@@ -4,17 +4,11 @@ import { BTC_NFT_SWAP_NAME, CONTRACT_ADDRESS, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
-  broadcastTransaction,
-  bufferCV,
   contractPrincipalCV,
   createAssetInfo,
-  makeContractCall,
   makeContractNonFungiblePostCondition,
-  makeStandardNonFungiblePostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
-  serializeCV,
-  standardPrincipalCV,
   uintCV,
 } from '@stacks/transactions';
 import {
@@ -91,7 +85,7 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
           proofCV,
           nftCV,
         ],
-        postConditionMode: PostConditionMode.Allow,
+        postConditionMode: PostConditionMode.Deny,
         postConditions: [
           makeContractNonFungiblePostCondition(
             CONTRACT_ADDRESS,
@@ -103,6 +97,7 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
         ],
         userSession,
         network: NETWORK,
+        anchorMode: AnchorMode.Any,
         onCancel: () => {
           setLoading(false);
         },

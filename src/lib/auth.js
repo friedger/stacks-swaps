@@ -27,7 +27,7 @@ export const useConnect = () => {
     manifestPath: '/manifest.json',
     appDetails: {
       name: 'Stacks Swaps',
-      icon: 'https://cdn.citycoins.co/logos/citycoin.png',
+      icon: 'https://stacks-swaps.netlify.app/android-icon-144x144.png',
     },
   };
 

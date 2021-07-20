@@ -54,34 +54,6 @@ export function StacksSwapsContainer() {
             Confirm Bitcoin Tx
           </button>
         </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className="nav-link"
-            id="stacking-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#stacking"
-            type="button"
-            role="tab"
-            aria-controls="stacking"
-            aria-selected="true"
-          >
-            Stack CityCoins
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className="nav-link"
-            id="stackingclaim-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#stackingclaim"
-            type="button"
-            role="tab"
-            aria-controls="stackingclaim"
-            aria-selected="true"
-          >
-            Claim Stacking Rewards
-          </button>
-        </li>
       </ul>
 
       <div className="tab-content mt-3" id="myTabContent">
@@ -108,17 +80,6 @@ export function StacksSwapsContainer() {
           aria-labelledby="miningclaim-tab"
         >
           <SwapSubmit ownerStxAddress={ownerStxAddress} />
-        </div>
-        <div className="tab-pane fade" id="stacking" role="tabpanel" aria-labelledby="stacking-tab">
-          <SwapCreateNFT ownerStxAddress={ownerStxAddress} />
-        </div>
-        <div
-          className="tab-pane fade"
-          id="stackingclaim"
-          role="tabpanel"
-          aria-labelledby="stackingclaim-tab"
-        >
-          <SwapCreateNFT ownerStxAddress={ownerStxAddress} />
         </div>
       </div>
     </div>

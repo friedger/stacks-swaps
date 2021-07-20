@@ -12,36 +12,25 @@ export default function Landing(props) {
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">
         <div className="container pt-3">
           <AlertAllPages />
-          <h1>Introducing CityCoins</h1>
+          <h1>Stacks Swaps</h1>
           <p className="h5">
-            CityCoins are cryptocurrencies that allow you to support your favorite cities while
-            earning yield in Bitcoin.
+            The Stacks Blockchain has knowledge about the Bitcoin blockchain. This can be used to
+            trigger contract call by a bitcoin transaction.
           </p>
           <p className="h5">
-            Each city has their own coin, starting with Miami and MiamiCoin ($MIA).
+            This site provides a UI to create and handle trustless swaps between Bitcoins and and
+            fungible and non-fungible tokens on the Stacks chain.
           </p>
-          <h2 className="mt-4">Activation</h2>
+          <h2 className="mt-4">Create Swap</h2>
           <p className="h5">
-            CityCoins only exist through mining, which requires 20 independent wallets to signal
-            activation once the contract is deployed.
+            After agreeing on Terms and Conditions off-chain, the owner of the Stacks assets creates
+            a swap and sends the assets to the contract in escrow.
           </p>
-          <p className="h5">No ICO, no pre-sale, no pre-mine.</p>
-          <h2 className="mt-4">Mining</h2>
+          <h2 className="mt-4">Submit BTC transaction</h2>
           <p className="h5">
-            Anyone can mine CityCoins by forwarding STX into a CityCoins smart contract on the
-            Stacks blockchain.
-          </p>
-          <p className="h5">
-            30% of the STX that miners forward is sent directly to a reserved wallet for the city.
-          </p>
-          <h2 className="mt-4">Stacking</h2>
-          <p className="h5">
-            The remaining 70% of the STX that miners forward is distributed to CityCoin holders who
-            stack their tokens.
-          </p>
-          <p className="h5">
-            Stacking CityCoins yields STX rewards, which can further be stacked to yield BTC
-            rewards.
+            After the owner of BTC has made the transaction to the agree BTC address, any user can
+            submit the BTC contract to the Stacks contract. After verification, the Stacks assets
+            are released to the agree Stacks receiver.
           </p>
           <button
             className="btn btn-lg btn-outline-primary mt-4"

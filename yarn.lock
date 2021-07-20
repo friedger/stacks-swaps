@@ -1632,7 +1632,7 @@
   dependencies:
     cross-fetch "^3.0.6"
 
-"@stacks/common@^2.0.0", "@stacks/common@^2.0.0-beta.0":
+"@stacks/common@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@stacks/common/-/common-2.0.0.tgz#df5c8ef083864c9b5be90628cee9bc2463c93054"
   integrity sha512-drfXbdJbiwbSNJNaY5KCobR/oQryhAAwAUcLDcco+Aa3QKttjx1KefWDwstvSpZ7Hqmnyl3a/yf269X/d09gpA==
@@ -1776,12 +1776,12 @@
     bitcoinjs-lib "^5.2.0"
     jsontokens "^3.0.0"
 
-"@stacks/transactions@2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@stacks/transactions/-/transactions-2.0.0-beta.1.tgz#dcfff56b39f25b3ae67be801dca3cd416337b3db"
-  integrity sha512-Xy1Nt0jGCvRX+768O/3K6IV5wX5S5+jnSqoB/ZojjV46KTsvUIMYDuM8htyU7Yok+9NzlDOYoZBeZetppMJwyg==
+"@stacks/transactions@2.0.0", "@stacks/transactions@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@stacks/transactions/-/transactions-2.0.0.tgz#4b5986cc38efa596b62eb87d0246317e9011d12c"
+  integrity sha512-A5URiHAssshnLQ9mMoqebeeQJ1coEPTe3OgUkqaSnf8rd5lWI6LypLwUJFpwI8dv4Lw6fwu5ZRS2mxjyZ3eqVQ==
   dependencies:
-    "@stacks/common" "^2.0.0-beta.0"
+    "@stacks/common" "^2.0.0"
     "@stacks/network" "^1.2.2"
     "@types/bn.js" "^4.11.6"
     "@types/elliptic" "^6.4.12"
@@ -1815,28 +1815,6 @@
     elliptic "^6.5.3"
     lodash "^4.17.20"
     lodash-es "4.17.20"
-    randombytes "^2.1.0"
-    ripemd160-min "^0.0.6"
-    sha.js "^2.4.11"
-    smart-buffer "^4.1.0"
-
-"@stacks/transactions@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@stacks/transactions/-/transactions-2.0.0.tgz#4b5986cc38efa596b62eb87d0246317e9011d12c"
-  integrity sha512-A5URiHAssshnLQ9mMoqebeeQJ1coEPTe3OgUkqaSnf8rd5lWI6LypLwUJFpwI8dv4Lw6fwu5ZRS2mxjyZ3eqVQ==
-  dependencies:
-    "@stacks/common" "^2.0.0"
-    "@stacks/network" "^1.2.2"
-    "@types/bn.js" "^4.11.6"
-    "@types/elliptic" "^6.4.12"
-    "@types/node" "^14.14.43"
-    "@types/randombytes" "^2.0.0"
-    "@types/sha.js" "^2.4.0"
-    bn.js "^4.12.0"
-    c32check "^1.1.2"
-    cross-fetch "^3.1.4"
-    elliptic "^6.5.4"
-    lodash "^4.17.20"
     randombytes "^2.1.0"
     ripemd160-min "^0.0.6"
     sha.js "^2.4.11"

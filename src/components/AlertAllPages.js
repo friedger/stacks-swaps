@@ -4,16 +4,8 @@ export function AlertAllPages() {
   return (
     <div className="alert alert-warning alert-dismissible fade show" role="alert">
       <p className="fw-bold">
-        <i className="bi bi-exclamation-triangle fs-3"></i> The testnet was reset to a fresh
-        chainstate on 2021/07/12.
-      </p>
-      <p>Mining will be unavailable until a new contract is deployed.</p>
-      <p>
-        Please watch the <code>#user-interface</code> channel in the{' '}
-        <a href="https://chat.citycoins.co" target="_blank" rel="nofollow" className="alert-link">
-          CityCoins Discord
-        </a>{' '}
-        for more information.
+        <i className="bi bi-exclamation-triangle fs-3"></i> Bitcoin transactions that happen during
+        a flash block can't be verified on Stacks chain 2.0.
       </p>
       <button
         type="button"

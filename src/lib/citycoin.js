@@ -2,7 +2,7 @@ import { ClarityType, cvToHex, cvToString, hexToCV, tupleCV, uintCV } from '@sta
 import { standardPrincipalCV, callReadOnlyFunction } from '@stacks/transactions';
 import {
   accountsApi,
-  CITYCOIN_CONTRACT_NAME,
+  BTC_NFT_SWAP_NAME,
   CONTRACT_ADDRESS,
   GENESIS_CONTRACT_ADDRESS,
   infoApi,
@@ -13,7 +13,7 @@ import {
 export async function getCityCoinBalance(address) {
   const result = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-balance',
     functionArgs: [standardPrincipalCV(address)],
     network: NETWORK,
@@ -22,22 +22,10 @@ export async function getCityCoinBalance(address) {
   return result.value.value.toNumber();
 }
 
-export async function getMiningActivationStatus() {
-  const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
-    functionName: 'get-mining-activation-status',
-    functionArgs: [],
-    network: NETWORK,
-    senderAddress: GENESIS_CONTRACT_ADDRESS,
-  });
-  return result.type === ClarityType.BoolTrue;
-}
-
 export async function getRegisteredMinerId(address) {
   const result = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-miner-id',
     functionArgs: [standardPrincipalCV(address)],
     network: NETWORK,
@@ -53,7 +41,7 @@ export async function getRegisteredMinerId(address) {
 export async function getRegisteredMinerCount() {
   const result = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-registered-miners-nonce',
     functionArgs: [],
     network: NETWORK,
@@ -65,7 +53,7 @@ export async function getRegisteredMinerCount() {
 export async function getRegisteredMinersThreshold() {
   const result = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-registered-miners-threshold',
     functionArgs: [],
     network: NETWORK,
@@ -76,7 +64,7 @@ export async function getRegisteredMinersThreshold() {
 export async function getCoinbase(blockHeight) {
   const result = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-coinbase-amount',
     functionArgs: [uintCV(blockHeight)],
     senderAddress: CONTRACT_ADDRESS,
@@ -93,7 +81,7 @@ export async function getMiningDetails(stxAddress) {
       tx.tx_type === 'contract_call' &&
       (tx.contract_call.function_name === 'mine-tokens' ||
         tx.contract_call.function_name === 'mine-tokens-over-30-blocks') &&
-      tx.contract_call.contract_id === `${CONTRACT_ADDRESS}.${CITYCOIN_CONTRACT_NAME}`
+      tx.contract_call.contract_id === `${CONTRACT_ADDRESS}.${BTC_NFT_SWAP_NAME}`
   );
   const minerId = await getRegisteredMinerId(stxAddress);
   console.log({ minerId });
@@ -115,7 +103,7 @@ async function getWinningDetailsFor(blockHeight, minerId) {
   console.log({ blockHeight });
   const randomSample = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-random-uint-at-block',
     functionArgs: [uintCV(blockHeight + 100)],
     senderAddress: CONTRACT_ADDRESS,
@@ -128,7 +116,7 @@ async function getWinningDetailsFor(blockHeight, minerId) {
 
     const minedBlock = await smartContractsApi.getContractDataMapEntry({
       contractAddress: CONTRACT_ADDRESS,
-      contractName: CITYCOIN_CONTRACT_NAME,
+      contractName: BTC_NFT_SWAP_NAME,
       mapName: 'mined-blocks',
       key: cvToHex(tupleCV({ 'stacks-block-height': uintCV(blockHeight) })),
     });
@@ -145,7 +133,7 @@ async function getWinningDetailsFor(blockHeight, minerId) {
       console.log({ idx });
       const minerOfBlock = await smartContractsApi.getContractDataMapEntry({
         contractAddress: CONTRACT_ADDRESS,
-        contractName: CITYCOIN_CONTRACT_NAME,
+        contractName: BTC_NFT_SWAP_NAME,
         mapName: 'blocks-miners',
         key: cvToHex(tupleCV({ 'stacks-block-height': uintCV(blockHeight), idx: uintCV(idx) })),
       });
@@ -174,7 +162,7 @@ async function getWinningDetailsFor(blockHeight, minerId) {
 async function getWinningAmount(blockHeight, randomSample) {
   const blockCommit = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-block-commit-total',
     functionArgs: [uintCV(blockHeight)],
     senderAddress: CONTRACT_ADDRESS,
@@ -190,7 +178,7 @@ async function getWinningAmount(blockHeight, randomSample) {
 export async function getPoxLiteInfo() {
   const poxLiteInfo = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-pox-lite-info',
     functionArgs: [],
     senderAddress: CONTRACT_ADDRESS,
@@ -203,7 +191,7 @@ export async function getAvailableRewards(stxAddress, cycleId) {
   const info = await infoApi.getCoreApiInfo();
   const stackingReward = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-entitled-stacking-reward',
     functionArgs: [
       standardPrincipalCV(stxAddress),
@@ -215,7 +203,7 @@ export async function getAvailableRewards(stxAddress, cycleId) {
   });
   const cityCoinClaim = await callReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
-    contractName: CITYCOIN_CONTRACT_NAME,
+    contractName: BTC_NFT_SWAP_NAME,
     functionName: 'get-stacked-in-cycle',
     functionArgs: [standardPrincipalCV(stxAddress), uintCV(cycleId)],
     senderAddress: stxAddress,
@@ -238,7 +226,7 @@ export async function getStackingState(stxAddress) {
       tx.tx_status === 'success' &&
       tx.tx_type === 'contract_call' &&
       tx.contract_call.function_name === 'stack-tokens' &&
-      tx.contract_call.contract_id === `${CONTRACT_ADDRESS}.${CITYCOIN_CONTRACT_NAME}`
+      tx.contract_call.contract_id === `${CONTRACT_ADDRESS}.${BTC_NFT_SWAP_NAME}`
   );
   const state = [];
   for (let tx of txs) {

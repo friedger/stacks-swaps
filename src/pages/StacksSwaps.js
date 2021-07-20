@@ -1,9 +1,9 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
-import { CityCoinContainer } from '../components/CityCoinContainer';
+import { StacksSwapsContainer } from '../components/StacksSwapsContainer';
 import { useStxAddresses } from '../lib/hooks';
 
-export default function CityCoin({ userSession }) {
+export default function StacksSwaps({ userSession }) {
   const { ownerStxAddress } = useStxAddresses(userSession);
   if (!userSession || !ownerStxAddress) {
     return <div>Loading</div>;
@@ -11,7 +11,7 @@ export default function CityCoin({ userSession }) {
   return (
     <main className="container">
       <AlertAllPages />
-      <CityCoinContainer />
+      <StacksSwapsContainer />
     </main>
   );
 }

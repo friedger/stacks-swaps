@@ -10,9 +10,11 @@ export function ProfileFull({ stxAddress, userSession }) {
   });
 
   useEffect(() => {
-    fetchAccount(stxAddress).then(acc => {
-      setProfileState({ account: acc });
-    });
+    if (stxAddress) {
+      fetchAccount(stxAddress).then(acc => {
+        setProfileState({ account: acc });
+      });
+    }
   }, [stxAddress]);
 
   return (

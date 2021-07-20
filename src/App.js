@@ -5,7 +5,7 @@ import { Router } from '@reach/router';
 import Auth from './components/Auth';
 import { userDataState, userSessionState, useConnect } from './lib/auth';
 import { useAtom } from 'jotai';
-import CityCoin from './pages/CityCoin';
+import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
 
 export default function App(props) {
@@ -29,16 +29,16 @@ export default function App(props) {
             href="/"
             className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
           >
-            <img src="/citycoin-icon-blue-reversed-75x75.png" width="75" alt="CityCoins CC Logo" />
+            <img src="/android-icon-72x72.png" width="75" alt="Stacks Swaps Logo" />
           </a>
         </div>
         <div>
-          <span className="h1">CityCoins</span>
+          <span className="h1">Stacks Swaps</span>
         </div>
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
           <ProfileSmall userSession={userSession} />
           <a
-            href="https://docs.citycoins.co"
+            href="https://app.sigle.io/friedger.id/A-l0d8h0Bq7uEGTWl004B"
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline-primary"
@@ -68,7 +68,7 @@ function Content({ userSession }) {
           {!authenticated && <Landing path="/" />}
           {decentralizedID && (
             <>
-              <CityCoin path="/" decentralizedID={decentralizedID} userSession={userSession} />
+              <StacksSwaps path="/" decentralizedID={decentralizedID} userSession={userSession} />
             </>
           )}
         </AppBody>

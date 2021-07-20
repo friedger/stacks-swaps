@@ -22,14 +22,23 @@ console.log({ localNode, localAuth, mocknet, testnet, mainnet });
 export const CONTRACT_ADDRESS = mocknet
   ? 'ST3EQ88S02BXXD0T5ZVT3KW947CRMQ1C6DMQY8H19' //ADDR1 from Stacks.toml
   : testnet
-  ? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A'
-  : 'SPAP1KAFW2BBAD840FSPJJJ7EVYXPCEMXNH3GNT9'; // TODO: UPDATE
-export const GENESIS_CONTRACT_ADDRESS = 'ST000000000000000000002AMW42H';
+  ? 'ST2PABAF9FTAJYNFZH93XENAJ8FVY99RRM4DF2YCW'
+  : 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9';
+export const GENESIS_CONTRACT_ADDRESS = mainnet
+  ? 'SP000000000000000000002Q6VF78'
+  : 'ST000000000000000000002AMW42H';
+
 export const BNS_CONTRACT_NAME = 'bns';
 
-export const CITYCOIN_CONTRACT_NAME = mocknet ? 'citycoin' : 'comfortable-purple-kiwi';
-export const CC_NAME = 'citycoin';
-export const CC_SYMBOL = '$CITY';
+export const CLARITY_BITCOIN_CONTRACT_NAME = mainnet
+  ? 'clarity-bitcoin-lib-v1'
+  : 'clarity-bitcoin-lib-v1';
+
+export const BTC_NFT_SWAP_NAME = mocknet
+  ? 'btc-nft-swap'
+  : testnet
+  ? 'btc-nft-swap-v1'
+  : 'btc-nft-swap-v1';
 
 // TODO: add Freehold API endpoint?
 export const STACK_API_URL = localNode

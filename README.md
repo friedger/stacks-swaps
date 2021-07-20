@@ -1,6 +1,6 @@
-# CityCoin UI
+# Swap BTC for tokens on Stacks chain
 
-Basic UI components for interacting with the [CityCoin contract](https://github.com/citycoins/citycoin).
+Information and basic UI to inspect and execute trustless swaps between Bitcoins and fungible and non-fungible tokens on the Stacks chain.
 
 ## Testing
 

@@ -26,7 +26,7 @@ export const useConnect = () => {
     redirectTo: '/',
     manifestPath: '/manifest.json',
     appDetails: {
-      name: 'CityCoins',
+      name: 'Stacks Swaps',
       icon: 'https://cdn.citycoins.co/logos/citycoin.png',
     },
   };

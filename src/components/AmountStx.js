@@ -4,12 +4,12 @@ import { useAtomValue } from 'jotai/utils';
 
 export function AmountStx({ ustx }) {
   const rate = useAtomValue(STX_USD);
-  if (isNaN(ustx)) {
+  if (typeof ustx !== "bigint") {
     return ustx;
   }
   return (
     <li>
-      {(ustx / 1000000).toLocaleString(undefined, {
+      {(ustx / 1000000n).toLocaleString(undefined, {
         style: 'decimal',
         minimumFractionDigits: 6,
         maximumFractionDigits: 6,
@@ -17,7 +17,7 @@ export function AmountStx({ ustx }) {
       &nbsp;Ӿ
       <br />
       ($
-      {((ustx / 1000000) * rate.value).toLocaleString(undefined, {
+      {((ustx / 1000000n) * rate.value).toLocaleString(undefined, {
         style: 'decimal',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,

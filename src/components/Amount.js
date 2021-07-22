@@ -2,7 +2,7 @@ import React from 'react';
 import { AmountStx } from './AmountStx';
 
 export function Amount({ ustx, stxAddress }) {
-  if (isNaN(ustx)) {
+  if (typeof ustx !== "bigint") {
     return ustx;
   }
   return (

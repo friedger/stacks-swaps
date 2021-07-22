@@ -101,7 +101,7 @@ export async function verifyMerkleProof(txId, block, proofCV) {
     senderAddress: CONTRACT_ADDRESS,
     network: NETWORK,
   });
-  console.log('verify-merkle-proof', JSON.stringify(result));
+  console.log('verify-merkle-proof', JSON.stringify(result), cvToString(result));
   return result;
 }
 
@@ -214,21 +214,34 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   const blockResponse = await fetch(
     `https://api.blockcypher.com/v1/btc/main/blocks/${tx.block_hash}?limit=500`
   );
-  const block = await blockResponse.json();
+  const blockFirstPart = await blockResponse.json();
+  const txCount = blockFirstPart.n_tx;
+  let block = blockFirstPart;
+  while (block.txids.length < txCount) {
+    const response = await fetch(
+      `https://api.blockcypher.com/v1/btc/main/blocks/${tx.block_hash}?limit=500&txstart=${block.txids.length}`
+    );
+    const blockNextPart = await response.json();
+    block.txids = block.txids.concat(blockNextPart.txids);
+    console.log({ txidsLength: block.txids.length });
+  }
 
   const headerResponse = await fetch(`https://blockstream.info/api/block/${tx.block_hash}/header`);
   const header = await headerResponse.text();
 
   // proof cv
   const txIndex = block.txids.findIndex(id => id === btcTxId);
-  const tree = new MerkleTree(block.txids, SHA256, { isBitcoinTree: true });
+  const tree = new MerkleTree(block.txids, SHA256, { isBitcoinTree: true});
   const treeDepth = tree.getDepth();
+  const proof = tree.getProof(btcTxId, txIndex);
+  console.log({ proof }, tree.getHexProof(btcTxId, txIndex));
+  console.log(tree.print())
   const proofCV = tupleCV({
     'tx-index': uintCV(txIndex),
-    hashes: listCV(tree.getProof(btcTxId).map(po => bufferCV(reverse(po.data)))),
+    hashes: listCV(proof.map(po => bufferCV(reverse(po.data)))),
     'tree-depth': uintCV(treeDepth),
   });
-
+  console.log({ txIndex, treeDepth, tree, hashes: proofCV.data.hashes });
   // block header
   const blockCV = tupleCV({
     header: bufferCV(Buffer.from(header, 'hex')),

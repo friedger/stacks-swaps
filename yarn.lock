@@ -7811,10 +7811,9 @@ merkle-lib@^2.0.10:
   resolved "https://registry.yarnpkg.com/merkle-lib/-/merkle-lib-2.0.10.tgz#82b8dbae75e27a7785388b73f9d7725d0f6f3326"
   integrity sha1-grjbrnXieneFOItz+ddyXQ9vMyY=
 
-merkletreejs@^0.2.23:
+"merkletreejs@https://github.com/friedger/merkletreejs#feat/test":
   version "0.2.23"
-  resolved "https://registry.yarnpkg.com/merkletreejs/-/merkletreejs-0.2.23.tgz#afc43fd1e1b7059943766eb1ebf281f858553b10"
-  integrity sha512-L3iWPXiyx81on1uZpfBEWFo+bm9T9YLwffQaWIUUTNoQZkVV8BfThXtbFLbMnurXSzPiAYi4C8qN62XAvdI3Dg==
+  resolved "https://github.com/friedger/merkletreejs#95624eeb5bb916948b656ded0ba130bd4957d913"
   dependencies:
     bignumber.js "^9.0.1"
     buffer-reverse "^1.0.1"

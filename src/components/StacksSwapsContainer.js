@@ -65,6 +65,7 @@ export function StacksSwapsContainer() {
         >
           <StacksSwapsDashboard />
         </div>
+        <hr/>
         <div
           className="tab-pane fade  show active"
           id="create-nft"
@@ -73,6 +74,7 @@ export function StacksSwapsContainer() {
         >
           <SwapCreateNFT ownerStxAddress={ownerStxAddress} />
         </div>
+        <hr/>
         <div
           className="tab-pane fade show active"
           id="miningclaim"

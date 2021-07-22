@@ -124,6 +124,7 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
             ref={nftTraitRef}
             aria-label="NFT asset"
             placeholder="NFT asset"
+            defaultValue="SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-12::b-12"
             required
             minLength="1"
           />
@@ -168,6 +169,7 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
             ref={nftIdRef}
             aria-label="ID of NFT"
             placeholder="ID of NFT"
+            defaultValue="82"
             required
             minLength="1"
           />

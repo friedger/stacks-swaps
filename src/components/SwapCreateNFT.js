@@ -88,6 +88,7 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={nftTraitRef}
             aria-label="NFT asset"
             placeholder="NFT asset"
+            defaultValue="SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-12::b-12"
             required
             minLength="1"
           />
@@ -99,6 +100,7 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={amountSatsRef}
             aria-label="Price for NFT in Bitcoin"
             placeholder="Price for NFT in Bitcoin"
+            defaultValue="0.00535"
             required
             minLength="1"
           />
@@ -113,6 +115,7 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={btcRecipientRef}
             aria-label="Bitcoin recipient address"
             placeholder="Bitcoin recipient address"
+            defaultValue="1MATdc1Xjen4GUYMhZW5nPxbou24bnWY1v"
             required
             max="40"
             minLength="1"
@@ -125,6 +128,7 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={nftIdRef}
             aria-label="ID of NFT"
             placeholder="ID of NFT"
+            defaultValue="82"
             required
             minLength="1"
           />
@@ -136,6 +140,7 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={nftRecipientRef}
             aria-label="NFT receiver Stacks address"
             placeholder="NFT receiver Stacks address"
+            defaultValue="SP197GMEG6WGBRDTCTGGWMRA1G77E65TRXWYKGCT7"
             required
             minLength="1"
           />

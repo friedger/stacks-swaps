@@ -1,13 +1,5 @@
 import { serializeCV, hexToCV as stacksHexToCV } from '@stacks/transactions';
-import {
-  chainSuffix,
-  mainnet,
-  mocknet,
-  STACKS_API_WS_URL,
-  STACK_API_URL,
-  testnet,
-  transactionsApi,
-} from './constants';
+import { chainSuffix, mainnet, mocknet, STACK_API_URL, transactionsApi } from './constants';
 import { Storage } from '@stacks/storage';
 
 export function resultToStatus(result) {
@@ -45,11 +37,7 @@ export function txUrl(txId) {
   }
 }
 
-const indexFileName = mainnet
-  ? 'index-mainnet.json'
-  : testnet
-  ? 'index-testnet.json'
-  : 'index-mocknet.json';
+const indexFileName = 'index-mainnet.json';
 
 export async function saveTxData(data, userSession) {
   console.log(JSON.stringify(data));

@@ -13,17 +13,15 @@ import {
   accountsApi,
   BNS_CONTRACT_NAME,
   GENESIS_CONTRACT_ADDRESS,
-  mocknet,
   NETWORK,
   STACKS_API_ACCOUNTS_URL,
-  testnet,
 } from './constants';
 
 export function getStacksAccount(appPrivateKey) {
   const privateKey = createStacksPrivateKey(appPrivateKey);
   const publicKey = getPublicKey(privateKey);
   const address = addressFromPublicKeys(
-    testnet || mocknet ? AddressVersion.TestnetSingleSig : AddressVersion.MainnetSingleSig,
+    AddressVersion.MainnetSingleSig,
     AddressHashMode.SerializeP2PKH,
     1,
     [publicKey]

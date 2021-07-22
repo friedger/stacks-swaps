@@ -58,7 +58,7 @@ export function StacksSwapsContainer() {
 
       <div className="tab-content mt-3" id="myTabContent">
         <div
-          className="tab-pane fade"
+          className="tab-pane fade  show active"
           id="dashboard"
           role="tabpanel"
           aria-labelledby="dashboard-tab"
@@ -66,7 +66,7 @@ export function StacksSwapsContainer() {
           <StacksSwapsDashboard />
         </div>
         <div
-          className="tab-pane fade"
+          className="tab-pane fade  show active"
           id="create-nft"
           role="tabpanel"
           aria-labelledby="create-nft-tab"

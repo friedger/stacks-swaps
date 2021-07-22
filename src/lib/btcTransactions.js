@@ -159,7 +159,7 @@ function numberToBuffer(value, size) {
 
 export async function paramsFromTx(btcTxId, stxHeight) {
   const tx = await (
-    await fetch(`https://api.blockcypher.com/v1/btc/test3/txs/${btcTxId}?limit=50&includeHex=true`)
+    await fetch(`https://api.blockcypher.com/v1/btc/main/txs/${btcTxId}?limit=50&includeHex=true`)
   ).json();
 
   console.log({ out: tx.outputs[0] });
@@ -199,13 +199,13 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   if (!stxHeight) {
     const stacksBlockHash = tx.outputs[0].data_hex.substr(6, 64);
     const stacksBlockResponse = await fetch(
-      `https://stacks-node-api.testnet.stacks.co/extended/v1/block/0x${stacksBlockHash}`
+      `https://stacks-node-api.mainnet.stacks.co/extended/v1/block/0x${stacksBlockHash}`
     );
     stacksBlock = await stacksBlockResponse.json();
     height = stacksBlock.height;
   } else {
     const stacksBlockResponse = await fetch(
-      `https://stacks-node-api.testnet.stacks.co/extended/v1/block/by_height/${stxHeight}`
+      `https://stacks-node-api.mainnet.stacks.co/extended/v1/block/by_height/${stxHeight}`
     );
     stacksBlock = await stacksBlockResponse.json();
     height = stxHeight;
@@ -213,12 +213,12 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   console.log({ height, stacksBlock });
 
   const blockResponse = await fetch(
-    `https://api.blockcypher.com/v1/btc/test3/blocks/${tx.block_hash}?limit=500`
+    `https://api.blockcypher.com/v1/btc/main/blocks/${tx.block_hash}?limit=500`
   );
   const block = await blockResponse.json();
 
   const headerResponse = await fetch(
-    `https://blockstream.info/testnet/api/block/${tx.block_hash}/header`
+    `https://blockstream.info/api/block/${tx.block_hash}/header`
   );
   const header = await headerResponse.text();
 

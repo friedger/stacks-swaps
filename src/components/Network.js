@@ -1,5 +1,5 @@
 import React from 'react';
-import { STACK_API_URL, testnet, mainnet } from '../lib/constants';
+import { STACK_API_URL, mainnet } from '../lib/constants';
 export function Network() {
   return (
     <div
@@ -8,7 +8,7 @@ export function Network() {
       }`}
       title={STACK_API_URL}
     >
-      {mainnet ? 'mainnet' : testnet ? 'testnet' : 'mocknet'}
+      mainnet
     </div>
   );
 }

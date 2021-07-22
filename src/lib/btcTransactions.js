@@ -12,22 +12,20 @@ import SHA256 from 'crypto-js/sha256';
 
 import {
   accountsApi,
-  BTC_NFT_SWAP_NAME,
-  CLARITY_BITCOIN_CONTRACT_NAME,
+  BTC_NFT_SWAP_CONTRACT,
+  CLARITY_BITCOIN_CONTRACT,
   CONTRACT_ADDRESS,
   NETWORK,
 } from './constants';
 
 export async function fetchSwapTxList() {
   const response = await accountsApi.getAccountTransactions({
-    principal: `${CONTRACT_ADDRESS}.${BTC_NFT_SWAP_NAME}`,
+    principal: `${BTC_NFT_SWAP_CONTRACT.address}.${BTC_NFT_SWAP_CONTRACT.name}`,
   });
 
   console.log(response);
   const result = response.results.filter(
-    tx =>
-      tx.tx_status === 'success' &&
-      tx.tx_type === 'contract_call'
+    tx => tx.tx_status === 'success' && tx.tx_type === 'contract_call'
   );
 
   console.log(result);
@@ -36,8 +34,8 @@ export async function fetchSwapTxList() {
 
 export async function concatTransaction(txPartsCV) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'concat-tx',
     functionArgs: [txPartsCV],
     senderAddress: CONTRACT_ADDRESS,
@@ -49,8 +47,8 @@ export async function concatTransaction(txPartsCV) {
 
 export async function getTxId(txBuffCV) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'get-txid',
     functionArgs: [txBuffCV],
     senderAddress: CONTRACT_ADDRESS,
@@ -62,8 +60,8 @@ export async function getTxId(txBuffCV) {
 
 export async function wasTxMined(blockPartsCV, txCV, proofCV) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'was-tx-mined',
     functionArgs: [blockPartsCV, txCV, proofCV],
     senderAddress: CONTRACT_ADDRESS,
@@ -77,8 +75,8 @@ export async function parseTx(txCV) {
   // parse tx
   try {
     const result = await callReadOnlyFunction({
-      contractAddress: CONTRACT_ADDRESS,
-      contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+      contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+      contractName: CLARITY_BITCOIN_CONTRACT.name,
       functionName: 'parse-tx',
       functionArgs: [txCV],
       senderAddress: CONTRACT_ADDRESS,
@@ -92,8 +90,8 @@ export async function parseTx(txCV) {
 
 export async function verifyMerkleProof(txId, block, proofCV) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'verify-merkle-proof',
     functionArgs: [
       bufferCV(reverse(MerkleTree.bufferify(txId))),
@@ -109,8 +107,8 @@ export async function verifyMerkleProof(txId, block, proofCV) {
 
 export async function wasTxMinedFromHex(blockCV, txCV, proofCV) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'was-tx-mined-compact',
     functionArgs: [blockCV, txCV, proofCV],
     senderAddress: CONTRACT_ADDRESS,
@@ -122,8 +120,9 @@ export async function wasTxMinedFromHex(blockCV, txCV, proofCV) {
 
 export async function parseBlockHeader(blockHeader) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
+
     functionName: 'parse-block-header',
     functionArgs: [bufferCV(Buffer.from(blockHeader, 'hex'))],
     senderAddress: CONTRACT_ADDRESS,
@@ -135,8 +134,8 @@ export async function parseBlockHeader(blockHeader) {
 
 export async function verifyBlockHeader(parts, blockHeight) {
   const result = await callReadOnlyFunction({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CLARITY_BITCOIN_CONTRACT_NAME,
+    contractAddress: CLARITY_BITCOIN_CONTRACT.address,
+    contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'verify-block-header',
     functionArgs: [
       bufferCV(Buffer.from(parts[0] + parts[1] + parts[2] + parts[3] + parts[4] + parts[5], 'hex')),
@@ -195,7 +194,7 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   });
 
   let height;
-  let stacksBlock
+  let stacksBlock;
   if (!stxHeight) {
     const stacksBlockHash = tx.outputs[0].data_hex.substr(6, 64);
     const stacksBlockResponse = await fetch(
@@ -217,9 +216,7 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   );
   const block = await blockResponse.json();
 
-  const headerResponse = await fetch(
-    `https://blockstream.info/api/block/${tx.block_hash}/header`
-  );
+  const headerResponse = await fetch(`https://blockstream.info/api/block/${tx.block_hash}/header`);
   const header = await headerResponse.text();
 
   // proof cv

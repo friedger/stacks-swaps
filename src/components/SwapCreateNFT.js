@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { BTC_NFT_SWAP_NAME, CONTRACT_ADDRESS, NETWORK } from '../lib/constants';
+import {
+  BTC_NFT_SWAP_CONTRACT,
+  NETWORK,
+} from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -49,8 +52,8 @@ export function SwapCreateNFT({ ownerStxAddress }) {
       const [nftContractName, nftAssetName] = nftTail.split('::');
       const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
       await doContractCall({
-        contractAddress: CONTRACT_ADDRESS,
-        contractName: BTC_NFT_SWAP_NAME,
+        contractAddress: BTC_NFT_SWAP_CONTRACT.address,
+        contractName: BTC_NFT_SWAP_CONTRACT.name,
         functionName: 'create-swap',
         functionArgs: [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV],
         network: NETWORK,

@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { BTC_NFT_SWAP_NAME, CONTRACT_ADDRESS, NETWORK } from '../lib/constants';
+import {
+  BTC_NFT_SWAP_CONTRACT,
+  NETWORK,
+} from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -72,8 +75,8 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
     try {
       // submit
       await doContractCall({
-        contractAddress: CONTRACT_ADDRESS,
-        contractName: BTC_NFT_SWAP_NAME,
+        contractAddress: BTC_NFT_SWAP_CONTRACT.address,
+        contractName: BTC_NFT_SWAP_CONTRACT.name,
         functionName: 'submit-swap',
         functionArgs: [
           swapIdCV,
@@ -88,8 +91,8 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
         postConditionMode: PostConditionMode.Deny,
         postConditions: [
           makeContractNonFungiblePostCondition(
-            CONTRACT_ADDRESS,
-            BTC_NFT_SWAP_NAME,
+            BTC_NFT_SWAP_CONTRACT.address,
+            BTC_NFT_SWAP_CONTRACT.name,
             NonFungibleConditionCode.DoesNotOwn,
             createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
             nftIdCV

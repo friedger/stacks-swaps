@@ -16,11 +16,9 @@ export const GENESIS_CONTRACT_ADDRESS = 'SP000000000000000000002Q6VF78';
 
 export const BNS_CONTRACT_NAME = 'bns';
 
-export const CLARITY_BITCOIN_CONTRACT_NAME = mainnet
-  ? 'clarity-bitcoin-lib-v1'
-  : 'clarity-bitcoin-lib-v1';
+export const CLARITY_BITCOIN_CONTRACT = { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'clarity-bitcoin-lib-v1' };
 
-export const BTC_NFT_SWAP_NAME = 'btc-nft-swap-v1';
+export const BTC_NFT_SWAP_CONTRACT = { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'btc-nft-swap-v1' };
 
 // TODO: add Freehold API endpoint?
 export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';

@@ -9,16 +9,20 @@ import {
   AnchorMode,
   contractPrincipalCV,
   createAssetInfo,
+  cvToString,
   makeContractNonFungiblePostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
   uintCV,
 } from '@stacks/transactions';
 import {
+  getReversedTxId,
   paramsFromTx,
   parseBlockHeader,
   verifyBlockHeader,
+  verifyBlockHeader2,
   verifyMerkleProof,
+  verifyMerkleProof2,
   wasTxMined,
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
@@ -49,14 +53,18 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
       stacksBlock,
     } = await paramsFromTx(btcTxId, stxHeight);
     const height = stacksBlock.height;
+    console.log({btcTxId, block, proofCV: cvToString(proofCV), blockCV: cvToString(blockCV), txCV: cvToString(txCV)})
     const results = await Promise.all([
+      getReversedTxId(txCV),
       verifyMerkleProof(btcTxId, block, proofCV),
+      verifyMerkleProof2(txCV, headerPartsCV, proofCV),
+      verifyBlockHeader(headerParts, height),
+      verifyBlockHeader2(blockCV),
       wasTxMinedFromHex(blockCV, txCV, proofCV),
       parseBlockHeader(header),
-      verifyBlockHeader(headerParts, height),
       wasTxMined(headerPartsCV, txCV, proofCV),
     ]);
-    console.log({ results });
+    console.log({ r: results.map(r => cvToString(r)) });
     setChanged(false);
   };
 

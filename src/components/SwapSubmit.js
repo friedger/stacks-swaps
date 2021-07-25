@@ -24,7 +24,7 @@ import {
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
 
-export function SwapSubmit({ ownerStxAddress, userSession, type }) {
+export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
   const heightRef = useRef();
   const swapIdRef = useRef();
   const nftIdRef = useRef();
@@ -151,6 +151,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type }) {
             ref={traitRef}
             aria-label={`fully qualified contract of the ${assetName} and its asset class`}
             placeholder={`fully qualified contract of the ${assetName} and its asset class`}
+            defaultValue={trait}
             required
             minLength="1"
           />

@@ -69,10 +69,22 @@ function Content({ userSession }) {
           {!authenticated && <Landing path="/" />}
           {decentralizedID && (
             <>
-              <Intro path="/" />
+              <Intro path="/" default />
+              <StacksSwaps
+                path="/nft/:trait"
+                type="nft"
+                decentralizedID={decentralizedID}
+                userSession={userSession}
+              />
               <StacksSwaps
                 path="/nft"
                 type="nft"
+                decentralizedID={decentralizedID}
+                userSession={userSession}
+              />
+              <StacksSwaps
+                path="/ft/:trait"
+                type="ft"
                 decentralizedID={decentralizedID}
                 userSession={userSession}
               />

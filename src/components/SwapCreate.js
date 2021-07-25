@@ -17,7 +17,7 @@ import { decodeBtcAddress } from '@stacks/stacking';
 
 // TODO: consider state for when stacking is active
 
-export function SwapCreate({ ownerStxAddress, type }) {
+export function SwapCreate({ ownerStxAddress, type, trait }) {
   const amountSatsRef = useRef();
   const btcRecipientRef = useRef();
   const nftIdRef = useRef();
@@ -107,6 +107,7 @@ export function SwapCreate({ ownerStxAddress, type }) {
             ref={traitRef}
             aria-label={`fully qualified contract of the ${assetName} and its asset class`}
             placeholder={`fully qualified contract of the ${assetName} and its asset class`}
+            defaultValue={trait}
             required
             minLength="1"
           />

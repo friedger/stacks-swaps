@@ -1,9 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import {
-  BTC_NFT_SWAP_CONTRACT,
-  NETWORK,
-} from '../lib/constants';
+import { BTC_NFT_SWAP_CONTRACT, contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -26,11 +23,12 @@ import {
   wasTxMined,
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
-export function SwapSubmit({ ownerStxAddress, userSession }) {
+
+export function SwapSubmit({ ownerStxAddress, userSession, type }) {
   const heightRef = useRef();
   const swapIdRef = useRef();
   const nftIdRef = useRef();
-  const nftTraitRef = useRef();
+  const traitRef = useRef();
   const btcTxIdRef = useRef();
 
   const [txId, setTxId] = useState();
@@ -53,7 +51,13 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
       stacksBlock,
     } = await paramsFromTx(btcTxId, stxHeight);
     const height = stacksBlock.height;
-    console.log({btcTxId, block, proofCV: cvToString(proofCV), blockCV: cvToString(blockCV), txCV: cvToString(txCV)})
+    console.log({
+      btcTxId,
+      block,
+      proofCV: cvToString(proofCV),
+      blockCV: cvToString(blockCV),
+      txCV: cvToString(txCV),
+    });
     const results = await Promise.all([
       getReversedTxId(txCV),
       verifyMerkleProof(btcTxId, block, proofCV),
@@ -76,17 +80,15 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
     const btcTxId = btcTxIdRef.current.value.trim();
     const { txPartsCV, proofCV, headerPartsCV } = await paramsFromTx(btcTxId, height);
     const swapIdCV = uintCV(swapId);
-    const [nftContractAddress, nftTail] = nftTraitRef.current.value.trim().split('.');
-    const [nftContractName, nftAssetName] = nftTail.split('::');
-    const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
-    const nftIdCV = uintCV(parseInt(nftIdRef.current.value.trim()));
-    try {
-      // submit
-      await doContractCall({
-        contractAddress: BTC_NFT_SWAP_CONTRACT.address,
-        contractName: BTC_NFT_SWAP_CONTRACT.name,
-        functionName: 'submit-swap',
-        functionArgs: [
+    let functionArgs;
+    let postConditions;
+    switch (type) {
+      case 'nft':
+        const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
+        const [nftContractName, nftAssetName] = nftTail.split('::');
+        const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
+        const nftIdCV = uintCV(parseInt(nftIdRef.current.value.trim()));
+        functionArgs = [
           swapIdCV,
           // block
           headerPartsCV,
@@ -95,9 +97,8 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
           // proof
           proofCV,
           nftCV,
-        ],
-        postConditionMode: PostConditionMode.Deny,
-        postConditions: [
+        ];
+        postConditions = [
           makeContractNonFungiblePostCondition(
             BTC_NFT_SWAP_CONTRACT.address,
             BTC_NFT_SWAP_CONTRACT.name,
@@ -105,7 +106,22 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
             createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
             nftIdCV
           ),
-        ],
+        ];
+        break;
+
+      default:
+        break;
+    }
+    const contract = contracts[type];
+    try {
+      // submit
+      await doContractCall({
+        contractAddress: contract.address,
+        contractName: contract.name,
+        functionName: 'submit-swap',
+        functionArgs,
+        postConditionMode: PostConditionMode.Deny,
+        postConditions,
         userSession,
         network: NETWORK,
         anchorMode: AnchorMode.Any,
@@ -122,20 +138,19 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
       setLoading(false);
     }
   };
-
+  const assetName = type === 'nft' ? 'NFT' : type === 'ft' ? 'token' : 'stacks';
   return (
     <>
-      <h3>Submit BTC Transaction for Swap BTC-NFT</h3>
+      <h3>Submit BTC Transaction for Swap BTC-{type.toUpperCase()}</h3>
       <p>The Swap ID is returned during creation.</p>
       <form>
-        <div className="input-group mb-3">
+        <div className={`input-group mb-3 ${type === 'stx' ? 'd-none' : ''}`}>
           <input
             type="text"
             className="form-control"
-            ref={nftTraitRef}
-            aria-label="NFT asset"
-            placeholder="NFT asset"
-            defaultValue="SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-12::b-12"
+            ref={traitRef}
+            aria-label={`fully qualified contract of the ${assetName} and its asset class`}
+            placeholder={`fully qualified contract of the ${assetName} and its asset class`}
             required
             minLength="1"
           />
@@ -173,14 +188,13 @@ export function SwapSubmit({ ownerStxAddress, userSession }) {
             minLength="1"
           />
         </div>
-        <div className="input-group mb-3">
+        <div className={`input-group mb-3 ${type === 'nft' ? '' : 'd-none'}`}>
           <input
             type="number"
             className="form-control"
             ref={nftIdRef}
             aria-label="ID of NFT"
             placeholder="ID of NFT"
-            defaultValue="82"
             required
             minLength="1"
           />

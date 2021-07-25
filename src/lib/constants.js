@@ -16,12 +16,34 @@ export const GENESIS_CONTRACT_ADDRESS = 'SP000000000000000000002Q6VF78';
 
 export const BNS_CONTRACT_NAME = 'bns';
 
-export const CLARITY_BITCOIN_CONTRACT = { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'clarity-bitcoin-lib-v1' };
+export const CLARITY_BITCOIN_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'clarity-bitcoin-lib-v1',
+};
 
-export const BTC_NFT_SWAP_CONTRACT = { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'btc-nft-swap-v1' };
+export const BTC_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'btc-nft-swap-v1',
+};
+
+export const BTC_FT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'btc-ft-swap',
+};
+
+export const BTC_STX_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'btc-nft-swap-v1',
+};
+
+export const contracts = {
+  nft: BTC_NFT_SWAP_CONTRACT,
+  ft: BTC_FT_SWAP_CONTRACT,
+  stx: BTC_STX_SWAP_CONTRACT,
+};
 
 // TODO: add Freehold API endpoint?
-export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';
+export const STACK_API_URL = 'https://stacks-node.planbetter.org';
 export const STACKS_API_WS_URL = 'wss://stacks-node-api.mainnet.stacks.co/';
 export const STACKS_API_ACCOUNTS_URL = `${STACK_API_URL}/v2/accounts`;
 

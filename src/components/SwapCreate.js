@@ -1,9 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import {
-  BTC_NFT_SWAP_CONTRACT,
-  NETWORK,
-} from '../lib/constants';
+import { BTC_NFT_SWAP_CONTRACT, contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -20,12 +17,13 @@ import { decodeBtcAddress } from '@stacks/stacking';
 
 // TODO: consider state for when stacking is active
 
-export function SwapCreateNFT({ ownerStxAddress }) {
+export function SwapCreate({ ownerStxAddress, type }) {
   const amountSatsRef = useRef();
   const btcRecipientRef = useRef();
   const nftIdRef = useRef();
-  const nftRecipientRef = useRef();
-  const nftTraitRef = useRef();
+  const amountRef = useRef();
+  const assetRecipientRef = useRef();
+  const traitRef = useRef();
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const { doContractCall } = useConnect();
@@ -46,27 +44,39 @@ export function SwapCreateNFT({ ownerStxAddress }) {
           Buffer.from('88ac', 'hex'),
         ])
       );
-      const nftIdCV = uintCV(nftIdRef.current.value.trim());
-      const nftReceiverCV = standardPrincipalCV(nftRecipientRef.current.value.trim());
-      const [nftContractAddress, nftTail] = nftTraitRef.current.value.trim().split('.');
-      const [nftContractName, nftAssetName] = nftTail.split('::');
-      const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
+      const contract = contracts[type];
+      let functionArgs;
+      let postConditions;
+      switch (type) {
+        case 'nft':
+          const nftIdCV = uintCV(nftIdRef.current.value.trim());
+          const nftReceiverCV = standardPrincipalCV(assetRecipientRef.current.value.trim());
+          const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
+          const [nftContractName, nftAssetName] = nftTail.split('::');
+          const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
+          functionArgs = [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV];
+          postConditions = [
+            makeStandardNonFungiblePostCondition(
+              ownerStxAddress,
+              NonFungibleConditionCode.DoesNotOwn,
+              createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
+              nftIdCV
+            ),
+          ];
+          break;
+
+        default:
+          break;
+      }
       await doContractCall({
-        contractAddress: BTC_NFT_SWAP_CONTRACT.address,
-        contractName: BTC_NFT_SWAP_CONTRACT.name,
+        contractAddress: contract.address,
+        contractName: contract.name,
         functionName: 'create-swap',
-        functionArgs: [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV],
+        functionArgs,
         network: NETWORK,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Deny,
-        postConditions: [
-          makeStandardNonFungiblePostCondition(
-            ownerStxAddress,
-            NonFungibleConditionCode.DoesNotOwn,
-            createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
-            nftIdCV
-          ),
-        ],
+        postConditions,
 
         onCancel: () => {
           setLoading(false);
@@ -78,20 +88,25 @@ export function SwapCreateNFT({ ownerStxAddress }) {
       });
     }
   };
-
+  const asset = type.toUpperCase();
+  const assetName = type === 'nft' ? 'NFT' : type === 'ft' ? 'token' : 'stacks';
   return (
     <>
-      <h3>Create Swap BTC-NFT</h3>
-      <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
+      <h3>Create Swap BTC-{asset}</h3>
+      {type === 'nft' && (
+        <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
+      )}
+      {type === 'ft' && (
+        <p>For a swap of Bitcoins and a token on Stacks, the token has to comply with SIP-10.</p>
+      )}
       <form>
-        <div className="input-group mb-3">
+        <div className={`input-group mb-3 ${type === 'stx' ? 'd-none' : ''}`}>
           <input
             type="text"
             className="form-control"
-            ref={nftTraitRef}
-            aria-label="NFT asset"
-            placeholder="NFT asset"
-            defaultValue="SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-12::b-12"
+            ref={traitRef}
+            aria-label={`fully qualified contract of the ${assetName} and its asset class`}
+            placeholder={`fully qualified contract of the ${assetName} and its asset class`}
             required
             minLength="1"
           />
@@ -101,9 +116,8 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             type="number"
             className="form-control"
             ref={amountSatsRef}
-            aria-label="Price for NFT in Bitcoin"
-            placeholder="Price for NFT in Bitcoin"
-            defaultValue="0.00535"
+            aria-label={type === "nft" ? `Price for NFT in Bitcoin`: `Bitcoins to sent`}
+            placeholder={type === "nft" ? `Price for NFT in Bitcoin`: `Bitcoins to sent`}
             required
             minLength="1"
           />
@@ -118,20 +132,29 @@ export function SwapCreateNFT({ ownerStxAddress }) {
             ref={btcRecipientRef}
             aria-label="Bitcoin recipient address"
             placeholder="Bitcoin recipient address"
-            defaultValue="1MATdc1Xjen4GUYMhZW5nPxbou24bnWY1v"
             required
             max="40"
             minLength="1"
           />
         </div>
-        <div className="input-group mb-3">
+        <div className={`input-group mb-3 ${type === 'nft' ? '' : 'd-none'}`}>
           <input
             type="number"
             className="form-control"
             ref={nftIdRef}
             aria-label="ID of NFT"
             placeholder="ID of NFT"
-            defaultValue="82"
+            required
+            minLength="1"
+          />
+        </div>
+        <div className={`input-group mb-3 ${type === 'nft' ? 'd-none' : ''}`}>
+          <input
+            type="number"
+            className="form-control"
+            ref={amountRef}
+            aria-label={`amount of ${assetName}`}
+            placeholder={`amount of ${assetName}`}
             required
             minLength="1"
           />
@@ -140,10 +163,9 @@ export function SwapCreateNFT({ ownerStxAddress }) {
           <input
             type="text"
             className="form-control"
-            ref={nftRecipientRef}
-            aria-label="NFT receiver Stacks address"
-            placeholder="NFT receiver Stacks address"
-            defaultValue="SP197GMEG6WGBRDTCTGGWMRA1G77E65TRXWYKGCT7"
+            ref={assetRecipientRef}
+            aria-label={`${assetName} receiver's Stacks address`}
+            placeholder={`${assetName} receiver's Stacks address`}
             required
             minLength="1"
           />

@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import Landing from './pages/Landing';
 import { Connect } from '@stacks/connect-react';
 import { Router } from '@reach/router';
 import Auth from './components/Auth';
 import { userDataState, userSessionState, useConnect } from './lib/auth';
 import { useAtom } from 'jotai';
+import Landing from './pages/Landing';
+import Intro from './pages/Intro';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
 
@@ -68,7 +69,25 @@ function Content({ userSession }) {
           {!authenticated && <Landing path="/" />}
           {decentralizedID && (
             <>
-              <StacksSwaps path="/" decentralizedID={decentralizedID} userSession={userSession} />
+              <Intro path="/" />
+              <StacksSwaps
+                path="/nft"
+                type="nft"
+                decentralizedID={decentralizedID}
+                userSession={userSession}
+              />
+              <StacksSwaps
+                path="/ft"
+                type="ft"
+                decentralizedID={decentralizedID}
+                userSession={userSession}
+              />
+              <StacksSwaps
+                path="/stx"
+                type="stx"
+                decentralizedID={decentralizedID}
+                userSession={userSession}
+              />
             </>
           )}
         </AppBody>

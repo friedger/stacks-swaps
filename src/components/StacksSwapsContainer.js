@@ -3,10 +3,10 @@ import { userSessionState } from '../lib/auth';
 import { useStxAddresses } from '../lib/hooks';
 import { useAtomValue } from 'jotai/utils';
 import { StacksSwapsDashboard } from './StacksSwapsDashboard';
-import { SwapCreateNFT } from './SwapCreateNFT';
+import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 
-export function StacksSwapsContainer() {
+export function StacksSwapsContainer({ type }) {
   const userSession = useAtomValue(userSessionState);
   const { ownerStxAddress } = useStxAddresses(userSession);
   return (
@@ -63,25 +63,25 @@ export function StacksSwapsContainer() {
           role="tabpanel"
           aria-labelledby="dashboard-tab"
         >
-          <StacksSwapsDashboard />
+          <StacksSwapsDashboard type={type} />
         </div>
-        <hr/>
+        <hr />
         <div
           className="tab-pane fade  show active"
           id="create-nft"
           role="tabpanel"
           aria-labelledby="create-nft-tab"
         >
-          <SwapCreateNFT ownerStxAddress={ownerStxAddress} />
+          <SwapCreate ownerStxAddress={ownerStxAddress} type={type} />
         </div>
-        <hr/>
+        <hr />
         <div
           className="tab-pane fade show active"
           id="miningclaim"
           role="tabpanel"
           aria-labelledby="miningclaim-tab"
         >
-          <SwapSubmit ownerStxAddress={ownerStxAddress} />
+          <SwapSubmit ownerStxAddress={ownerStxAddress} type={type} />
         </div>
       </div>
     </div>

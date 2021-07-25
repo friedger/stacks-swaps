@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
-
+import { Link } from '@reach/router';
 // Intro page with choice of swaps
 
 export default function Intro(props) {
@@ -14,13 +14,13 @@ export default function Intro(props) {
             Use catamaran swaps to exchange BTCs for digital assets on the Stacks Chain.
           </p>
           <p className="h5">
-            <a href="stx">Swap STX</a>
+            <Link to="stx">Swap STX</Link>
           </p>
           <p className="h5">
-            <a href="nft">Swap NFTs (SIP-9 compliant)</a>
+            <Link to="nft">Swap NFTs (SIP-9 compliant)</Link>
           </p>
           <p className="h5">
-            <a href="ft">Swap tokens (SIP-10 compliant)</a>
+            <Link to="ft">Swap tokens (SIP-10 compliant)</Link>
           </p>
         </div>
       </div>

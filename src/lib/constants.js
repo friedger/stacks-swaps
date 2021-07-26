@@ -33,7 +33,7 @@ export const BTC_FT_SWAP_CONTRACT = {
 
 export const BTC_STX_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'btc-nft-swap-v1',
+  name: 'btc-stx-swap-v1',
 };
 
 export const contracts = {

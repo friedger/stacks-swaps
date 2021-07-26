@@ -1,19 +1,24 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { BTC_NFT_SWAP_CONTRACT, contracts, NETWORK } from '../lib/constants';
+import { contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
   bufferCV,
   contractPrincipalCV,
   createAssetInfo,
+  FungibleConditionCode,
+  makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
+  makeStandardSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
+  someCV,
   standardPrincipalCV,
   uintCV,
 } from '@stacks/transactions';
 import { decodeBtcAddress } from '@stacks/stacking';
+import { BN } from 'bn.js';
 
 // TODO: consider state for when stacking is active
 
@@ -61,6 +66,34 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
               NonFungibleConditionCode.DoesNotOwn,
               createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
               nftIdCV
+            ),
+          ];
+          break;
+        case 'ft':
+          const ftAmountCV = uintCV(amountRef.current.value.trim());
+          const ftReceiverCV = someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()));
+          const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+          const [ftContractName, ftAssetName] = ftTail.split('::');
+          const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+          functionArgs = [satsCV, btcReceiverCV, ftAmountCV, ftReceiverCV, ftCV];
+          postConditions = [
+            makeStandardFungiblePostCondition(
+              ownerStxAddress,
+              FungibleConditionCode.Equal,
+              ftAmountCV.value,
+              createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+            ),
+          ];
+          break;
+        case 'stx':
+          const stxAmountCV = uintCV(amountRef.current.value.trim());
+          const stxReceiverCV = someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()));
+          functionArgs = [satsCV, btcReceiverCV, stxAmountCV, stxReceiverCV];
+          postConditions = [
+            makeStandardSTXPostCondition(
+              ownerStxAddress,
+              FungibleConditionCode.Equal,
+              stxAmountCV.value
             ),
           ];
           break;
@@ -117,8 +150,8 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
             type="number"
             className="form-control"
             ref={amountSatsRef}
-            aria-label={type === "nft" ? `Price for NFT in Bitcoin`: `Bitcoins to sent`}
-            placeholder={type === "nft" ? `Price for NFT in Bitcoin`: `Bitcoins to sent`}
+            aria-label={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
+            placeholder={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
             required
             minLength="1"
           />

@@ -59,15 +59,6 @@ export function StacksSwapsContainer({ type, trait }) {
       <div className="tab-content mt-3" id="myTabContent">
         <div
           className="tab-pane fade  show active"
-          id="dashboard"
-          role="tabpanel"
-          aria-labelledby="dashboard-tab"
-        >
-          <StacksSwapsDashboard type={type} />
-        </div>
-        <hr />
-        <div
-          className="tab-pane fade  show active"
           id="create-nft"
           role="tabpanel"
           aria-labelledby="create-nft-tab"
@@ -83,6 +74,16 @@ export function StacksSwapsContainer({ type, trait }) {
         >
           <SwapSubmit ownerStxAddress={ownerStxAddress} type={type} trait={trait} />
         </div>
+        <hr />
+        <div
+          className="tab-pane fade  show active"
+          id="dashboard"
+          role="tabpanel"
+          aria-labelledby="dashboard-tab"
+        >
+          <StacksSwapsDashboard type={type} />
+        </div>
+        <hr />
       </div>
     </div>
   );

@@ -1,17 +1,33 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Address } from './Address';
+import { contracts } from '../lib/constants';
+import { Contract } from './Contract';
 
 export function SwapList() {
   const [swaps, setSwaps] = useState();
 
   useEffect(() => {
-    setSwaps([{ contract: '', type: 'nft', tx_id:"0x1234", title: "Boombox b-12 #82" }]);
+    setSwaps([
+      {
+        contract: contracts['nft'],
+        type: 'nft',
+        create_tx_id: '0x70578fa63b28659b9fdcadc77d096b70d6789f0e4c92304d9e14325af5dcb0d8',
+        submit_tx_id: '0x5c275f52078374fb1ff68266034ce83e8cfe144cfb239f0d10c8f626b0b2e431',
+        title: 'Boombox b-12 #82 (id 0)',
+      },
+      {
+        contract: contracts['stx'],
+        type: 'stx',
+        create_tx_id: '0xcc8cb89aaee093903ebbb91ee2f0c9212ee114f090a408afdef9eb1d9c335ba4',
+        submit_tx_id: '0x134473bbc94467fee49e57d5462372e05dd2f8bd759a169f474ec3995fbf8f86',
+        title: '500 STX (id 0)',
+      },
+    ]);
   }, []);
 
   if (swaps) {
     return (
       <>
-        <h3>Swap Activities</h3>
+        <h3>Completed Swap Activities</h3>
         <div className="container">
           {swaps.map((swap, key) => (
             <Fragment key={key}>
@@ -30,18 +46,11 @@ export function SwapList() {
                     </button>
                   </h2>
                 </div>
-                <div
-                  id="accordionActivityLog-activityOne"
-                  className="accordion-collapse collapse"
-                  aria-labelledby="accordionActivityLog-headingOne"
-                  data-bs-parent="#accordionActivityLog"
-                >
-                  <div className="accordion-body">
-                    <div className="card p-2 m-2">
-                      <div className="row pl-4">{swap.type}</div>
-                      <div className="row pl-4 mb-2">
-                        <Details swap={swap} />
-                      </div>
+
+                <div className="accordion-body">
+                  <div className="card p-2 m-2">
+                    <div className="row pl-4 mb-2">
+                      <Details swap={swap} />
                     </div>
                   </div>
                 </div>
@@ -61,12 +70,25 @@ function Details({ swap }) {
     <>
       <div className="col-lg-6 col-md-12">
         <small>
-          <Address addr={swap.contract} />
+          <Contract ctr={swap.contract} />
         </small>
       </div>
       <div className="col-lg-6 col-md-12 text-right">
-        {swap.tx_id.substr(0, 10)}...
-        <a href={`https://explorer.stacks.co/txid/${swap.tx_id}`} target="_blank" rel="noreferrer">
+        create: {swap.create_tx_id.substr(0, 10)}...
+        <a
+          href={`https://explorer.stacks.co/txid/${swap.create_tx_id}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i className="bi bi-box-arrow-up-right" />
+        </a>
+        <br />
+        verify: {swap.submit_tx_id.substr(0, 10)}...
+        <a
+          href={`https://explorer.stacks.co/txid/${swap.submit_tx_id}`}
+          target="_blank"
+          rel="noreferrer"
+        >
           <i className="bi bi-box-arrow-up-right" />
         </a>
       </div>

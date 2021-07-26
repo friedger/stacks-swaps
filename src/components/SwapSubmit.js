@@ -1,13 +1,25 @@
 import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { BTC_NFT_SWAP_CONTRACT, contracts, NETWORK } from '../lib/constants';
+import {
+  BTC_FT_SWAP_CONTRACT,
+  BTC_NFT_SWAP_CONTRACT,
+  BTC_STX_SWAP_CONTRACT,
+  contracts,
+  NETWORK,
+  smartContractsApi,
+} from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
   contractPrincipalCV,
   createAssetInfo,
+  cvToHex,
   cvToString,
+  FungibleConditionCode,
+  hexToCV,
+  makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
+  makeContractSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
   uintCV,
@@ -80,6 +92,16 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
     const btcTxId = btcTxIdRef.current.value.trim();
     const { txPartsCV, proofCV, headerPartsCV } = await paramsFromTx(btcTxId, height);
     const swapIdCV = uintCV(swapId);
+    console.log(swapIdCV, cvToHex(swapIdCV));
+    const swapEntry = await smartContractsApi.getContractDataMapEntry({
+      contractAddress: BTC_STX_SWAP_CONTRACT.address,
+      contractName: BTC_STX_SWAP_CONTRACT.name,
+      mapName: 'swaps',
+      key: cvToHex(swapIdCV),
+    });
+    const swapCV = hexToCV(swapEntry.data);
+    console.log(swapCV);
+
     let functionArgs;
     let postConditions;
     switch (type) {
@@ -105,6 +127,49 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
             NonFungibleConditionCode.DoesNotOwn,
             createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
             nftIdCV
+          ),
+        ];
+        break;
+        case 'ft':
+        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        const [ftContractName, ftAssetName] = ftTail.split('::');
+        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+        functionArgs = [
+          swapIdCV,
+          // block
+          headerPartsCV,
+          // tx
+          txPartsCV,
+          // proof
+          proofCV,
+          ftCV,
+        ];
+        postConditions = [
+          makeContractFungiblePostCondition(
+            BTC_FT_SWAP_CONTRACT.address,
+            BTC_FT_SWAP_CONTRACT.name,
+            FungibleConditionCode.Equal,
+            swapCV.value.data["amount"].value,
+            createAssetInfo(ftContractAddress, ftContractName, ftAssetName),
+          ),
+        ];
+        break;
+      case 'stx':
+        functionArgs = [
+          swapIdCV,
+          // block
+          headerPartsCV,
+          // tx
+          txPartsCV,
+          // proof
+          proofCV,
+        ];
+        postConditions = [
+          makeContractSTXPostCondition(
+            BTC_STX_SWAP_CONTRACT.address,
+            BTC_STX_SWAP_CONTRACT.name,
+            FungibleConditionCode.Equal,
+            swapCV.value.data['ustx'].value
           ),
         ];
         break;

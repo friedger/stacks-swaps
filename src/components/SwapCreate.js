@@ -18,9 +18,6 @@ import {
   uintCV,
 } from '@stacks/transactions';
 import { decodeBtcAddress } from '@stacks/stacking';
-import { BN } from 'bn.js';
-
-// TODO: consider state for when stacking is active
 
 export function SwapCreate({ ownerStxAddress, type, trait }) {
   const amountSatsRef = useRef();
@@ -32,7 +29,6 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const { doContractCall } = useConnect();
-
   const createAction = async () => {
     setLoading(true);
     if (amountSatsRef.current.value === '' || btcRecipientRef.current.value === '') {
@@ -132,6 +128,11 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
       {type === 'ft' && (
         <p>For a swap of Bitcoins and a token on Stacks, the token has to comply with SIP-10.</p>
       )}
+      <p>
+        Your {assetName} {type === 'nft' ? ' is ' : ' are '} sent to the contract now and will be
+        released to the buyer if the BTC transaction is verified (or back to you if the swap expired
+        after 100 Bitcoin blocks and you called "cancel").
+      </p>
       <form>
         <div className={`input-group mb-3 ${type === 'stx' ? 'd-none' : ''}`}>
           <input
@@ -164,8 +165,8 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
             type="text"
             className="form-control"
             ref={btcRecipientRef}
-            aria-label="Bitcoin recipient address"
-            placeholder="Bitcoin recipient address"
+            aria-label="Bitcoin recipient address (must start with 1)"
+            placeholder="Bitcoin recipient address (must start with 1)"
             required
             max="40"
             minLength="1"
@@ -187,8 +188,8 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
             type="number"
             className="form-control"
             ref={amountRef}
-            aria-label={`amount of ${assetName}`}
-            placeholder={`amount of ${assetName}`}
+            aria-label={`amount of ${assetName} in ${type === 'stx' ? 'ustx' : 'smallest unit'}`}
+            placeholder={`amount of ${assetName} in ${type === 'stx' ? 'ustx' : 'smallest unit'}`}
             required
             minLength="1"
           />

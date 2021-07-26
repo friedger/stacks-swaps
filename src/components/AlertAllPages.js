@@ -7,6 +7,9 @@ export function AlertAllPages() {
         <i className="bi bi-exclamation-triangle fs-3"></i> Bitcoin transactions that happen during
         a flash block can't be verified on Stacks chain 2.0.
       </p>
+      <p className="fw-bold">
+        <i className="bi bi-exclamation-triangle fs-3"></i> Bitcoin transactions that contain more than 8 ins or 8 outs can't be verified on-chain.
+      </p>
       <button
         type="button"
         className="btn-close"

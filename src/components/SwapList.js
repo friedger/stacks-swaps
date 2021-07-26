@@ -21,6 +21,13 @@ export function SwapList() {
         submit_tx_id: '0x134473bbc94467fee49e57d5462372e05dd2f8bd759a169f474ec3995fbf8f86',
         title: '500 STX (id 0)',
       },
+      {
+        contract: contracts['ft'],
+        type: 'ft',
+        create_tx_id: '0x7c20aeb66742e50f52898339e3d1f56a99901f405900ec48241891811496e7fc',
+        submit_tx_id: '0x4d6d6f15309790a30c7f2794680c3e267f31ab43712e72479f79d8054798ce77',
+        title: '1m Wrapped Nothing (id 0)',
+      },
     ]);
   }, []);
 

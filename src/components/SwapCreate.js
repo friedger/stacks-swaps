@@ -165,8 +165,8 @@ export function SwapCreate({ ownerStxAddress, type, trait }) {
             type="text"
             className="form-control"
             ref={btcRecipientRef}
-            aria-label="Bitcoin recipient address"
-            placeholder="Bitcoin recipient address"
+            aria-label="Bitcoin recipient address (must start with 1)"
+            placeholder="Bitcoin recipient address (must start with 1)"
             required
             max="40"
             minLength="1"

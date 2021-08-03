@@ -92,7 +92,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
     const btcTxId = btcTxIdRef.current.value.trim();
     const { txPartsCV, proofCV, headerPartsCV } = await paramsFromTx(btcTxId, height);
     const swapIdCV = uintCV(swapId);
-    const contract = contracts[type]
+    const contract = contracts[type];
     const swapEntry = await smartContractsApi.getContractDataMapEntry({
       contractAddress: contract.address,
       contractName: contract.name,
@@ -129,7 +129,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
           ),
         ];
         break;
-        case 'ft':
+      case 'ft':
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
@@ -148,8 +148,8 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
             BTC_FT_SWAP_CONTRACT.address,
             BTC_FT_SWAP_CONTRACT.name,
             FungibleConditionCode.Equal,
-            swapCV.value.data["amount"].value,
-            createAssetInfo(ftContractAddress, ftContractName, ftAssetName),
+            swapCV.value.data['amount'].value,
+            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
           ),
         ];
         break;

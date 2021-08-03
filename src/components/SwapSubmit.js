@@ -274,7 +274,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
               loading ? '' : 'd-none'
             } spinner-border spinner-border-sm text-info align-text-top mr-2`}
           />
-          {changed ? 'Verify' : 'Submit'}
+          {changed ? 'Verify (dry run)' : 'Submit'}
         </button>
       </form>
       {txId && <TxStatus txId={txId} />}

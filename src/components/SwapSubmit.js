@@ -35,9 +35,9 @@ import {
   wasTxMined,
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
+import { getAsset, getAssetName } from './assets';
 
-export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
-  const heightRef = useRef();
+export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id }) {
   const swapIdRef = useRef();
   const nftIdRef = useRef();
   const traitRef = useRef();
@@ -50,7 +50,6 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
 
   const verifyAction = async () => {
     const btcTxId = btcTxIdRef.current.value.trim();
-    const stxHeight = parseInt(heightRef.current.value.trim());
     const {
       txCV,
       txPartsCV,
@@ -61,7 +60,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
       headerParts,
       headerPartsCV,
       stacksBlock,
-    } = await paramsFromTx(btcTxId, stxHeight);
+    } = await paramsFromTx(btcTxId);
     const height = stacksBlock.height;
     console.log({
       btcTxId,
@@ -87,10 +86,9 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
   const submitAction = async () => {
     setLoading(true);
 
-    const height = parseInt(heightRef.current.value.trim());
     const swapId = parseInt(swapIdRef.current.value.trim());
     const btcTxId = btcTxIdRef.current.value.trim();
-    const { txPartsCV, proofCV, headerPartsCV } = await paramsFromTx(btcTxId, height);
+    const { txPartsCV, proofCV, headerPartsCV } = await paramsFromTx(btcTxId);
     const swapIdCV = uintCV(swapId);
     const contract = contracts[type];
     const swapEntry = await smartContractsApi.getContractDataMapEntry({
@@ -201,10 +199,12 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
       setLoading(false);
     }
   };
-  const assetName = type === 'nft' ? 'NFT' : type === 'ft' ? 'token' : 'stacks';
+  const asset = getAsset(type, trait);
+  const assetName = getAssetName(type, trait);
+
   return (
     <>
-      <h3>Submit BTC Transaction for Swap BTC-{type.toUpperCase()}</h3>
+      <h3>Submit BTC Transaction for Swap BTC-{asset}</h3>
       <p>The Swap ID is returned during creation.</p>
       <form>
         <div className={`input-group mb-3 ${type === 'stx' ? 'd-none' : ''}`}>
@@ -216,6 +216,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
             placeholder={`fully qualified contract of the ${assetName} and its asset class`}
             defaultValue={trait}
             required
+            readOnly={trait}
             minLength="1"
           />
         </div>
@@ -226,18 +227,9 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait }) {
             ref={swapIdRef}
             aria-label="Swap ID"
             placeholder="Swap ID"
+            defaultValue={id}
             required
-            minLength="1"
-          />
-        </div>
-        <div className="input-group mb-3">
-          <input
-            type="number"
-            className="form-control"
-            ref={heightRef}
-            aria-label="Stacks Block"
-            placeholder="Stacks Block"
-            required
+            readOnly={id}
             minLength="1"
           />
         </div>

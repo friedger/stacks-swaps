@@ -1,6 +1,48 @@
-import { serializeCV, hexToCV as stacksHexToCV } from '@stacks/transactions';
-import { chainSuffix, mainnet, mocknet, STACK_API_URL, transactionsApi } from './constants';
+import {
+  serializeCV,
+  hexToCV as stacksHexToCV,
+  uintCV,
+  ClarityType,
+  cvToString,
+} from '@stacks/transactions';
+import {
+  accountsApi,
+  chainSuffix,
+  contracts,
+  smartContractsApi,
+  transactionsApi,
+} from './constants';
 import { Storage } from '@stacks/storage';
+
+export async function fetchSwapTxList(type) {
+  const contract = contracts[type];
+  const response = await accountsApi.getAccountTransactions({
+    principal: `${contract.address}.${contract.name}`,
+  });
+
+  console.log(response);
+  const result = response.results.filter(
+    tx => tx.tx_status === 'success' && tx.tx_type === 'contract_call'
+  );
+
+  console.log(result);
+  return result;
+}
+
+export async function fetchSwapsEntry(type, id) {
+  const contract = contracts[type];
+  const response = await smartContractsApi.getContractDataMapEntry({
+    contractAddress: contract.address,
+    contractName: contract.name,
+    mapName: 'swaps',
+    key: cvToHex(uintCV(id)),
+  });
+  if (response.data === '0x09') {
+    return undefined;
+  } else {
+    return hexToCV(response.data).value;
+  }
+}
 
 export function resultToStatus(result) {
   if (result && !result.error && result.startsWith('"') && result.length === 66) {
@@ -30,11 +72,7 @@ export function hexToCV(hexString) {
 }
 
 export function txUrl(txId) {
-  if (mocknet) {
-    return `${STACK_API_URL}/extended/v1/tx/0x${txId}`;
-  } else {
-    return `https://explorer.stacks.co/txid/0x${txId}${chainSuffix}`;
-  }
+  return `https://explorer.stacks.co/txid/0x${txId}${chainSuffix}`;
 }
 
 const indexFileName = 'index-mainnet.json';
@@ -176,4 +214,12 @@ async function createTxWithApiData(txId, tx, storage) {
     await storage.putFile(`txs/${txId}.json`, JSON.stringify(txWithApiData));
   }
   return txWithApiData;
+}
+
+export function optionalCVToString(cv) {
+  if (cv.type === ClarityType.OptionalNone) {
+    return '';
+  } else {
+    return cvToString(cv.value);
+  }
 }

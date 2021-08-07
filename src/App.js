@@ -49,14 +49,9 @@ export default function App(props) {
           <Auth />
         </div>
       </header>
-
-      <Content userSession={userSession} />
+      <Content userSession={userSession} path="/" />
     </Connect>
   );
-}
-
-function AppBody(props) {
-  return <div>{props.children}</div>;
 }
 function Content({ userSession }) {
   const authenticated = userSession && userSession.isUserSignedIn();
@@ -65,44 +60,74 @@ function Content({ userSession }) {
   return (
     <>
       <Router>
-        <AppBody path="/">
-          {!authenticated && <Landing path="/" />}
-          {decentralizedID && (
-            <>
-              <Intro path="/" default />
-              <StacksSwaps
-                path="/nft/:trait"
-                type="nft"
-                decentralizedID={decentralizedID}
-                userSession={userSession}
-              />
-              <StacksSwaps
-                path="/nft"
-                type="nft"
-                decentralizedID={decentralizedID}
-                userSession={userSession}
-              />
-              <StacksSwaps
-                path="/ft/:trait"
-                type="ft"
-                decentralizedID={decentralizedID}
-                userSession={userSession}
-              />
-              <StacksSwaps
-                path="/ft"
-                type="ft"
-                decentralizedID={decentralizedID}
-                userSession={userSession}
-              />
-              <StacksSwaps
-                path="/stx"
-                type="stx"
-                decentralizedID={decentralizedID}
-                userSession={userSession}
-              />
-            </>
-          )}
-        </AppBody>
+        {!authenticated && <Landing path="/" />}
+        {decentralizedID && (
+          <>
+            <Intro path="/" default />
+            <StacksSwaps
+              path="/nft/:trait/:id"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/nft/:trait"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/nft"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+             <StacksSwaps
+              path="/ft/:trait/:id"
+              type="ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/ft/:trait"
+              type="ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/ft"
+              type="ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/mia/:id"
+              type="ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait="SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-core-v1"
+            />
+            <StacksSwaps
+              path="/mia"
+              type="ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait="SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-core-v1"
+            />
+             <StacksSwaps
+              path="/stx/:id"
+              type="stx"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/stx"
+              type="stx"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+          </>
+        )}
       </Router>
     </>
   );

@@ -1,4 +1,5 @@
 import {
+  AddressHashMode,
   bufferCV,
   callReadOnlyFunction,
   cvToString,
@@ -11,27 +12,8 @@ import reverse from 'buffer-reverse';
 import SHA256 from 'crypto-js/sha256';
 import { Transaction } from 'bitcoinjs-lib';
 
-import {
-  accountsApi,
-  BTC_NFT_SWAP_CONTRACT,
-  CLARITY_BITCOIN_CONTRACT,
-  CONTRACT_ADDRESS,
-  NETWORK,
-} from './constants';
-
-export async function fetchSwapTxList() {
-  const response = await accountsApi.getAccountTransactions({
-    principal: `${BTC_NFT_SWAP_CONTRACT.address}.${BTC_NFT_SWAP_CONTRACT.name}`,
-  });
-
-  console.log(response);
-  const result = response.results.filter(
-    tx => tx.tx_status === 'success' && tx.tx_type === 'contract_call'
-  );
-
-  console.log(result);
-  return result;
-}
+import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
+import { decodeBtcAddress } from '@stacks/stacking';
 
 export async function getReversedTxId(txCV) {
   const result = await callReadOnlyFunction({
@@ -120,12 +102,12 @@ export async function verifyMerkleProof(txId, block, proofCV) {
   return result;
 }
 
-export async function verifyMerkleProof2(txCV, blockCV, proofCV) {
+export async function verifyMerkleProof2(txCV, headerPartsCV, proofCV) {
   const result = await callReadOnlyFunction({
     contractAddress: CLARITY_BITCOIN_CONTRACT.address,
     contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'verify-merkle-proof',
-    functionArgs: [await getReversedTxId(txCV), blockCV.data['merkle-root'], proofCV],
+    functionArgs: [await getReversedTxId(txCV), headerPartsCV.data['merkle-root'], proofCV],
     senderAddress: CONTRACT_ADDRESS,
     network: NETWORK,
   });
@@ -160,14 +142,14 @@ export async function parseBlockHeader(blockHeader) {
   return result;
 }
 
-export async function verifyBlockHeader(parts, blockHeight) {
+export async function verifyBlockHeader(parts, stacksBlockHeight) {
   const result = await callReadOnlyFunction({
     contractAddress: CLARITY_BITCOIN_CONTRACT.address,
     contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'verify-block-header',
     functionArgs: [
       bufferCV(Buffer.from(parts[0] + parts[1] + parts[2] + parts[3] + parts[4] + parts[5], 'hex')),
-      uintCV(blockHeight),
+      uintCV(stacksBlockHeight),
     ],
     senderAddress: CONTRACT_ADDRESS,
     network: NETWORK,
@@ -203,6 +185,19 @@ function numberToBuffer(value, size) {
 function txForHash(tx) {
   const transaction = Transaction.fromHex(tx);
   return transaction.__toBuffer(undefined, undefined, false).toString('hex');
+}
+
+async function getStxBlock(bitcoinBlockHeight) {
+  let stxBlock;
+  let limit = 30
+  let offset = 0;
+  while (!stxBlock) {
+    const blockListResponse = await blocksApi.getBlockList({ offset, limit });
+    stxBlock = blockListResponse.results.find(b => b.burn_block_height === bitcoinBlockHeight);
+    offset += limit;
+    if (offset > blockListResponse.total) return undefined;
+  }
+  return stxBlock;
 }
 
 export async function paramsFromTx(btcTxId, stxHeight) {
@@ -256,11 +251,10 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   let height;
   let stacksBlock;
   if (!stxHeight) {
-    const stacksBlockHash = tx.outputs[0].data_hex.substr(6, 64);
-    const stacksBlockResponse = await fetch(
-      `https://stacks-node-api.mainnet.stacks.co/extended/v1/block/0x${stacksBlockHash}`
-    );
-    stacksBlock = await stacksBlockResponse.json();
+    console.log('try to find stx height');
+    const bitcoinBlockHeight = tx.block_height;
+    stacksBlock = await getStxBlock(bitcoinBlockHeight);
+    console.log({ stacksBlock });
     height = stacksBlock.height;
   } else {
     const stacksBlockResponse = await fetch(
@@ -337,5 +331,23 @@ export async function paramsFromTx(btcTxId, stxHeight) {
     headerParts,
     headerPartsCV,
     stacksBlock,
+    stxHeight: height,
   };
+}
+
+export function btcAddressToPubscriptCV(btcAddress) {
+  const decodedAddress = decodeBtcAddress(btcAddress);
+
+  switch (decodedAddress.hashMode) {
+    case AddressHashMode.SerializeP2PKH:
+      return bufferCV(
+        Buffer.concat([
+          Buffer.from('76a914', 'hex'),
+          decodedAddress.data,
+          Buffer.from('88ac', 'hex'),
+        ])
+      );
+    default:
+      throw new Error('unsupported btc address format: ' + decodedAddress.hashMode);
+  }
 }

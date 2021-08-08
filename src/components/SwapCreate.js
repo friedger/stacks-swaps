@@ -449,7 +449,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                         loading ? '' : 'd-none'
                       } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                     />
-                    Create Swap
+                    Sell {asset}
                   </button>
                 )}
               </div>

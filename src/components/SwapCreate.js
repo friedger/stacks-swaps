@@ -25,7 +25,7 @@ import { getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
 
-export function SwapCreate({ ownerStxAddress, type, trait, id }) {
+export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
   const amountSatsRef = useRef();
   const btcRecipientRef = useRef();
   const nftIdRef = useRef();
@@ -44,7 +44,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id }) {
     amountSats: '',
     assetRecipient: '',
     amount: '',
-    nftId: '',
+    nftId: nftId,
   });
   const { doContractCall } = useConnect();
 

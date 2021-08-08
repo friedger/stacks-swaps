@@ -6,7 +6,7 @@ import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 
-export function StacksSwapsContainer({ type, trait, id }) {
+export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const userSession = useAtomValue(userSessionState);
   const { ownerStxAddress } = useStxAddresses(userSession);
   return (
@@ -63,17 +63,27 @@ export function StacksSwapsContainer({ type, trait, id }) {
           role="tabpanel"
           aria-labelledby="create-nft-tab"
         >
-          <SwapCreate ownerStxAddress={ownerStxAddress} type={type} trait={trait} id={id} />
+          <SwapCreate
+            ownerStxAddress={ownerStxAddress}
+            type={type}
+            trait={trait}
+            id={id}
+            nftId={nftId}
+          />
         </div>
-        <hr />
-        <div
-          className="tab-pane fade show active"
-          id="miningclaim"
-          role="tabpanel"
-          aria-labelledby="miningclaim-tab"
-        >
-          <SwapSubmit ownerStxAddress={ownerStxAddress} type={type} trait={trait} id={id} />
-        </div>
+        {id && (
+          <>
+            <hr />
+            <div
+              className="tab-pane fade show active"
+              id="miningclaim"
+              role="tabpanel"
+              aria-labelledby="miningclaim-tab"
+            >
+              <SwapSubmit ownerStxAddress={ownerStxAddress} type={type} trait={trait} id={id} />
+            </div>
+          </>
+        )}
         <hr />
         <div
           className="tab-pane fade  show active"

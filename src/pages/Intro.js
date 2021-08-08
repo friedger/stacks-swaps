@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
-import { Link } from '@reach/router';
+import { IntroButton } from '../components/IntroButton';
+import { BOOMBOX_CONTRACT, MIA_CONTRACT } from '../components/assets';
 // Intro page with choice of swaps
 
 export default function Intro(props) {
@@ -13,15 +14,28 @@ export default function Intro(props) {
           <p className="h5">
             Use catamaran swaps to exchange BTCs for digital assets on the Stacks Chain.
           </p>
-          <p className="h5">
-            <Link to="stx">Swap STX</Link>
-          </p>
-          <p className="h5">
-            <Link to="nft">Swap NFTs (SIP-9 compliant)</Link>
-          </p>
-          <p className="h5">
-            <Link to="ft">Swap tokens (SIP-10 compliant)</Link>
-          </p>
+          <div className="container">
+            <div className="row">
+              <div className="col">
+                <IntroButton type="stx" />
+              </div>
+              <div className="col">
+                <IntroButton type="ft" trait={MIA_CONTRACT} />
+              </div>
+              <div className="col">
+                <IntroButton type="nft" trait={BOOMBOX_CONTRACT} />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <IntroButton type="ft" />
+              </div>
+              <div className="col">
+                <IntroButton type="nft" />
+              </div>
+              <div className="col"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

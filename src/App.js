@@ -65,7 +65,13 @@ function Content({ userSession }) {
           <>
             <Intro path="/" default />
             <StacksSwaps
-              path="/nft/:trait/:id"
+              path="/nft/swap/:id"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+             <StacksSwaps
+              path="/nft/:trait/:nftId"
               type="nft"
               decentralizedID={decentralizedID}
               userSession={userSession}
@@ -83,7 +89,7 @@ function Content({ userSession }) {
               userSession={userSession}
             />
              <StacksSwaps
-              path="/ft/:trait/:id"
+              path="/ft/swap/:id"
               type="ft"
               decentralizedID={decentralizedID}
               userSession={userSession}
@@ -101,7 +107,7 @@ function Content({ userSession }) {
               userSession={userSession}
             />
             <StacksSwaps
-              path="/mia/:id"
+              path="/mia/swap/:id"
               type="ft"
               decentralizedID={decentralizedID}
               userSession={userSession}

@@ -1,9 +1,10 @@
 import React from 'react';
+import { MIA_CONTRACT } from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
     case 'ft':
       switch (trait) {
-        case 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-core-v1':
+        case MIA_CONTRACT:
           return <img src="/mia.png" className="m-1" width="50" height="50" alt="mia" />;
 
         default:

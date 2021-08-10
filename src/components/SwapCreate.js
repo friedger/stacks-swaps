@@ -327,7 +327,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     className="form-control"
                     ref={btcRecipientRef}
                     value={formData.btcRecipient}
-                    onChange={e => setFormData({ ...formData, btcRecipient: e.current.value })}
+                    onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                     aria-label="Bitcoin recipient address (must start with 1)"
                     placeholder="Bitcoin recipient address (must start with 1)"
                     readOnly={id}
@@ -346,7 +346,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     className="form-control"
                     ref={nftIdRef}
                     value={formData.nftId}
-                    onChange={e => setFormData({ ...formData, nftId: e.current.value })}
+                    onChange={e => setFormData({ ...formData, nftId: e.target.value })}
                     aria-label="ID of NFT"
                     placeholder="ID of NFT"
                     readOnly={id}
@@ -360,7 +360,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     className="form-control"
                     ref={amountRef}
                     value={formData.amount}
-                    onChange={e => setFormData({ ...formData, amount: e.current.value })}
+                    onChange={e => setFormData({ ...formData, amount: e.target.value })}
                     aria-label={`amount of ${assetName} in ${
                       type === 'stx' ? 'ustx' : 'smallest unit'
                     }`}
@@ -382,7 +382,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     className="form-control"
                     ref={amountSatsRef}
                     value={formData.amountSats}
-                    onChange={e => setFormData({ ...formData, amountSats: e.current.value })}
+                    onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
                     aria-label={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
                     placeholder={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
                     readOnly={id}
@@ -402,7 +402,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     className="form-control"
                     ref={assetRecipientRef}
                     value={formData.assetRecipient}
-                    onChange={e => setFormData({ ...formData, assetRecipient: e.current.value })}
+                    onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
                     aria-label={`${assetName} receiver's Stacks address`}
                     placeholder={`${assetName} receiver's Stacks address`}
                     readOnly={id && formData.assetRecipient}

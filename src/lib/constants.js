@@ -44,7 +44,7 @@ export const contracts = {
 };
 
 // TODO: add Freehold API endpoint?
-export const STACK_API_URL = 'https://stacks-node.planbetter.org';
+export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';
 export const STACKS_API_WS_URL = 'wss://stacks-node-api.mainnet.stacks.co/';
 export const STACKS_API_ACCOUNTS_URL = `${STACK_API_URL}/v2/accounts`;
 

@@ -30,11 +30,11 @@ export default function App(props) {
             href="/"
             className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
           >
-            <img src="/android-icon-72x72.png" width="75" alt="Stacks Swaps Logo" />
+            <img src="/android-icon-72x72.png" width="75" alt="Catamaran Swaps Logo" />
           </a>
         </div>
         <div>
-          <span className="h1">Stacks Swaps</span>
+          <span className="h1">Catamaran Swaps</span>
         </div>
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
           <ProfileSmall userSession={userSession} />

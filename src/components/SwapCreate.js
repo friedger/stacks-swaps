@@ -4,7 +4,6 @@ import { contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
-  bufferCV,
   contractPrincipalCV,
   createAssetInfo,
   cvToString,
@@ -67,14 +66,16 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     trait: cvToString(swapsEntry.data['ft']),
                     amount: swapsEntry.data.amount.value.toNumber(),
                     assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
+                    assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
                   });
                   break;
                 case 'stx':
                   setFormData({
                     btcRecipient: cvToString(swapsEntry.data['btc-receiver']),
-                    amountSats: cvToString(swapsEntry.data.sats),
-                    amount: cvToString(swapsEntry.data.amount),
+                    amountSats: swapsEntry.data.sats.value.toNumber(),
+                    amount: swapsEntry.data.ustx.value.toNumber(),
                     assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
+                    assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
                   });
                   break;
                 case 'nft':
@@ -83,7 +84,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     amountSats: cvToString(swapsEntry.data.sats),
                     trait: cvToString(swapsEntry.data['ft']),
                     nftId: cvToString(swapsEntry.data['nft-id']),
-                    assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
+                    assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
                   });
                   break;
                 default:
@@ -270,6 +271,48 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
     });
   };
 
+  const cancelAction = async () => {
+    const contract = contracts[type];
+    let functionArgs;
+    let postConditions;
+    let idCV;
+    switch (type) {
+      case 'nft':
+        break;
+      case 'ft':
+        idCV = uintCV(id);
+        functionArgs = [idCV];
+        postConditions = [];
+        break;
+      case 'stx':
+        idCV = uintCV(id);
+        functionArgs = [idCV];
+        postConditions = [];
+        break;
+
+      default:
+        break;
+    }
+    await doContractCall({
+      contractAddress: contract.address,
+      contractName: contract.name,
+      functionName: "cancel",
+      functionArgs,
+      network: NETWORK,
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions,
+
+      onCancel: () => {
+        setLoading(false);
+      },
+      onFinish: result => {
+        setLoading(false);
+        setTxId(result.txId);
+      },
+    });
+  };
+
   const asset = getAsset(type, formData.trait);
   const assetName = getAssetName(type, formData.trait);
   return (
@@ -405,7 +448,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
                     aria-label={`${assetName} receiver's Stacks address`}
                     placeholder={`${assetName} receiver's Stacks address`}
-                    readOnly={id && formData.assetRecipient}
+                    readOnly={id && formData.assetRecipientFromSwap}
                     required
                     minLength="1"
                   />
@@ -420,7 +463,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
             <div className="row">
               <div className="col-12 text-center">
                 {id ? (
-                  formData.assetRecipient ? (
+                  formData.assetRecipientFromSwap ? (
                     <></>
                   ) : (
                     <button

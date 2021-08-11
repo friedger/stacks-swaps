@@ -26,8 +26,8 @@ export const useConnect = () => {
     redirectTo: '/',
     manifestPath: '/manifest.json',
     appDetails: {
-      name: 'Stacks Swaps',
-      icon: 'https://stacks-swaps.netlify.app/android-icon-144x144.png',
+      name: 'Catamarana Swaps',
+      icon: 'https://www.catamaranswaps.org/android-icon-144x144.png',
     },
   };
 

@@ -26,7 +26,7 @@ export const useConnect = () => {
     redirectTo: '/',
     manifestPath: '/manifest.json',
     appDetails: {
-      name: 'Catamarana Swaps',
+      name: 'Catamaran Swaps',
       icon: 'https://www.catamaranswaps.org/android-icon-144x144.png',
     },
   };

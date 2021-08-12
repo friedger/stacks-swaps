@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { contracts, infoApi, NETWORK, smartContractsApi } from '../lib/constants';
+import { contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
   contractPrincipalCV,
   createAssetInfo,
-  cvToString,
   FungibleConditionCode,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
@@ -25,10 +24,9 @@ import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
 import { getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
-import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
 import { BN } from 'bn.js';
 
-export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
+export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formData1, blockHeight }) {
   const amountSatsRef = useRef();
   const btcRecipientRef = useRef();
   const nftIdRef = useRef();
@@ -38,122 +36,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
-  const [loadingSwapEntry, setLoadingSwapEntry] = useState();
-  const [swapsEntry, setSwapsEntry] = useState();
-  const [invalidSwapId, setInvalidSwapId] = useState(false);
-  const [blockHeight, setBlockHeight] = useState(0);
-  const [formData, setFormData] = useState({
-    trait: trait,
-    btcRecipient: '',
-    amountSats: '',
-    assetRecipient: '',
-    amount: '',
-    nftId: nftId,
-    assetSenderFromSwap: '',
-  });
+  const [formData, setFormData] = useState(formData1);
   const { doContractCall } = useConnect();
-
-  useEffect(() => {
-    infoApi.getCoreApiInfo().then(info => {
-      setBlockHeight(info.stacks_tip_height);
-    });
-
-    if (type && id) {
-      setLoadingSwapEntry(true);
-      try {
-        console.log('fetch swap entry');
-        const asyncFetchSwapEntry = async () => {
-          const swapsEntry = await fetchSwapsEntry(type, id);
-          console.log(swapsEntry);
-          if (swapsEntry) {
-            setSwapsEntry(swapsEntry);
-            const whenFromSwap = swapsEntry.data['when'].value.toNumber();
-            const doneFromSwap = swapsEntry.data['done'].value.toNumber();
-            const btcRecipient = cvToString(swapsEntry.data['btc-receiver']);
-            const amountSats = swapsEntry.data.sats.value.toNumber();
-            let trait, contractAddress, contractName, ctrInterface;
-            switch (type) {
-              case 'ft':
-                trait = cvToString(swapsEntry.data['ft']);
-                [contractAddress, contractName] = trait.split('.');
-                ctrInterface = await smartContractsApi.getContractInterface({
-                  contractAddress,
-                  contractName,
-                });
-                const ft =
-                  ctrInterface.fungible_tokens.length === 1
-                    ? ctrInterface.fungible_tokens[0]
-                    : undefined;
-                console.log({ ft });
-                setFormData({
-                  btcRecipient,
-                  amountSats,
-                  trait: trait + '::' + ft,
-                  amount: swapsEntry.data.amount.value.toNumber(),
-                  assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
-                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              case 'stx':
-                setFormData({
-                  btcRecipient,
-                  amountSats,
-                  amount: swapsEntry.data.ustx.value.toNumber(),
-                  assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
-                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              case 'nft':
-                trait = cvToString(swapsEntry.data['nft']);
-                [contractAddress, contractName] = trait.split('.');
-                console.log({ contractAddress, contractName });
-                ctrInterface = await smartContractsApi.getContractInterface({
-                  contractAddress,
-                  contractName,
-                });
-                const nft =
-                  ctrInterface.non_fungible_tokens.length === 1
-                    ? ctrInterface.non_fungible_tokens[0].name
-                    : undefined;
-                console.log({ nft });
-
-                setFormData({
-                  btcRecipient,
-                  amountSats,
-                  trait: trait + '::' + nft,
-                  nftId: swapsEntry.data['nft-id'].value.toNumber(),
-                  assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
-                  assetRecipientFromSwap: cvToString(swapsEntry.data['nft-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              default:
-                console.log('unsupported type ' + type);
-            }
-            if (doneFromSwap === 1) {
-              setStatus('Swap was completed');
-            }
-          } else {
-            setInvalidSwapId(true);
-          }
-          setLoadingSwapEntry(false);
-        };
-        asyncFetchSwapEntry();
-      } catch (e) {
-        setStatus(`Error: couldn't load swap details for swap ${id}`);
-        console.log({ e });
-        setLoadingSwapEntry(false);
-      }
-    }
-  }, [type, id]);
 
   const createAction = async () => {
     setLoading(true);
@@ -189,8 +73,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
         const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
         const [nftContractName, nftAssetName] = nftTail.split('::');
         if (!nftAssetName) {
-          setStatus('"nft contract :: nft name" must be set')
-          return
+          setStatus('"nft contract :: nft name" must be set');
+          return;
         }
         const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
         functionArgs = [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV];
@@ -211,8 +95,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         if (!nftAssetName) {
-          setStatus('"ft contract :: ft name" must be set')
-          return
+          setStatus('"ft contract :: ft name" must be set');
+          return;
         }
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
         functionArgs = [satsCV, btcReceiverCV, ftAmountCV, ftReceiverCV, ftCV];
@@ -433,164 +317,119 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
             minLength="1"
           />
         </div>
-        {loadingSwapEntry ? (
-          <div
-            role="status"
-            className={`spinner-border spinner-border-sm text-info align-text-top mr-2`}
-          />
-        ) : invalidSwapId ? (
-          <div className="container">
-            <div className="row align-items-center">
-              <div className="col text-center">Invalid Swap Id {id}</div>
+        <div className="container">
+          <div className="row align-items-center m-5">
+            <div className="col text-center">
+              You
+              <br />
+              <Address addr={ownerStxAddress} />
+              <br />
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  ref={btcRecipientRef}
+                  value={formData.btcRecipient}
+                  onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
+                  aria-label="Bitcoin recipient address (must start with 1)"
+                  placeholder="Bitcoin recipient address (must start with 1)"
+                  readOnly={id}
+                  required
+                  max="40"
+                  minLength="1"
+                />
+              </div>
+            </div>
+            <div className="col text-center border-left">
+              <AssetIcon type={type} trait={formData.trait} />
+              <br />
+              <div className={`input-group ${type === 'nft' ? '' : 'd-none'}`}>
+                <input
+                  type="number"
+                  className="form-control"
+                  ref={nftIdRef}
+                  value={formData.nftId}
+                  onChange={e => setFormData({ ...formData, nftId: e.target.value })}
+                  aria-label="ID of NFT"
+                  placeholder="ID of NFT"
+                  readOnly={id}
+                  required
+                  minLength="1"
+                />
+              </div>
+              <div className={`input-group ${type === 'nft' ? 'd-none' : ''}`}>
+                <input
+                  type="number"
+                  className="form-control"
+                  ref={amountRef}
+                  value={formData.amount}
+                  onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                  aria-label={`amount of ${assetName} in ${
+                    type === 'stx' ? 'ustx' : 'smallest unit'
+                  }`}
+                  placeholder={`amount of ${assetName} in ${
+                    type === 'stx' ? 'ustx' : 'smallest unit'
+                  }`}
+                  readOnly={id}
+                  required
+                  minLength="1"
+                />
+              </div>
+              <i className="bi bi-arrow-right"></i>
+              <br />
+              <i className="bi bi-arrow-left"></i>
+              <br />
+              <div className="input-group">
+                <input
+                  type="number"
+                  className="form-control"
+                  ref={amountSatsRef}
+                  value={formData.amountSats}
+                  onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
+                  aria-label={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
+                  placeholder={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
+                  readOnly={id}
+                  required
+                  minLength="1"
+                />
+              </div>
+              <img className="m-1" src="/bitcoin.webp" alt="BTC" />
+            </div>
+            <div className="col text-center">
+              <br />
+              Counterpart
+              <br />
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  ref={assetRecipientRef}
+                  value={formData.assetRecipient}
+                  onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
+                  aria-label={`${assetName} receiver's Stacks address`}
+                  placeholder={`${assetName} receiver's Stacks address`}
+                  readOnly={id && formData.assetRecipientFromSwap}
+                  required
+                  minLength="1"
+                />
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="container">
-            <div className="row align-items-center m-5">
-              <div className="col text-center">
-                You
-                <br />
-                <Address addr={ownerStxAddress} />
-                <br />
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    ref={btcRecipientRef}
-                    value={formData.btcRecipient}
-                    onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
-                    aria-label="Bitcoin recipient address (must start with 1)"
-                    placeholder="Bitcoin recipient address (must start with 1)"
-                    readOnly={id}
-                    required
-                    max="40"
-                    minLength="1"
-                  />
-                </div>
-              </div>
-              <div className="col text-center border-left">
-                <AssetIcon type={type} trait={formData.trait} />
-                <br />
-                <div className={`input-group ${type === 'nft' ? '' : 'd-none'}`}>
-                  <input
-                    type="number"
-                    className="form-control"
-                    ref={nftIdRef}
-                    value={formData.nftId}
-                    onChange={e => setFormData({ ...formData, nftId: e.target.value })}
-                    aria-label="ID of NFT"
-                    placeholder="ID of NFT"
-                    readOnly={id}
-                    required
-                    minLength="1"
-                  />
-                </div>
-                <div className={`input-group ${type === 'nft' ? 'd-none' : ''}`}>
-                  <input
-                    type="number"
-                    className="form-control"
-                    ref={amountRef}
-                    value={formData.amount}
-                    onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                    aria-label={`amount of ${assetName} in ${
-                      type === 'stx' ? 'ustx' : 'smallest unit'
-                    }`}
-                    placeholder={`amount of ${assetName} in ${
-                      type === 'stx' ? 'ustx' : 'smallest unit'
-                    }`}
-                    readOnly={id}
-                    required
-                    minLength="1"
-                  />
-                </div>
-                <i className="bi bi-arrow-right"></i>
-                <br />
-                <i className="bi bi-arrow-left"></i>
-                <br />
-                <div className="input-group">
-                  <input
-                    type="number"
-                    className="form-control"
-                    ref={amountSatsRef}
-                    value={formData.amountSats}
-                    onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
-                    aria-label={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
-                    placeholder={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
-                    readOnly={id}
-                    required
-                    minLength="1"
-                  />
-                </div>
-                <img className="m-1" src="/bitcoin.webp" alt="BTC" />
-              </div>
-              <div className="col text-center">
-                <br />
-                Counterpart
-                <br />
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    ref={assetRecipientRef}
-                    value={formData.assetRecipient}
-                    onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
-                    aria-label={`${assetName} receiver's Stacks address`}
-                    placeholder={`${assetName} receiver's Stacks address`}
-                    readOnly={id && formData.assetRecipientFromSwap}
-                    required
-                    minLength="1"
-                  />
-                </div>
-              </div>
+          {status && (
+            <div className="row align-items-center">
+              <div className="col text-center alert">{status}</div>
             </div>
-            {status && (
-              <div className="row align-items-center">
-                <div className="col text-center alert">{status}</div>
-              </div>
-            )}
-            <div className="row">
-              <div className="col-12 text-center">
-                {id &&
-                  formData.assetSenderFromSwap &&
-                  formData.whenFromSwap + 100 < blockHeight &&
-                  formData.doneFromSwap === 0 && (
-                    <button
-                      className="btn btn-block btn-primary"
-                      type="button"
-                      onClick={cancelAction}
-                    >
-                      <div
-                        role="status"
-                        className={`${
-                          loading ? '' : 'd-none'
-                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                      />
-                      Cancel swap
-                    </button>
-                  )}
-                {id ? (
-                  formData.assetRecipientFromSwap ? (
-                    <></>
-                  ) : (
-                    <button
-                      className="btn btn-block btn-primary"
-                      type="button"
-                      onClick={setRecipientAction}
-                    >
-                      <div
-                        role="status"
-                        className={`${
-                          loading ? '' : 'd-none'
-                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                      />
-                      Buy {assetName}
-                    </button>
-                  )
-                ) : (
+          )}
+          <div className="row">
+            <div className="col-12 text-center">
+              {id &&
+                formData.assetSenderFromSwap &&
+                formData.whenFromSwap + 100 < blockHeight &&
+                formData.doneFromSwap === 0 && (
                   <button
                     className="btn btn-block btn-primary"
                     type="button"
-                    onClick={createAction}
+                    onClick={cancelAction}
                   >
                     <div
                       role="status"
@@ -598,13 +437,41 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                         loading ? '' : 'd-none'
                       } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                     />
-                    Sell {asset}
+                    Cancel swap
                   </button>
                 )}
-              </div>
+              {id ? (
+                formData.assetRecipientFromSwap ? (
+                  <></>
+                ) : (
+                  <button
+                    className="btn btn-block btn-primary"
+                    type="button"
+                    onClick={setRecipientAction}
+                  >
+                    <div
+                      role="status"
+                      className={`${
+                        loading ? '' : 'd-none'
+                      } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                    />
+                    Buy {assetName}
+                  </button>
+                )
+              ) : (
+                <button className="btn btn-block btn-primary" type="button" onClick={createAction}>
+                  <div
+                    role="status"
+                    className={`${
+                      loading ? '' : 'd-none'
+                    } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                  />
+                  Sell {asset}
+                </button>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </form>
       {txId && <TxStatus txId={txId} />}
     </>

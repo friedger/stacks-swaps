@@ -37,7 +37,7 @@ import {
 } from '../lib/btcTransactions';
 import { getAsset, getAssetName } from './assets';
 
-export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id }) {
+export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, fromData }) {
   const swapIdRef = useRef();
   const nftIdRef = useRef();
   const traitRef = useRef();

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { contracts, infoApi, NETWORK } from '../lib/constants';
+import { contracts, infoApi, NETWORK, smartContractsApi } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -9,6 +9,7 @@ import {
   cvToString,
   FungibleConditionCode,
   makeContractFungiblePostCondition,
+  makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
@@ -61,68 +62,91 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
       setLoadingSwapEntry(true);
       try {
         console.log('fetch swap entry');
-        fetchSwapsEntry(type, id)
-          .then(swapsEntry => {
-            console.log(swapsEntry);
-            if (swapsEntry) {
-              setSwapsEntry(swapsEntry);
-              const whenFromSwap = swapsEntry.data['when'].value.toNumber();
-              const doneFromSwap = swapsEntry.data['done'].value.toNumber();
+        const asyncFetchSwapEntry = async () => {
+          const swapsEntry = await fetchSwapsEntry(type, id);
+          console.log(swapsEntry);
+          if (swapsEntry) {
+            setSwapsEntry(swapsEntry);
+            const whenFromSwap = swapsEntry.data['when'].value.toNumber();
+            const doneFromSwap = swapsEntry.data['done'].value.toNumber();
+            const btcRecipient = cvToString(swapsEntry.data['btc-receiver']);
+            const amountSats = swapsEntry.data.sats.value.toNumber();
+            let trait, contractAddress, contractName, ctrInterface;
+            switch (type) {
+              case 'ft':
+                trait = cvToString(swapsEntry.data['ft']);
+                [contractAddress, contractName] = trait.split('.');
+                ctrInterface = await smartContractsApi.getContractInterface({
+                  contractAddress,
+                  contractName,
+                });
+                const ft =
+                  ctrInterface.fungible_tokens.length === 1
+                    ? ctrInterface.fungible_tokens[0]
+                    : undefined;
+                console.log({ ft });
+                setFormData({
+                  btcRecipient,
+                  amountSats,
+                  trait: trait + '::' + ft,
+                  amount: swapsEntry.data.amount.value.toNumber(),
+                  assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
+                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
+                  assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
+                  whenFromSwap,
+                  doneFromSwap,
+                });
+                break;
+              case 'stx':
+                setFormData({
+                  btcRecipient,
+                  amountSats,
+                  amount: swapsEntry.data.ustx.value.toNumber(),
+                  assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
+                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
+                  assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
+                  whenFromSwap,
+                  doneFromSwap,
+                });
+                break;
+              case 'nft':
+                trait = cvToString(swapsEntry.data['nft']);
+                [contractAddress, contractName] = trait.split('.');
+                console.log({ contractAddress, contractName });
+                ctrInterface = await smartContractsApi.getContractInterface({
+                  contractAddress,
+                  contractName,
+                });
+                const nft =
+                  ctrInterface.non_fungible_tokens.length === 1
+                    ? ctrInterface.non_fungible_tokens[0].name
+                    : undefined;
+                console.log({ nft });
 
-              switch (type) {
-                case 'ft':
-                  setFormData({
-                    btcRecipient: cvToString(swapsEntry.data['btc-receiver']),
-                    amountSats: swapsEntry.data.sats.value.toNumber() / 100000000,
-                    trait: cvToString(swapsEntry.data['ft']),
-                    amount: swapsEntry.data.amount.value.toNumber(),
-                    assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
-                    assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
-                    assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-                    whenFromSwap,
-                    doneFromSwap,
-                  });
-                  break;
-                case 'stx':
-                  setFormData({
-                    btcRecipient: cvToString(swapsEntry.data['btc-receiver']),
-                    amountSats: swapsEntry.data.sats.value.toNumber(),
-                    amount: swapsEntry.data.ustx.value.toNumber(),
-                    assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
-                    assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
-                    assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
-                    whenFromSwap,
-                    doneFromSwap,
-                  });
-                  break;
-                case 'nft':
-                  setFormData({
-                    btcRecipient: cvToString(swapsEntry.data['btc-receiver']),
-                    amountSats: cvToString(swapsEntry.data.sats),
-                    trait: cvToString(swapsEntry.data['ft']),
-                    nftId: cvToString(swapsEntry.data['nft-id']),
-                    assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
-                    assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-                    whenFromSwap,
-                    doneFromSwap,
-                  });
-                  break;
-                default:
-                  console.log('unsupported type ' + type);
-              }
-              if (doneFromSwap === 1) {
-                setStatus('Swap was completed');
-              }
-            } else {
-              setInvalidSwapId(true);
+                setFormData({
+                  btcRecipient,
+                  amountSats,
+                  trait: trait + '::' + nft,
+                  nftId: swapsEntry.data['nft-id'].value.toNumber(),
+                  assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
+                  assetRecipientFromSwap: cvToString(swapsEntry.data['nft-receiver']),
+                  assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
+                  whenFromSwap,
+                  doneFromSwap,
+                });
+                break;
+              default:
+                console.log('unsupported type ' + type);
             }
-            setLoadingSwapEntry(false);
-          })
-          .catch(e => {
-            setStatus(`couldn't load swap details for swap ${id} ${e}.`);
-            console.log({ e });
-            setLoadingSwapEntry(false);
-          });
+            if (doneFromSwap === 1) {
+              setStatus('Swap was completed');
+            }
+          } else {
+            setInvalidSwapId(true);
+          }
+          setLoadingSwapEntry(false);
+        };
+        asyncFetchSwapEntry();
       } catch (e) {
         setStatus(`Error: couldn't load swap details for swap ${id}`);
         console.log({ e });
@@ -301,6 +325,21 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
     let idCV;
     switch (type) {
       case 'nft':
+        const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
+        const [nftContractName, nftAssetName] = nftTail.split('::');
+
+        idCV = uintCV(id);
+        functionArgs = [idCV];
+        postConditions = [
+          makeContractNonFungiblePostCondition(
+            contract.address,
+            contract.name,
+            NonFungibleConditionCode.DoesNotOwn,
+            createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
+            idCV
+          ),
+        ];
+
         break;
       case 'ft':
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');

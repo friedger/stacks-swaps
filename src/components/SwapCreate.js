@@ -188,6 +188,10 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
         const nftReceiverCV = standardPrincipalCV(assetRecipientRef.current.value.trim());
         const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
         const [nftContractName, nftAssetName] = nftTail.split('::');
+        if (!nftAssetName) {
+          setStatus('"nft contract :: nft name" must be set')
+          return
+        }
         const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
         functionArgs = [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV];
         postConditions = [
@@ -206,6 +210,10 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
           : noneCV();
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
+        if (!nftAssetName) {
+          setStatus('"ft contract :: ft name" must be set')
+          return
+        }
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
         functionArgs = [satsCV, btcReceiverCV, ftAmountCV, ftReceiverCV, ftCV];
         postConditions = [

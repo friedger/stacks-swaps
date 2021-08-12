@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { contracts, NETWORK } from '../lib/constants';
+import { contracts, infoApi, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -8,6 +8,8 @@ import {
   createAssetInfo,
   cvToString,
   FungibleConditionCode,
+  makeContractFungiblePostCondition,
+  makeContractSTXPostCondition,
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
@@ -23,6 +25,7 @@ import { AssetIcon } from './AssetIcon';
 import { getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
+import { BN } from 'bn.js';
 
 export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
   const amountSatsRef = useRef();
@@ -37,6 +40,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
   const [loadingSwapEntry, setLoadingSwapEntry] = useState();
   const [swapsEntry, setSwapsEntry] = useState();
   const [invalidSwapId, setInvalidSwapId] = useState(false);
+  const [blockHeight, setBlockHeight] = useState(0);
   const [formData, setFormData] = useState({
     trait: trait,
     btcRecipient: '',
@@ -44,10 +48,15 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
     assetRecipient: '',
     amount: '',
     nftId: nftId,
+    assetSenderFromSwap: '',
   });
   const { doContractCall } = useConnect();
 
   useEffect(() => {
+    infoApi.getCoreApiInfo().then(info => {
+      setBlockHeight(info.stacks_tip_height);
+    });
+
     if (type && id) {
       setLoadingSwapEntry(true);
       try {
@@ -57,6 +66,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
             console.log(swapsEntry);
             if (swapsEntry) {
               setSwapsEntry(swapsEntry);
+              const whenFromSwap = swapsEntry.data['when'].value.toNumber();
+              const doneFromSwap = swapsEntry.data['done'].value.toNumber();
 
               switch (type) {
                 case 'ft':
@@ -67,6 +78,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     amount: swapsEntry.data.amount.value.toNumber(),
                     assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
                     assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
+                    assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
+                    whenFromSwap,
+                    doneFromSwap,
                   });
                   break;
                 case 'stx':
@@ -76,6 +90,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     amount: swapsEntry.data.ustx.value.toNumber(),
                     assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
                     assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
+                    assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
+                    whenFromSwap,
+                    doneFromSwap,
                   });
                   break;
                 case 'nft':
@@ -85,10 +102,16 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
                     trait: cvToString(swapsEntry.data['ft']),
                     nftId: cvToString(swapsEntry.data['nft-id']),
                     assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
+                    assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
+                    whenFromSwap,
+                    doneFromSwap,
                   });
                   break;
                 default:
                   console.log('unsupported type ' + type);
+              }
+              if (doneFromSwap === 1) {
+                setStatus('Swap was completed');
               }
             } else {
               setInvalidSwapId(true);
@@ -280,14 +303,32 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
       case 'nft':
         break;
       case 'ft':
+        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        const [ftContractName, ftAssetName] = ftTail.split('::');
+
         idCV = uintCV(id);
         functionArgs = [idCV];
-        postConditions = [];
+        postConditions = [
+          makeContractFungiblePostCondition(
+            contract.address,
+            contract.name,
+            FungibleConditionCode.Equal,
+            new BN(formData.amount),
+            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+          ),
+        ];
         break;
       case 'stx':
         idCV = uintCV(id);
         functionArgs = [idCV];
-        postConditions = [];
+        postConditions = [
+          makeContractSTXPostCondition(
+            contract.address,
+            contract.name,
+            FungibleConditionCode.Equal,
+            new BN(formData.amount)
+          ),
+        ];
         break;
 
       default:
@@ -296,7 +337,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
     await doContractCall({
       contractAddress: contract.address,
       contractName: contract.name,
-      functionName: "cancel",
+      functionName: 'cancel',
       functionArgs,
       network: NETWORK,
       anchorMode: AnchorMode.Any,
@@ -462,6 +503,24 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, nftId }) {
             )}
             <div className="row">
               <div className="col-12 text-center">
+                {id &&
+                  formData.assetSenderFromSwap &&
+                  formData.whenFromSwap + 100 < blockHeight &&
+                  formData.doneFromSwap === 0 && (
+                    <button
+                      className="btn btn-block btn-primary"
+                      type="button"
+                      onClick={cancelAction}
+                    >
+                      <div
+                        role="status"
+                        className={`${
+                          loading ? '' : 'd-none'
+                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                      />
+                      Cancel swap
+                    </button>
+                  )}
                 {id ? (
                   formData.assetRecipientFromSwap ? (
                     <></>

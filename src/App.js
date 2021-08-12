@@ -121,7 +121,7 @@ function Content({ userSession }) {
               trait="SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token::miamicoin"
             />
              <StacksSwaps
-              path="/stx/:id"
+              path="/stx/swap/:id"
               type="stx"
               decentralizedID={decentralizedID}
               userSession={userSession}

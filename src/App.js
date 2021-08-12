@@ -132,6 +132,20 @@ function Content({ userSession }) {
               decentralizedID={decentralizedID}
               userSession={userSession}
             />
+            <StacksSwaps
+              path="/thisisnumberone/swap/:id"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.btc-nft-swap-v1::my-nft"
+            />
+            <StacksSwaps
+              path="/thisisnumberone"
+              type="nft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.btc-nft-swap-v1::my-nft"
+            />
           </>
         )}
       </Router>

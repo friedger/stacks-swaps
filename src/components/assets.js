@@ -1,11 +1,15 @@
-export const MIA_CONTRACT = 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-core-v1';
-export const BOOMBOX_CONTRACT = 'SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-14';
+export const MIA_TOKEN = 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token::miamicoin';
+export const BOOMBOX = 'SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-14::b-14';
+export const THIS_IS_NUMBER_ONE =
+  'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.thisisnumberone-v2::my-nft';
 
 export function getAsset(type, trait) {
-  return trait === MIA_CONTRACT
+  return trait === MIA_TOKEN
     ? 'MIA'
-    : trait === BOOMBOX_CONTRACT
+    : trait === BOOMBOX
     ? 'BOOMBOX'
+    : trait === THIS_IS_NUMBER_ONE
+    ? '#1'
     : type.toUpperCase();
 }
 
@@ -14,5 +18,11 @@ export function getAssetName(type, trait) {
 }
 
 export function getDeepLink(type, trait) {
-  return trait === MIA_CONTRACT ? '/mia' : trait ? `/${type}/${trait}` : `/${type}`;
+  return trait === MIA_TOKEN
+    ? '/mia'
+    : trait === THIS_IS_NUMBER_ONE
+    ? '/thisisnumberone'
+    : trait
+    ? `/${type}/${trait}`
+    : `/${type}`;
 }

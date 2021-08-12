@@ -8,6 +8,7 @@ import Landing from './pages/Landing';
 import Intro from './pages/Intro';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
+import { MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
 
 export default function App(props) {
   const { authOptions } = useConnect();
@@ -70,7 +71,7 @@ function Content({ userSession }) {
               decentralizedID={decentralizedID}
               userSession={userSession}
             />
-             <StacksSwaps
+            <StacksSwaps
               path="/nft/:trait/:nftId"
               type="nft"
               decentralizedID={decentralizedID}
@@ -88,7 +89,7 @@ function Content({ userSession }) {
               decentralizedID={decentralizedID}
               userSession={userSession}
             />
-             <StacksSwaps
+            <StacksSwaps
               path="/ft/swap/:id"
               type="ft"
               decentralizedID={decentralizedID}
@@ -111,16 +112,16 @@ function Content({ userSession }) {
               type="ft"
               decentralizedID={decentralizedID}
               userSession={userSession}
-              trait="SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token::miamicoin"
+              trait={MIA_TOKEN}
             />
             <StacksSwaps
               path="/mia"
               type="ft"
               decentralizedID={decentralizedID}
               userSession={userSession}
-              trait="SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token::miamicoin"
+              trait={MIA_TOKEN}
             />
-             <StacksSwaps
+            <StacksSwaps
               path="/stx/swap/:id"
               type="stx"
               decentralizedID={decentralizedID}
@@ -137,14 +138,14 @@ function Content({ userSession }) {
               type="nft"
               decentralizedID={decentralizedID}
               userSession={userSession}
-              trait="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.btc-nft-swap-v1::my-nft"
+              trait={THIS_IS_NUMBER_ONE}
             />
             <StacksSwaps
               path="/thisisnumberone"
               type="nft"
               decentralizedID={decentralizedID}
               userSession={userSession}
-              trait="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.btc-nft-swap-v1::my-nft"
+              trait={THIS_IS_NUMBER_ONE}
             />
           </>
         )}

@@ -34,7 +34,7 @@ export function SwapList() {
   if (swaps) {
     return (
       <>
-        <h3>Completed Swap Activities</h3>
+        <h3>Some Completed Swap Activities</h3>
         <div className="container">
           {swaps.map((swap, key) => (
             <Fragment key={key}>

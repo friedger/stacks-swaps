@@ -1,10 +1,10 @@
 import React from 'react';
-import { MIA_CONTRACT } from './assets';
+import { BOOMBOX, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
     case 'ft':
       switch (trait) {
-        case MIA_CONTRACT:
+        case MIA_TOKEN:
           return <img src="/mia.png" className="m-1" width="50" height="50" alt="mia" />;
 
         default:
@@ -34,17 +34,29 @@ export function AssetIcon({ type, trait }) {
         <img src="/Stacks_logo_full.webp" className="m-1" width="50" height="50" alt="token" />
       );
     default:
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="50"
-          height="50"
-          fill="currentColor"
-          className="bi bi-easel m-1"
-          viewBox="0 0 16 16"
-        >
-          <path d="M8 0a.5.5 0 0 1 .473.337L9.046 2H14a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1.85l1.323 3.837a.5.5 0 1 1-.946.326L11.092 11H8.5v3a.5.5 0 0 1-1 0v-3H4.908l-1.435 4.163a.5.5 0 1 1-.946-.326L3.85 11H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4.954L7.527.337A.5.5 0 0 1 8 0zM2 3v7h12V3H2z" />
-        </svg>
-      );
+      switch (trait) {
+        case BOOMBOX:
+          return (
+            <img src="/boom.png" className="m-1" width="50" height="50" alt="token" />
+          );
+
+        case THIS_IS_NUMBER_ONE:
+          return (
+            <img src="/thisisnumberone.png" className="m-1" width="50" height="50" alt="token" />
+          );
+        default:
+          return (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="50"
+              height="50"
+              fill="currentColor"
+              className="bi bi-easel m-1"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 0a.5.5 0 0 1 .473.337L9.046 2H14a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1.85l1.323 3.837a.5.5 0 1 1-.946.326L11.092 11H8.5v3a.5.5 0 0 1-1 0v-3H4.908l-1.435 4.163a.5.5 0 1 1-.946-.326L3.85 11H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4.954L7.527.337A.5.5 0 0 1 8 0zM2 3v7h12V3H2z" />
+            </svg>
+          );
+      }
   }
 }

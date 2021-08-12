@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
 import { IntroButton } from '../components/IntroButton';
-import { BOOMBOX_CONTRACT, MIA_CONTRACT } from '../components/assets';
+import { BOOMBOX, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
 // Intro page with choice of swaps
 
 export default function Intro(props) {
@@ -20,20 +20,23 @@ export default function Intro(props) {
                 <IntroButton type="stx" />
               </div>
               <div className="col">
-                <IntroButton type="ft" trait={MIA_CONTRACT} />
+                <IntroButton type="ft" trait={MIA_TOKEN} />
               </div>
               <div className="col">
-                <IntroButton type="nft" trait={BOOMBOX_CONTRACT} />
+                <IntroButton type="nft" trait={BOOMBOX} />
               </div>
             </div>
             <div className="row">
+              <div className="col">
+                <IntroButton type="nft" trait={THIS_IS_NUMBER_ONE} />
+              </div>
+
               <div className="col">
                 <IntroButton type="ft" />
               </div>
               <div className="col">
                 <IntroButton type="nft" />
               </div>
-              <div className="col"></div>
             </div>
           </div>
         </div>

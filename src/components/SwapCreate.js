@@ -94,7 +94,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           : noneCV();
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
-        if (!nftAssetName) {
+        if (!ftAssetName) {
           setStatus('"ft contract :: ft name" must be set');
           return;
         }

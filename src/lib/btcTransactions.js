@@ -10,11 +10,10 @@ import {
 import MerkleTree from 'merkletreejs';
 import reverse from 'buffer-reverse';
 import SHA256 from 'crypto-js/sha256';
-import { Transaction } from 'bitcoinjs-lib';
+import { Transaction, address } from 'bitcoinjs-lib';
 
 import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
 import { decodeBtcAddress } from '@stacks/stacking';
-
 export async function getReversedTxId(txCV) {
   const result = await callReadOnlyFunction({
     contractAddress: CLARITY_BITCOIN_CONTRACT.address,
@@ -189,7 +188,7 @@ function txForHash(tx) {
 
 async function getStxBlock(bitcoinBlockHeight) {
   let stxBlock;
-  let limit = 30
+  let limit = 30;
   let offset = 0;
   while (!stxBlock) {
     const blockListResponse = await blocksApi.getBlockList({ offset, limit });
@@ -336,18 +335,9 @@ export async function paramsFromTx(btcTxId, stxHeight) {
 }
 
 export function btcAddressToPubscriptCV(btcAddress) {
-  const decodedAddress = decodeBtcAddress(btcAddress);
+  return bufferCV(address.toOutputScript(btcAddress));
+}
 
-  switch (decodedAddress.hashMode) {
-    case AddressHashMode.SerializeP2PKH:
-      return bufferCV(
-        Buffer.concat([
-          Buffer.from('76a914', 'hex'),
-          decodedAddress.data,
-          Buffer.from('88ac', 'hex'),
-        ])
-      );
-    default:
-      throw new Error('unsupported btc address format: ' + decodedAddress.hashMode);
-  }
+export function pubscriptCVToBtcAddress(pubscriptCV) {
+  return address.fromOutputScript(pubscriptCV.buffer);
 }

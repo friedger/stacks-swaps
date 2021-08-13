@@ -8,6 +8,7 @@ import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
 import { cvToString } from '@stacks/transactions';
 import { infoApi, smartContractsApi } from '../lib/constants';
+import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const userSession = useAtomValue(userSessionState);
@@ -44,8 +45,8 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             setSwapsEntry(swapsEntry);
             const whenFromSwap = swapsEntry.data['when'].value.toNumber();
             const doneFromSwap = swapsEntry.data['done'].value.toNumber();
-            const btcRecipient = cvToString(swapsEntry.data['btc-receiver']);
-            const amountSats = swapsEntry.data.sats.value.toNumber();
+            const btcRecipient = pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+            const amountSats = swapsEntry.data.sats.value.toNumber() / 100000000;
             let trait, contractAddress, contractName, ctrInterface;
             switch (type) {
               case 'ft':

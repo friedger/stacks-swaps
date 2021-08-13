@@ -311,7 +311,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
             onChange={e => setFormData({ ...formData, trait: e.current.value })}
             aria-label={`fully qualified contract of the ${assetName} and its asset class`}
             placeholder={`fully qualified contract of the ${assetName} and its asset class`}
-            defaultValue={trait}
             readOnly={trait}
             required
             minLength="1"
@@ -320,10 +319,19 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         <div className="container">
           <div className="row align-items-center m-5">
             <div className="col text-center">
-              You
-              <br />
-              <Address addr={ownerStxAddress} />
-              <br />
+              {!id || formData.assetSenderFromSwap === ownerStxAddress ? (
+                <>
+                  Seller (You)
+                  <br />
+                  <Address addr={ownerStxAddress} />
+                </>
+              ) : (
+                <>
+                  Seller
+                  <br />
+                </>
+              )}
+
               <div className="input-group">
                 <input
                   type="text"
@@ -397,7 +405,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
             </div>
             <div className="col text-center">
               <br />
-              Counterpart
+              Buyer
               <br />
               <div className="input-group">
                 <input

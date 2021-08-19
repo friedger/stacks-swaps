@@ -170,10 +170,17 @@ export async function verifyBlockHeader2(blockCV) {
   return result;
 }
 
-function numberToBuffer(value, size) {
+export function numberToBuffer(value, size) {
   // increase size by 1 for "too large" numbers
-  const buf = Buffer.allocUnsafe(size + 1);
-  buf.writeIntLE(value, 0, size + 1);
+  const buf = Buffer.alloc(size + 1);
+  if (size === 4) {
+    buf.writeIntLE(value, 0, size + 1);
+  } else if (size === 8) {
+    buf.writeUInt32LE(value, 0, size + 1);
+  } else {
+    console.log(`unsupported size ${size}`);
+    // not supported
+  }
   // remove the extra byte again
   return buf.slice(0, size);
 }

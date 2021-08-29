@@ -18,7 +18,7 @@ export default function Landing(props) {
             trigger contract call by a bitcoin transaction.
           </p>
           <p className="h5">
-            This site provides a UI to create and handle trustless swaps between Bitcoins and and
+            This site provides a UI to create and handle trustless swaps between Bitcoins and
             fungible and non-fungible tokens on the Stacks chain.
           </p>
           <h2 className="mt-4">Create Swap</h2>
@@ -26,11 +26,16 @@ export default function Landing(props) {
             After agreeing on Terms and Conditions off-chain, the owner of the Stacks assets creates
             a swap and sends the assets to the contract in escrow.
           </p>
-          <h2 className="mt-4">Submit BTC transaction</h2>
+          <h2 className="mt-4">Submit BTC Transaction</h2>
           <p className="h5">
             After the owner of BTC has made the transaction to the agree BTC address, any user can
             submit the BTC contract to the Stacks contract. After verification, the Stacks assets
             are released to the agree Stacks receiver.
+          </p>
+          <h2 className="mt-4">Atomic Stacks Swaps</h2>
+          <p className="h5">
+            In addition to Catamaran swaps, the UI also provides support for swaps of digital
+            assets just on the Stacks chain.
           </p>
           <button
             className="btn btn-lg btn-outline-primary mt-4"

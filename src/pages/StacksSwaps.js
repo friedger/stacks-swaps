@@ -10,8 +10,8 @@ export default function StacksSwaps({ userSession, type, trait, id, nftId }) {
   }
   return (
     <main className="container">
-      <AlertAllPages />
-      <StacksSwapsContainer type={type} trait={trait} id={id} nftId={nftId}/>
+      {type.startsWith('stx-') ? null : <AlertAllPages />}
+      <StacksSwapsContainer type={type} trait={trait} id={id} nftId={nftId} />
     </main>
   );
 }

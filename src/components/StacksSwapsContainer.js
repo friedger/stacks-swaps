@@ -14,6 +14,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const userSession = useAtomValue(userSessionState);
   const { ownerStxAddress } = useStxAddresses(userSession);
 
+  const buyWithStx = type.startsWith('stx-');
   const [loadingSwapEntry, setLoadingSwapEntry] = useState();
   const [swapsEntry, setSwapsEntry] = useState();
   const [invalidSwapId, setInvalidSwapId] = useState(false);
@@ -28,6 +29,20 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
     nftId: nftId,
     assetSenderFromSwap: '',
   });
+
+  useEffect(() => {
+    if (buyWithStx) {
+      setFormData({
+        trait: trait,
+        btcRecipient: '',
+        amountSats: '',
+        assetRecipient: ownerStxAddress,
+        amount: '',
+        nftId: nftId,
+        assetSenderFromSwap: '',
+      });
+    }
+  }, [buyWithStx, ownerStxAddress, nftId, trait]);
 
   useEffect(() => {
     infoApi.getCoreApiInfo().then(info => {

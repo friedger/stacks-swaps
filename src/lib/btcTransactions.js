@@ -1,7 +1,7 @@
 import {
-  AddressHashMode,
   bufferCV,
   callReadOnlyFunction,
+  ClarityType,
   cvToString,
   listCV,
   tupleCV,
@@ -13,7 +13,12 @@ import SHA256 from 'crypto-js/sha256';
 import { Transaction, address } from 'bitcoinjs-lib';
 
 import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
-import { decodeBtcAddress } from '@stacks/stacking';
+
+export const ERR_DIFFERENT_HEX = 'different hex';
+export const ERR_NO_STACKS_BLOCK = 'no stacks block';
+export const ERR_API_FAILURE = 'api failure';
+const network = NETWORK;
+
 export async function getReversedTxId(txCV) {
   const result = await callReadOnlyFunction({
     contractAddress: CLARITY_BITCOIN_CONTRACT.address,
@@ -22,7 +27,7 @@ export async function getReversedTxId(txCV) {
     functionName: 'get-reversed-txid',
     functionArgs: [txCV],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('getReversedTxId', cvToString(result));
   return result;
@@ -34,8 +39,8 @@ export async function concatTransaction(txPartsCV) {
     contractName: CLARITY_BITCOIN_CONTRACT.name,
     functionName: 'concat-tx',
     functionArgs: [txPartsCV],
-    senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    senderAddress: CLARITY_BITCOIN_CONTRACT.address,
+    network,
   });
   console.log('concat-tx', cvToString(result));
   return result;
@@ -48,7 +53,7 @@ export async function getTxId(txBuffCV) {
     functionName: 'get-txid',
     functionArgs: [txBuffCV],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('txid', cvToString(result));
   return result;
@@ -61,7 +66,7 @@ export async function wasTxMined(blockPartsCV, txCV, proofCV) {
     functionName: 'was-tx-mined',
     functionArgs: [blockPartsCV, txCV, proofCV],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('was-tx-mined', cvToString(result));
   return result;
@@ -76,7 +81,7 @@ export async function parseTx(txCV) {
       functionName: 'parse-tx',
       functionArgs: [txCV],
       senderAddress: CONTRACT_ADDRESS,
-      network: NETWORK,
+      network,
     });
     console.log('parse-tx', cvToString(result));
   } catch (e) {
@@ -95,7 +100,7 @@ export async function verifyMerkleProof(txId, block, proofCV) {
       proofCV,
     ],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('verify-merkle-proof', JSON.stringify(result), cvToString(result));
   return result;
@@ -108,7 +113,7 @@ export async function verifyMerkleProof2(txCV, headerPartsCV, proofCV) {
     functionName: 'verify-merkle-proof',
     functionArgs: [await getReversedTxId(txCV), headerPartsCV.data['merkle-root'], proofCV],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('verify-merkle-proof-2', JSON.stringify(result), cvToString(result));
   return result;
@@ -121,7 +126,7 @@ export async function wasTxMinedFromHex(blockCV, txCV, proofCV) {
     functionName: 'was-tx-mined-compact',
     functionArgs: [blockCV, txCV, proofCV],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('was-tx-mined-compact', JSON.stringify(result));
   return result;
@@ -135,7 +140,7 @@ export async function parseBlockHeader(blockHeader) {
     functionName: 'parse-block-header',
     functionArgs: [bufferCV(Buffer.from(blockHeader, 'hex'))],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('parse block header', cvToString(result.value.data['merkle-root']));
   return result;
@@ -151,7 +156,7 @@ export async function verifyBlockHeader(parts, stacksBlockHeight) {
       uintCV(stacksBlockHeight),
     ],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('verify-block-header', cvToString(result));
   return result;
@@ -164,7 +169,7 @@ export async function verifyBlockHeader2(blockCV) {
     functionName: 'verify-block-header',
     functionArgs: [blockCV.data['header'], blockCV.data['height']],
     senderAddress: CONTRACT_ADDRESS,
-    network: NETWORK,
+    network,
   });
   console.log('verify-block-header-2', cvToString(result));
   return result;
@@ -194,52 +199,95 @@ function txForHash(tx) {
 }
 
 async function getStxBlock(bitcoinBlockHeight) {
-  let stxBlock;
   let limit = 30;
   let offset = 0;
+  const firstResponse = await blocksApi.getBlockList({ offset, limit });
+  const lastBlock = firstResponse.results[0];
+  let stxBlock = firstResponse.results.find(b => b.burn_block_height === bitcoinBlockHeight);
+  offset += Math.max(limit, firstResponse.results[0].burn_block_height - bitcoinBlockHeight);
+  console.log('getStxBlock', { offset });
   while (!stxBlock) {
     const blockListResponse = await blocksApi.getBlockList({ offset, limit });
-    stxBlock = blockListResponse.results.find(b => b.burn_block_height === bitcoinBlockHeight);
-    offset += limit;
-    if (offset > blockListResponse.total) return undefined;
+    const blocks = blockListResponse.results;
+    stxBlock = blocks.find(b => b.burn_block_height === bitcoinBlockHeight);
+    offset -= limit;
+    console.log('getStxBlock', { offset });
+    if (offset < 0 || blocks[blocks.length - 1].burn_block_height > bitcoinBlockHeight)
+      return undefined;
   }
   return stxBlock;
 }
 
 export async function paramsFromTx(btcTxId, stxHeight) {
+  console.log(btcTxId);
   const tx = await (
-    await fetch(`https://api.blockcypher.com/v1/btc/main/txs/${btcTxId}?limit=50&includeHex=true`)
+    await fetch(
+      //`https://chain.so/api/v2/tx/btc/${btcTxId}`
+      `https://api.blockcypher.com/v1/btc/main/txs/${btcTxId}?includeHex=true`
+    )
   ).json();
 
-  console.log({ out: tx.outputs[0] });
+  if (!tx.hex) {
+    console.log(tx);
+    return {
+      txCV: undefined,
+      proofCV: undefined,
+      block: undefined,
+      blockCV: undefined,
+      headerPartsCV: undefined,
+      header: undefined,
+      headerParts: undefined,
+      stxHeight: undefined,
+      txPartsCV: undefined,
+      error: ERR_API_FAILURE,
+    };
+  }
+
+  /*
+  tx.hex = tx.tx_hex;
+  */
 
   // tx hex without witness
   const txCV = bufferCV(MerkleTree.bufferify(txForHash(tx.hex)));
 
+  let version;
+  if (tx.hex.substr(9, 10) === "00") {
+    version = tx.hex.substr(0, 12)
+  } else {
+    version = tx.hex.substr(0, 8)
+  }
+
   // tx decomposed
   const txPartsCV = tupleCV({
-    version: bufferCV(Buffer.from(tx.hex.substr(0, 8), 'hex')),
+    version: bufferCV(Buffer.from(version, 'hex')),
     ins: listCV(
       tx.inputs.map(input => {
-        console.log(input.script_type);
-        if (input.script_type === 'pay-to-pubkey-hash') {
-          return tupleCV({
-            outpoint: tupleCV({
-              hash: bufferCV(reverse(Buffer.from(input.prev_hash, 'hex'))),
-              index: bufferCV(numberToBuffer(input.output_index, 4)),
-            }),
-            scriptSig: bufferCV(Buffer.from(input.script, 'hex')),
-            sequence: bufferCV(numberToBuffer(input.sequence, 4)),
-          });
-        } else {
-          return tupleCV({
-            outpoint: tupleCV({
-              hash: bufferCV(reverse(Buffer.from(input.prev_hash, 'hex'))),
-              index: bufferCV(numberToBuffer(input.output_index, 4)),
-            }),
-            scriptSig: bufferCV(Buffer.from('', 'hex')),
-            sequence: bufferCV(numberToBuffer(input.sequence, 4)),
-          });
+        /*
+        input.prev_hash = input.received_from.txid;
+        input.output_index = input.received_from.output_no;
+        input.script = input.script_hex;
+        input.sequence = 123;
+        */
+        switch (input.script_type) {
+          case 'pay-to-witness-pubkey-hash':
+            return tupleCV({
+              outpoint: tupleCV({
+                hash: bufferCV(reverse(Buffer.from(input.prev_hash, 'hex'))),
+                index: bufferCV(numberToBuffer(input.output_index, 4)),
+              }),
+              scriptSig: bufferCV(Buffer.from(input.script, 'hex')),
+              sequence: bufferCV(numberToBuffer(input.sequence, 4)),
+            });
+          case 'pay-to-pubkey-hash':
+          default:
+            return tupleCV({
+              outpoint: tupleCV({
+                hash: bufferCV(reverse(Buffer.from(input.prev_hash, 'hex'))),
+                index: bufferCV(numberToBuffer(input.output_index, 4)),
+              }),
+              scriptSig: bufferCV(Buffer.from(input.script, 'hex')),
+              sequence: bufferCV(numberToBuffer(input.sequence, 4)),
+            });
         }
       })
     ),
@@ -253,6 +301,25 @@ export async function paramsFromTx(btcTxId, stxHeight) {
     ),
     locktime: bufferCV(Buffer.from(tx.hex.substr(tx.hex.length - 8), 'hex')),
   });
+  const txHexResponse = await concatTransaction(txPartsCV);
+  if (
+    txHexResponse.type === ClarityType.OptionalNone ||
+    txHexResponse.buffer.toString('hex') !== tx.hex
+  ) {
+    console.log({ err: cvToString(txHexResponse) });
+    return {
+      txCV: undefined,
+      proofCV: undefined,
+      block: undefined,
+      blockCV: undefined,
+      headerPartsCV: undefined,
+      header: undefined,
+      headerParts: undefined,
+      stxHeight: undefined,
+      txPartsCV: undefined,
+      error: ERR_DIFFERENT_HEX,
+    };
+  }
 
   let height;
   let stacksBlock;
@@ -260,7 +327,20 @@ export async function paramsFromTx(btcTxId, stxHeight) {
     console.log('try to find stx height');
     const bitcoinBlockHeight = tx.block_height;
     stacksBlock = await getStxBlock(bitcoinBlockHeight);
-    console.log({ stacksBlock });
+    if (!stacksBlock) {
+      return {
+        txCV: undefined,
+        proofCV: undefined,
+        block: undefined,
+        blockCV: undefined,
+        headerPartsCV: undefined,
+        header: undefined,
+        headerParts: undefined,
+        stxHeight: undefined,
+        txPartsCV: undefined,
+        error: ERR_NO_STACKS_BLOCK,
+      };
+    }
     height = stacksBlock.height;
   } else {
     const stacksBlockResponse = await fetch(
@@ -269,7 +349,7 @@ export async function paramsFromTx(btcTxId, stxHeight) {
     stacksBlock = await stacksBlockResponse.json();
     height = stxHeight;
   }
-  console.log({ height, stacksBlock });
+  console.log({ height, stacksBlockHash: stacksBlock.hash });
 
   const blockResponse = await fetch(
     `https://api.blockcypher.com/v1/btc/main/blocks/${tx.block_hash}?limit=500`
@@ -294,14 +374,11 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   const tree = new MerkleTree(block.txids, SHA256, { isBitcoinTree: true });
   const treeDepth = tree.getDepth();
   const proof = tree.getProof(btcTxId, txIndex);
-  console.log({ proof }, tree.getHexProof(btcTxId, txIndex));
-  console.log(tree.print());
   const proofCV = tupleCV({
     'tx-index': uintCV(txIndex),
     hashes: listCV(proof.map(po => bufferCV(reverse(po.data)))),
     'tree-depth': uintCV(treeDepth),
   });
-  console.log({ txIndex, treeDepth, tree, hashes: proofCV.data.hashes });
   // block header
   const blockCV = tupleCV({
     header: bufferCV(Buffer.from(header, 'hex')),

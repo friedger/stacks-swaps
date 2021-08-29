@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { contracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
@@ -36,8 +36,14 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
-  const [formData, setFormData] = useState(formData1);
+  const [formData, setFormData] = useState({ formData1 });
   const { doContractCall } = useConnect();
+
+  const buyWithStx = type.startsWith('stx-');
+
+  useEffect(() => {
+    setFormData(formData1);
+  }, [formData1]);
 
   const createAction = async () => {
     setLoading(true);
@@ -46,7 +52,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       errors.push('positive numbers required to swap');
     }
 
-    if (btcRecipientRef.current.value.trim() === '') {
+    if (!buyWithStx && btcRecipientRef.current.value.trim() === '') {
       errors.push('BTC address is required');
     }
     if (errors.length > 0) {
@@ -61,9 +67,18 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       );
       return;
     }
-    const satsCV = uintCV(Math.floor(parseFloat(amountSatsRef.current.value.trim()) * 100_000_000));
-    const btcReceiverCV = btcAddressToPubscriptCV(btcRecipientRef.current.value.trim());
+    const factor = buyWithStx ? 1_000_000 : 100_000_000;
+    const satsOrUstxCV = uintCV(
+      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+    );
     const contract = contracts[type];
+    const seller = btcRecipientRef.current.value.trim();
+    const sellerCV = buyWithStx
+      ? seller
+        ? someCV(standardPrincipalCV(seller))
+        : noneCV()
+      : btcAddressToPubscriptCV(seller);
+
     let functionArgs;
     let postConditions;
     switch (type) {
@@ -77,7 +92,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           return;
         }
         const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
-        functionArgs = [satsCV, btcReceiverCV, nftIdCV, nftReceiverCV, nftCV];
+        functionArgs = [satsOrUstxCV, sellerCV, nftIdCV, nftReceiverCV, nftCV];
         postConditions = [
           makeStandardNonFungiblePostCondition(
             ownerStxAddress,
@@ -99,7 +114,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           return;
         }
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        functionArgs = [satsCV, btcReceiverCV, ftAmountCV, ftReceiverCV, ftCV];
+        functionArgs = [satsOrUstxCV, sellerCV, ftAmountCV, ftReceiverCV, ftCV];
         postConditions = [
           makeStandardFungiblePostCondition(
             ownerStxAddress,
@@ -114,7 +129,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         const stxReceiverCV = assetRecipientRef.current.value.trim()
           ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
           : noneCV();
-        functionArgs = [satsCV, btcReceiverCV, stxAmountCV, stxReceiverCV];
+        functionArgs = [satsOrUstxCV, sellerCV, stxAmountCV, stxReceiverCV];
         postConditions = [
           makeStandardSTXPostCondition(
             ownerStxAddress,
@@ -123,7 +138,18 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           ),
         ];
         break;
+      case 'stx-ft':
+        const ftAmount2CV = uintCV(amountRef.current.value.trim());
 
+        functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV];
+        postConditions = [
+          makeStandardSTXPostCondition(
+            ownerStxAddress,
+            FungibleConditionCode.Equal,
+            satsOrUstxCV.value.add(satsOrUstxCV.value.divRound(new BN(100)))
+          ),
+        ];
+        break;
       default:
         break;
     }
@@ -285,22 +311,39 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     });
   };
 
-  const asset = getAsset(type, formData.trait);
-  const assetName = getAssetName(type, formData.trait);
+  const buyWithAsset = buyWithStx ? 'STX' : 'BTC';
+  const sellType = buyWithStx ? type.split('-')[1] : type;
+  const asset = getAsset(sellType, formData.trait);
+  const assetName = getAssetName(sellType, formData.trait);
+
   return (
     <>
-      <h3>Create Swap BTC-{asset}</h3>
+      <h3>
+        Create Swap {buyWithAsset}-{asset}
+      </h3>
       {type === 'nft' && (
         <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
       )}
       {type === 'ft' && (
         <p>For a swap of Bitcoins and a token on Stacks, the token has to comply with SIP-10.</p>
       )}
-      <p>
-        Your {assetName} {type === 'nft' ? ' is ' : ' are '} sent to the contract now and will be
-        released to the buyer if the BTC transaction is verified (or back to you if the swap expired
-        after 100 Bitcoin blocks and you called "cancel").
-      </p>
+      {type === 'stx-ft' && (
+        <p>For a swap of Stacks and a token on Stacks, the token has to comply with SIP-10.</p>
+      )}
+      {buyWithStx ? (
+        <p>
+          Your Stacks tokens will be sent to the contract now (including 1% fees) and will be
+          released to the buyer if the {assetName} {sellType === 'nft' ? ' is ' : ' are '}{' '}
+          transferred to you. If the swap expired after 100 Stacks blocks and you called "cancel"
+          your Stacks tokens including fees are returned to you.
+        </p>
+      ) : (
+        <p>
+          Your {assetName} {type === 'nft' ? ' is ' : ' are '} sent to the contract now and will be
+          released to the buyer if the BTC transaction is verified (or back to you if the swap
+          expired after 100 Stacks blocks and you called "cancel").
+        </p>
+      )}
       <form>
         <div className={`input-group ${type === 'stx' ? 'd-none' : ''}`}>
           <input
@@ -319,7 +362,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         <div className="container">
           <div className="row align-items-center m-5">
             <div className="col text-center">
-              {!id || formData.assetSenderFromSwap === ownerStxAddress ? (
+              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx ? (
                 <>
                   Seller (You)
                   <br />
@@ -327,11 +370,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                 </>
               ) : (
                 <>
-                  Seller
                   <br />
+                  Seller
                 </>
               )}
-
+              <br />
               <div className="input-group">
                 <input
                   type="text"
@@ -339,8 +382,16 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   ref={btcRecipientRef}
                   value={formData.btcRecipient}
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
-                  aria-label="Bitcoin recipient address (must start with 1)"
-                  placeholder="Bitcoin recipient address (must start with 1)"
+                  aria-label={
+                    buyWithStx
+                      ? 'Stacks address or name (optional)'
+                      : 'Bitcoin recipient address (must start with 1)'
+                  }
+                  placeholder={
+                    buyWithStx
+                      ? 'Stacks address or name (optional)'
+                      : 'Bitcoin recipient address (must start with 1)'
+                  }
                   readOnly={id}
                   required
                   max="40"
@@ -349,7 +400,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
               </div>
             </div>
             <div className="col text-center border-left">
-              <AssetIcon type={type} trait={formData.trait} />
+              <AssetIcon type={sellType} trait={formData.trait} />
               <br />
               <div className={`input-group ${type === 'nft' ? '' : 'd-none'}`}>
                 <input
@@ -394,18 +445,49 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   ref={amountSatsRef}
                   value={formData.amountSats}
                   onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
-                  aria-label={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
-                  placeholder={type === 'nft' ? `Price for NFT in Bitcoin` : `amount of Bitcoins`}
+                  aria-label={
+                    buyWithStx
+                      ? type === 'nft'
+                        ? `Price for NFT in STXs`
+                        : `amount of STXs`
+                      : type === 'nft'
+                      ? `Price for NFT in Bitcoin`
+                      : `amount of Bitcoins`
+                  }
+                  placeholder={
+                    buyWithStx
+                      ? type === 'nft'
+                        ? `Price for NFT in STXs`
+                        : `amount of STXs`
+                      : type === 'nft'
+                      ? `Price for NFT in Bitcoin`
+                      : `amount of Bitcoins`
+                  }
                   readOnly={id}
                   required
                   minLength="1"
                 />
               </div>
-              <img className="m-1" src="/bitcoin.webp" alt="BTC" />
+              {buyWithStx ? (
+                <AssetIcon type="stx" />
+              ) : (
+                <img className="m-1" src="/bitcoin.webp" alt="BTC" />
+              )}
             </div>
             <div className="col text-center">
-              <br />
-              Buyer
+              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && buyWithStx ? (
+                <>
+                  Buyer (You)
+                  <br />
+                  <Address addr={ownerStxAddress} />
+                </>
+              ) : (
+                <>
+                  <br />
+                  Buyer
+                </>
+              )}
+
               <br />
               <div className="input-group">
                 <input
@@ -416,7 +498,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
                   aria-label={`${assetName} receiver's Stacks address`}
                   placeholder={`${assetName} receiver's Stacks address`}
-                  readOnly={id && formData.assetRecipientFromSwap}
+                  readOnly={(id && formData.assetRecipientFromSwap) || buyWithStx}
                   required
                   minLength="1"
                 />
@@ -455,7 +537,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   <button
                     className="btn btn-block btn-primary"
                     type="button"
-                    onClick={setRecipientAction}
+                    onClick={buyWithStx ? createAction : setRecipientAction}
                   >
                     <div
                       role="status"
@@ -463,7 +545,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                         loading ? '' : 'd-none'
                       } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                     />
-                    Buy {assetName}
+                    {buyWithStx ? 'Sell' : 'Buy'} {assetName}
                   </button>
                 )
               ) : (
@@ -474,7 +556,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                       loading ? '' : 'd-none'
                     } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                   />
-                  Sell {asset}
+                  {buyWithStx ? 'Buy' : 'Sell'} {asset}
                 </button>
               )}
             </div>

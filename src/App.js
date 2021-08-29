@@ -147,6 +147,32 @@ function Content({ userSession }) {
               userSession={userSession}
               trait={THIS_IS_NUMBER_ONE}
             />
+            <StacksSwaps
+              path="/stx-ft/swap/:id"
+              type="stx-ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/stx-ft"
+              type="stx-ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
+            <StacksSwaps
+              path="/stx-mia/swap/:id"
+              type="stx-ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait={MIA_TOKEN}
+            />
+            <StacksSwaps
+              path="/stx-mia"
+              type="stx-ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+              trait={MIA_TOKEN}
+            />
           </>
         )}
       </Router>

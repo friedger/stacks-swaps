@@ -14,12 +14,14 @@ export function getAsset(type, trait) {
 }
 
 export function getAssetName(type, trait) {
-  return type === 'nft' ? 'NFT' : type === 'ft' ? 'token' : 'stacks';
+  return type === 'nft' ? 'NFT' : type === 'ft' ? 'tokens' : 'stacks';
 }
 
 export function getDeepLink(type, trait) {
   return trait === MIA_TOKEN
-    ? '/mia'
+    ? type === 'stx-ft'
+      ? '/stx-mia'
+      : '/mia'
     : trait === THIS_IS_NUMBER_ONE
     ? '/thisisnumberone'
     : trait

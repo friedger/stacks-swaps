@@ -3,7 +3,7 @@ import React from 'react';
 import { AssetIcon } from './AssetIcon';
 import { getAsset, getDeepLink } from './assets';
 
-export function IntroButton({ type, trait }) {
+export function CatamaranIntroButton({ type, trait }) {
   const to = getDeepLink(type, trait);
   const assetName = getAsset(type, trait);
   return (

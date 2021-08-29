@@ -1,7 +1,8 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
-import { IntroButton } from '../components/IntroButton';
+import { CatamaranIntroButton } from '../components/CatamaranIntroButton';
 import { BOOMBOX, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
+import { AtomicIntroButton } from '../components/AtomicIntroButton';
 // Intro page with choice of swaps
 
 export default function Intro(props) {
@@ -12,30 +13,45 @@ export default function Intro(props) {
           <AlertAllPages />
           <h1>Catamaran Swaps</h1>
           <p className="h5">
-            Use catamaran swaps to exchange BTCs for digital assets on the Stacks Chain.
+            Use catamaran swaps to exchange BTCs for digital assets on the Stacks chain.
           </p>
           <div className="container">
             <div className="row">
               <div className="col">
-                <IntroButton type="stx" />
+                <CatamaranIntroButton type="stx" />
               </div>
               <div className="col">
-                <IntroButton type="ft" trait={MIA_TOKEN} />
+                <CatamaranIntroButton type="ft" trait={MIA_TOKEN} />
               </div>
               <div className="col">
-                <IntroButton type="nft" trait={BOOMBOX} />
+                <CatamaranIntroButton type="nft" trait={BOOMBOX} />
               </div>
             </div>
             <div className="row">
               <div className="col">
-                <IntroButton type="nft" trait={THIS_IS_NUMBER_ONE} />
+                <CatamaranIntroButton type="nft" trait={THIS_IS_NUMBER_ONE} />
               </div>
 
               <div className="col">
-                <IntroButton type="ft" />
+                <CatamaranIntroButton type="ft" />
               </div>
               <div className="col">
-                <IntroButton type="nft" />
+                <CatamaranIntroButton type="nft" />
+              </div>
+            </div>
+          </div>
+
+          <h1>Atomic Stacks Swaps</h1>
+          <p className="h5">
+            Use atomic swaps to exchange digital assets only on the Stacks chain.
+          </p>
+          <div className="container">
+            <div className="row">
+              <div className="col">
+                <AtomicIntroButton type="stx-ft" />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="stx-ft" trait={MIA_TOKEN} />
               </div>
             </div>
           </div>

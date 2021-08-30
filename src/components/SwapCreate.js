@@ -395,7 +395,13 @@ export function SwapCreate({
             STX_FT_SWAP_CONTRACT.address,
             STX_FT_SWAP_CONTRACT.name,
             FungibleConditionCode.Equal,
-            satsOrUstxCV.value.add(fees)
+            satsOrUstxCV.value
+          ),
+          makeContractSTXPostCondition(
+            STX_FT_SWAP_FEE_CONTRACT.address,
+            STX_FT_SWAP_FEE_CONTRACT.name,
+            FungibleConditionCode.Equal,
+            fees
           ),
           makeStandardFungiblePostCondition(
             ownerStxAddress,

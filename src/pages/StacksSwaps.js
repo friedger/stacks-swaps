@@ -8,6 +8,11 @@ export default function StacksSwaps({ userSession, type, trait, id, nftId }) {
   if (!userSession || !ownerStxAddress) {
     return <div>Loading</div>;
   }
+
+  if (trait && trait.startsWith('friedger.btc')) {
+    trait = trait.replace('friedger.btc', 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X');
+  }
+
   return (
     <main className="container">
       {type.startsWith('stx-') ? null : <AlertAllPages />}

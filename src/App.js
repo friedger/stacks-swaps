@@ -153,6 +153,12 @@ function Content({ userSession }) {
               decentralizedID={decentralizedID}
               userSession={userSession}
             />
+             <StacksSwaps
+              path="/stx-ft/:trait"
+              type="stx-ft"
+              decentralizedID={decentralizedID}
+              userSession={userSession}
+            />
             <StacksSwaps
               path="/stx-ft"
               type="stx-ft"

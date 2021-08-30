@@ -1,9 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import { contracts, NETWORK } from '../lib/constants';
+import {
+  contracts,
+  NETWORK,
+  smartContractsApi,
+  STX_FT_SWAP_CONTRACT,
+  STX_FT_SWAP_FEE_CONTRACT,
+} from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
+  callReadOnlyFunction,
+  ClarityType,
   contractPrincipalCV,
   createAssetInfo,
   FungibleConditionCode,
@@ -25,8 +33,17 @@ import { AssetIcon } from './AssetIcon';
 import { getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
+import { saveTxData } from '../lib/transactions';
 
-export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formData1, blockHeight }) {
+export function SwapCreate({
+  ownerStxAddress,
+  type,
+  trait,
+  id,
+  formData: formData1,
+  blockHeight,
+  userSession,
+}) {
   const amountSatsRef = useRef();
   const btcRecipientRef = useRef();
   const nftIdRef = useRef();
@@ -81,6 +98,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
 
     let functionArgs;
     let postConditions;
+    let ftContractAddress, ftTail, ftContractName, ftAssetName, ftCV;
     switch (type) {
       case 'nft':
         const nftIdCV = uintCV(nftIdRef.current.value.trim());
@@ -107,13 +125,13 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         const ftReceiverCV = assetRecipientRef.current.value.trim()
           ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
           : noneCV();
-        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        const [ftContractName, ftAssetName] = ftTail.split('::');
+        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        [ftContractName, ftAssetName] = ftTail.split('::');
         if (!ftAssetName) {
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+        ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
         functionArgs = [satsOrUstxCV, sellerCV, ftAmountCV, ftReceiverCV, ftCV];
         postConditions = [
           makeStandardFungiblePostCondition(
@@ -141,7 +159,20 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       case 'stx-ft':
         const ftAmount2CV = uintCV(amountRef.current.value.trim());
 
-        functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV];
+        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        [ftContractName, ftAssetName] = ftTail.split('::');
+        if (!ftAssetName) {
+          setStatus('"ft contract :: ft name" must be set');
+          return;
+        }
+        ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+
+        const feesCV = contractPrincipalCV(
+          STX_FT_SWAP_FEE_CONTRACT.address,
+          STX_FT_SWAP_FEE_CONTRACT.name
+        );
+
+        functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV, ftCV, feesCV];
         postConditions = [
           makeStandardSTXPostCondition(
             ownerStxAddress,
@@ -167,8 +198,18 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         setLoading(false);
       },
       onFinish: result => {
-        setLoading(false);
+        setStatus('Saving transaction to your storage');
         setTxId(result.txId);
+        saveTxData(result, userSession)
+          .then(r => {
+            setLoading(false);
+            setStatus(undefined);
+          })
+          .catch(e => {
+            console.log(e);
+            setLoading(false);
+            setStatus("Couldn't save the transaction");
+          });
       },
     });
   };
@@ -289,7 +330,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         break;
 
       default:
-        break;
+        setLoading(false);
+        return;
     }
     await doContractCall({
       contractAddress: contract.address,
@@ -309,6 +351,97 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         setTxId(result.txId);
       },
     });
+  };
+
+  const submitAction = async () => {
+    setLoading(true);
+
+    const factor = buyWithStx ? 1_000_000 : 100_000_000;
+    const satsOrUstxCV = uintCV(
+      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+    );
+
+    const swapIdCV = uintCV(id);
+    const contract = contracts[type];
+
+    let functionArgs;
+    let postConditions;
+    switch (type) {
+      case 'stx-ft':
+        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        const [ftContractName, ftAssetName] = ftTail.split('::');
+        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+        const feesCV = contractPrincipalCV(
+          STX_FT_SWAP_FEE_CONTRACT.address,
+          STX_FT_SWAP_FEE_CONTRACT.name
+        );
+        const feesResponse = await callReadOnlyFunction({
+          contractAddress: STX_FT_SWAP_FEE_CONTRACT.address,
+          contractName: STX_FT_SWAP_FEE_CONTRACT.name,
+          functionName: 'get-fees',
+          functionArgs: [satsOrUstxCV],
+          senderAddress: STX_FT_SWAP_FEE_CONTRACT.address,
+        });
+        const fees =
+          feesResponse.type === ClarityType.OptionalNone ? undefined : feesResponse.value.value;
+        if (!fees) {
+          setLoading(false);
+          setStatus("Couldn't load fees.");
+          return;
+        }
+        functionArgs = [swapIdCV, ftCV, feesCV];
+        postConditions = [
+          makeContractSTXPostCondition(
+            STX_FT_SWAP_CONTRACT.address,
+            STX_FT_SWAP_CONTRACT.name,
+            FungibleConditionCode.Equal,
+            satsOrUstxCV.value.add(fees)
+          ),
+          makeStandardFungiblePostCondition(
+            ownerStxAddress,
+            FungibleConditionCode.Equal,
+            new BN(formData.amount),
+            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+          ),
+        ];
+        break;
+
+      default:
+        setLoading(false);
+        return;
+    }
+    try {
+      // submit
+      await doContractCall({
+        contractAddress: contract.address,
+        contractName: contract.name,
+        functionName: 'submit-swap',
+        functionArgs,
+        postConditionMode: PostConditionMode.Deny,
+        postConditions,
+        userSession,
+        network: NETWORK,
+        anchorMode: AnchorMode.Any,
+        onCancel: () => {
+          setLoading(false);
+        },
+        onFinish: result => {
+          setLoading(false);
+          setTxId(result.txId);
+          saveTxData(result, userSession)
+            .then(r => {
+              setLoading(false);
+            })
+            .catch(e => {
+              console.log(e);
+              setLoading(false);
+            });
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+    }
   };
 
   const buyWithAsset = buyWithStx ? 'STX' : 'BTC';
@@ -513,7 +646,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           <div className="row">
             <div className="col-12 text-center">
               {id &&
-                formData.assetSenderFromSwap &&
+                (formData.assetSenderFromSwap || buyWithStx) &&
                 formData.whenFromSwap + 100 < blockHeight &&
                 formData.doneFromSwap === 0 && (
                   <button
@@ -531,13 +664,12 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   </button>
                 )}
               {id ? (
-                formData.assetRecipientFromSwap ? (
-                  <></>
-                ) : (
+                // show existing swap
+                buyWithStx ? (
                   <button
                     className="btn btn-block btn-primary"
                     type="button"
-                    onClick={buyWithStx ? createAction : setRecipientAction}
+                    onClick={submitAction}
                   >
                     <div
                       role="status"
@@ -545,10 +677,28 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                         loading ? '' : 'd-none'
                       } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                     />
-                    {buyWithStx ? 'Sell' : 'Buy'} {assetName}
+                    Sell {asset}
+                  </button>
+                ) : // handle buy with btc
+                formData.assetRecipientFromSwap ? (
+                  <></>
+                ) : (
+                  <button
+                    className="btn btn-block btn-primary"
+                    type="button"
+                    onClick={setRecipientAction}
+                  >
+                    <div
+                      role="status"
+                      className={`${
+                        loading ? '' : 'd-none'
+                      } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                    />
+                    Buy {asset}
                   </button>
                 )
               ) : (
+                // create new swap
                 <button className="btn btn-block btn-primary" type="button" onClick={createAction}>
                   <div
                     role="status"

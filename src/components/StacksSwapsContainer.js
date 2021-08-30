@@ -56,13 +56,22 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         const asyncFetchSwapEntry = async () => {
           const swapsEntry = await fetchSwapsEntry(type, id);
           console.log(swapsEntry);
+          const buyWithStx = type.startsWith('stx-');
           if (swapsEntry) {
             setSwapsEntry(swapsEntry);
             const whenFromSwap = swapsEntry.data['when'].value.toNumber();
-            const doneFromSwap = swapsEntry.data['done'].value.toNumber();
-            const btcRecipient = pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
-            const amountSats = swapsEntry.data.sats.value.toNumber() / 100000000;
-            let trait, contractAddress, contractName, ctrInterface;
+            const doneFromSwap = swapsEntry.data['done']
+              ? swapsEntry.data['done']
+              : swapsEntry.data['open'].value
+              ? 1
+              : 0;
+            const btcRecipient = buyWithStx
+              ? undefined
+              : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+            const amountBtcOrStx = buyWithStx
+              ? swapsEntry.data.ustx.value.toNumber() / 1_000_000
+              : swapsEntry.data.sats.value.toNumber() / 100_000_000;
+            let trait, ft, contractAddress, contractName, ctrInterface;
             switch (type) {
               case 'ft':
                 trait = cvToString(swapsEntry.data['ft']);
@@ -71,14 +80,14 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                   contractAddress,
                   contractName,
                 });
-                const ft =
+                ft =
                   ctrInterface.fungible_tokens.length === 1
                     ? ctrInterface.fungible_tokens[0].name
                     : undefined;
                 console.log({ ft });
                 setFormData({
                   btcRecipient,
-                  amountSats,
+                  amountSats: amountBtcOrStx,
                   trait: trait + '::' + ft,
                   amount: swapsEntry.data.amount.value.toNumber(),
                   assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
@@ -91,7 +100,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
               case 'stx':
                 setFormData({
                   btcRecipient,
-                  amountSats,
+                  amountSats: amountBtcOrStx,
                   amount: swapsEntry.data.ustx.value.toNumber(),
                   assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
                   assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
@@ -116,12 +125,36 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
 
                 setFormData({
                   btcRecipient,
-                  amountSats,
+                  amountSats: amountBtcOrStx,
                   trait: trait + '::' + nft,
                   nftId: swapsEntry.data['nft-id'].value.toNumber(),
                   assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
                   assetRecipientFromSwap: cvToString(swapsEntry.data['nft-receiver']),
                   assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
+                  whenFromSwap,
+                  doneFromSwap,
+                });
+                break;
+              case 'stx-ft':
+                trait = cvToString(swapsEntry.data['ft']);
+                [contractAddress, contractName] = trait.split('.');
+                ctrInterface = await smartContractsApi.getContractInterface({
+                  contractAddress,
+                  contractName,
+                });
+                ft =
+                  ctrInterface.fungible_tokens.length === 1
+                    ? ctrInterface.fungible_tokens[0].name
+                    : undefined;
+                console.log({ ft });
+                setFormData({
+                  btcRecipient,
+                  amountSats: amountBtcOrStx,
+                  trait: trait + '::' + ft,
+                  amount: swapsEntry.data.amount.value.toNumber(),
+                  assetRecipient: cvToString(swapsEntry.data['stx-sender']),
+                  assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
+                  assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
                   whenFromSwap,
                   doneFromSwap,
                 });
@@ -217,9 +250,10 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
               nftId={nftId}
               formData={formData}
               blockHeight={blockHeight}
+              userSession={userSession}
             />
           </div>
-          {id && (
+          {id && !buyWithStx && (
             <>
               <hr />
               <div
@@ -234,6 +268,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                   trait={id ? formData.trait : trait}
                   id={id}
                   formData={formData}
+                  userSession={userSession}
                 />
               </div>
             </>

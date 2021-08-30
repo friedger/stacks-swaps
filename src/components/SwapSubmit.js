@@ -36,6 +36,7 @@ import {
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
 import { getAsset, getAssetName } from './assets';
+import { saveTxData } from '../lib/transactions';
 
 export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, fromData }) {
   const swapIdRef = useRef();
@@ -192,6 +193,14 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, from
         onFinish: result => {
           setLoading(false);
           setTxId(result.txId);
+          saveTxData(result, userSession)
+          .then(r => {
+            setLoading(false);
+          })
+          .catch(e => {
+            console.log(e);
+            setLoading(false);
+          });
         },
       });
     } catch (e) {

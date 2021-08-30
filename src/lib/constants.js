@@ -42,6 +42,11 @@ export const STX_FT_SWAP_CONTRACT = {
   name: 'stx-ft-swap-v1',
 };
 
+export const STX_FT_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'stx-ft-swap-v1-fixed-fees',
+};
+
 export const contracts = {
   nft: BTC_NFT_SWAP_CONTRACT,
   ft: BTC_FT_SWAP_CONTRACT,

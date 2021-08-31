@@ -691,21 +691,24 @@ export function SwapCreate({
               {id ? (
                 // show existing swap
                 buyWithStx ? (
-                  <button
-                    className="btn btn-block btn-primary"
-                    type="button"
-                    onClick={submitAction}
-                  >
-                    <div
-                      role="status"
-                      className={`${
-                        loading ? '' : 'd-none'
-                      } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                    />
-                    Sell {asset}
-                  </button>
-                ) : // handle buy with btc
-                formData.assetRecipientFromSwap ? (
+                  formData.doneFromSwap === 1 ? (
+                    <></>
+                  ) : (
+                    <button
+                      className="btn btn-block btn-primary"
+                      type="button"
+                      onClick={submitAction}
+                    >
+                      <div
+                        role="status"
+                        className={`${
+                          loading ? '' : 'd-none'
+                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                      />
+                      Sell {asset}
+                    </button>
+                  ) // handle buy with btc
+                ) : formData.assetRecipientFromSwap ? (
                   <></>
                 ) : (
                   <button

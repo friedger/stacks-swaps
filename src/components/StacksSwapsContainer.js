@@ -6,7 +6,7 @@ import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
-import { cvToString } from '@stacks/transactions';
+import { ClarityType, cvToString } from '@stacks/transactions';
 import { infoApi, smartContractsApi } from '../lib/constants';
 import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
 
@@ -61,10 +61,10 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             setSwapsEntry(swapsEntry);
             const whenFromSwap = swapsEntry.data['when'].value.toNumber();
             const doneFromSwap = swapsEntry.data['done']
-              ? swapsEntry.data['done']
-              : swapsEntry.data['open'].value
-              ? 1
-              : 0;
+              ? swapsEntry.data['done'].value.toNumber()
+              : swapsEntry.data['open'].type === ClarityType.BoolTrue
+              ? 0
+              : 1;
             const btcRecipient = buyWithStx
               ? undefined
               : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);

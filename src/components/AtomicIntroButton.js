@@ -8,7 +8,6 @@ export function AtomicIntroButton({ type, trait }) {
   const to = getDeepLink(type, trait);
   const assetName = getAsset(sell, trait);
   const buyWithName = getAsset(buyWith);
-  console.log({ to, buyWith, sell, assetName, buyWithName });
   return (
     <Link to={to} type="button">
       <AssetIcon type={sell} trait={trait} />

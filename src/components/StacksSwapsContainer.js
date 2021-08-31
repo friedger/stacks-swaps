@@ -175,7 +175,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
       }
     }
   }, [type, id]);
-
+  const hideSubmit = id && !buyWithStx ? '' : 'd-none';
   return (
     <div>
       <ul className="nav nav-tabs">
@@ -196,18 +196,18 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         <li className="nav-item" role="presentation">
           <button
             className="nav-link"
-            id="create-nft"
+            id="createswap-tab"
             data-bs-toggle="tab"
-            data-bs-target="#create-nft"
+            data-bs-target="#createswap"
             type="button"
             role="tab"
-            aria-controls="create-nft"
+            aria-controls="createswap"
             aria-selected="true"
           >
             Create Swap
           </button>
         </li>
-        <li className="nav-item" role="presentation">
+        <li className={`nav-item ${hideSubmit}`} role="presentation">
           <button
             className="nav-link"
             id="miningclaim-tab"
@@ -238,9 +238,9 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         <div className="tab-content mt-3" id="myTabContent">
           <div
             className="tab-pane fade  show active"
-            id="create-nft"
+            id="createswap"
             role="tabpanel"
-            aria-labelledby="create-nft-tab"
+            aria-labelledby="createswap-tab"
           >
             <SwapCreate
               ownerStxAddress={ownerStxAddress}
@@ -253,27 +253,21 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
               userSession={userSession}
             />
           </div>
-          {id && !buyWithStx && (
-            <>
-              <hr />
-              <div
-                className="tab-pane fade show active"
-                id="miningclaim"
-                role="tabpanel"
-                aria-labelledby="miningclaim-tab"
-              >
-                <SwapSubmit
-                  ownerStxAddress={ownerStxAddress}
-                  type={type}
-                  trait={id ? formData.trait : trait}
-                  id={id}
-                  formData={formData}
-                  userSession={userSession}
-                />
-              </div>
-            </>
-          )}
-          <hr />
+          <div
+            className={`tab-pane fade show active ${hideSubmit}`}
+            id="miningclaim"
+            role="tabpanel"
+            aria-labelledby="miningclaim-tab"
+          >
+            <SwapSubmit
+              ownerStxAddress={ownerStxAddress}
+              type={type}
+              trait={id ? formData.trait : trait}
+              id={id}
+              formData={formData}
+              userSession={userSession}
+            />
+          </div>
           <div
             className="tab-pane fade  show active"
             id="dashboard"
@@ -282,7 +276,6 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
           >
             <StacksSwapsDashboard type={type} />
           </div>
-          <hr />
         </div>
       )}
     </div>

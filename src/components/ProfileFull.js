@@ -3,17 +3,30 @@ import { fetchAccount } from '../lib/account';
 import { Address } from './Address';
 import { Amount } from './Amount';
 import {} from 'react-jdenticon';
+import { useAtom } from 'jotai';
+import { refreshPrice, STX_USD } from '../lib/price';
 
 export function ProfileFull({ stxAddress, userSession }) {
   const [profileState, setProfileState] = useState({
     account: undefined,
   });
 
+  const [, setStxUsd] = useAtom(STX_USD);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    refreshPrice(setStxUsd);
+  }, [setStxUsd]);
+
   useEffect(() => {
     if (stxAddress) {
-      fetchAccount(stxAddress).then(acc => {
-        setProfileState({ account: acc });
-      });
+      setLoading(true);
+      fetchAccount(stxAddress)
+        .then(acc => {
+          setProfileState({ account: acc });
+          setLoading(false);
+        })
+        .catch(e => setLoading(false));
     }
   }, [stxAddress]);
 
@@ -101,254 +114,18 @@ export function ProfileFull({ stxAddress, userSession }) {
             </li>
           </ul>
           <hr />
+
+          <div
+            role="status"
+            className={`${
+              loading ? '' : 'd-none'
+            } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+          />
+
           {profileState.account && (
             <>
               <h5 className="mb-3">Account Balances</h5>
-              <Amount ustx={profileState.account.balance} stxAddress={stxAddress} />
-              <hr />
-              <h5>Last 5 Transactions</h5>
-              <div className="accordion accordion-flush" id="accordionLastFiveTx">
-                <div className="accordion-item">
-                  <h2 className="accordion-header" id="flush-headingOne">
-                    <button
-                      className="accordion-button collapsed"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#flush-collapseOne"
-                      aria-expanded="false"
-                      aria-controls="flush-collapseOne"
-                    >
-                      <i className="bi bi-circle me-2 text-warning"></i>claim-token-reward
-                    </button>
-                  </h2>
-                  <div
-                    id="flush-collapseOne"
-                    className="accordion-collapse collapse"
-                    aria-labelledby="flush-headingOne"
-                    data-bs-parent="#accordionLastFiveTx"
-                  >
-                    <div className="accordion-body">
-                      <span title="ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A">
-                        By: ST3CK...HK60A
-                      </span>
-                      <br />
-                      Status: Pending
-                      <br />
-                      TX ID:
-                      <a
-                        className="ps-1"
-                        href="https://explorer.stacks.co/txid/0x3415d7c2bba593b1c209757cfceec0756f68ec99be21706fed318be9eb5309bc?chain=testnet"
-                        target="_blank"
-                        rel="noreferrer"
-                        title="View on Explorer"
-                      >
-                        0x3415d7c2...
-                      </a>
-                      <a className="link-dark ps-1" href="#" title="Copy to Clipboard">
-                        <i className="bi bi-clipboard"></i>
-                      </a>
-                      <br />
-                      Block: TBD
-                      <br />
-                      Date: TBD
-                      <br />
-                      Time: TBD
-                    </div>
-                  </div>
-                </div>
-                <div className="accordion-item">
-                  <h2 className="accordion-header" id="flush-headingTwo">
-                    <button
-                      className="accordion-button collapsed"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#flush-collapseTwo"
-                      aria-expanded="false"
-                      aria-controls="flush-collapseTwo"
-                    >
-                      <i className="bi bi-circle me-2 text-danger"></i>mine-tokens
-                    </button>
-                  </h2>
-                  <div
-                    id="flush-collapseTwo"
-                    className="accordion-collapse collapse"
-                    aria-labelledby="flush-headingTwo"
-                    data-bs-parent="#accordionLastFiveTx"
-                  >
-                    <div className="accordion-body">
-                      <span title="ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A">
-                        By: ST3CK...HK60A
-                      </span>
-                      <br />
-                      Status: Failed
-                      <br />
-                      TX ID:
-                      <a
-                        className="ps-1"
-                        href="https://explorer.stacks.co/txid/0x8afc854d9c20976b65ae519a66d58bfe210fa22f7690a381b3dfc0e2c0f262b2?chain=testnet"
-                        target="_blank"
-                        rel="noreferrer"
-                        title="View on Explorer"
-                      >
-                        0x8afc854d...
-                      </a>
-                      <a className="link-dark ps-1" href="#" title="Copy to Clipboard">
-                        <i className="bi bi-clipboard"></i>
-                      </a>
-                      <br />
-                      Block: 14725
-                      <br />
-                      Date: 2021/06/09
-                      <br />
-                      Time: 04:39:56 PM
-                    </div>
-                  </div>
-                </div>
-                <div className="accordion-item">
-                  <h2 className="accordion-header" id="flush-headingThree">
-                    <button
-                      className="accordion-button collapsed"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#flush-collapseThree"
-                      aria-expanded="false"
-                      aria-controls="flush-collapseThree"
-                    >
-                      <i className="bi bi-circle me-2 text-success"></i>stack-tokens
-                    </button>
-                  </h2>
-                  <div
-                    id="flush-collapseThree"
-                    className="accordion-collapse collapse"
-                    aria-labelledby="flush-headingThree"
-                    data-bs-parent="#accordionLastFiveTx"
-                  >
-                    <div className="accordion-body">
-                      <span title="ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A">
-                        By: ST3CK...HK60A
-                      </span>
-                      <br />
-                      Status: Success
-                      <br />
-                      TX ID:
-                      <a
-                        className="ps-1"
-                        href="https://explorer.stacks.co/txid/0xca95e7402780c6cb0671be1f4fcd9daf2737775cd5399cc6d39abf2912a070a5?chain=testnet"
-                        target="_blank"
-                        rel="noreferrer"
-                        title="View on Explorer"
-                      >
-                        0xca95e740...
-                      </a>
-                      <a className="link-dark ps-1" href="#" title="Copy to Clipboard">
-                        <i className="bi bi-clipboard"></i>
-                      </a>
-                      <br />
-                      Block: 15425
-                      <br />
-                      Date: 2021/06/15
-                      <br />
-                      Time: 01:16:41 PM
-                    </div>
-                  </div>
-                </div>
-                <div className="accordion-item">
-                  <h2 className="accordion-header" id="flush-headingFour">
-                    <button
-                      className="accordion-button collapsed"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#flush-collapseFour"
-                      aria-expanded="false"
-                      aria-controls="flush-collapseFour"
-                    >
-                      <i className="bi bi-circle me-2 text-success"></i>stack-tokens
-                    </button>
-                  </h2>
-                  <div
-                    id="flush-collapseFour"
-                    className="accordion-collapse collapse"
-                    aria-labelledby="flush-headingFour"
-                    data-bs-parent="#accordionLastFiveTx"
-                  >
-                    <div className="accordion-body">
-                      <span title="ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A">
-                        By: ST3CK...HK60A
-                      </span>
-                      <br />
-                      Status: Success
-                      <br />
-                      TX ID:
-                      <a
-                        className="ps-1"
-                        href="https://explorer.stacks.co/txid/0xca95e7402780c6cb0671be1f4fcd9daf2737775cd5399cc6d39abf2912a070a5?chain=testnet"
-                        target="_blank"
-                        rel="noreferrer"
-                        title="View on Explorer"
-                      >
-                        0xca95e740...
-                      </a>
-                      <a className="link-dark ps-1" href="#" title="Copy to Clipboard">
-                        <i className="bi bi-clipboard"></i>
-                      </a>
-                      <br />
-                      Block: 15425
-                      <br />
-                      Date: 2021/06/15
-                      <br />
-                      Time: 01:16:41 PM
-                    </div>
-                  </div>
-                </div>
-                <div className="accordion-item">
-                  <h2 className="accordion-header" id="flush-headingFive">
-                    <button
-                      className="accordion-button collapsed"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#flush-collapseFive"
-                      aria-expanded="false"
-                      aria-controls="flush-collapseFive"
-                    >
-                      <i className="bi bi-circle me-2 text-success"></i>stack-tokens
-                    </button>
-                  </h2>
-                  <div
-                    id="flush-collapseFive"
-                    className="accordion-collapse collapse"
-                    aria-labelledby="flush-headingFive"
-                    data-bs-parent="#accordionLastFiveTx"
-                  >
-                    <div className="accordion-body">
-                      <span title="ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A">
-                        By: ST3CK...HK60A
-                      </span>
-                      <br />
-                      Status: Success
-                      <br />
-                      TX ID:
-                      <a
-                        className="ps-1"
-                        href="https://explorer.stacks.co/txid/0xca95e7402780c6cb0671be1f4fcd9daf2737775cd5399cc6d39abf2912a070a5?chain=testnet"
-                        target="_blank"
-                        rel="noreferrer"
-                        title="View on Explorer"
-                      >
-                        0xca95e740...
-                      </a>
-                      <a className="link-dark ps-1" href="#" title="Copy to Clipboard">
-                        <i className="bi bi-clipboard"></i>
-                      </a>
-                      <br />
-                      Block: 15425
-                      <br />
-                      Date: 2021/06/15
-                      <br />
-                      Time: 01:16:41 PM
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Amount ustx={BigInt(profileState.account.balance)} stxAddress={stxAddress} />
             </>
           )}
         </div>

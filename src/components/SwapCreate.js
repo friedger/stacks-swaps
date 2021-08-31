@@ -53,17 +53,14 @@ export function SwapCreate({
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
-  const [formData, setFormData] = useState({ formData1 });
+  const [formData, setFormData] = useState(formData1);
   const { doContractCall } = useConnect();
 
   const buyWithStx = type.startsWith('stx-');
 
-  useEffect(() => {
-    setFormData(formData1);
-  }, [formData1]);
-
   const createAction = async () => {
     setLoading(true);
+    setStatus('');
     const errors = [];
     if (amountSatsRef.current.value.trim() === '') {
       errors.push('positive numbers required to swap');
@@ -72,6 +69,15 @@ export function SwapCreate({
     if (!buyWithStx && btcRecipientRef.current.value.trim() === '') {
       errors.push('BTC address is required');
     }
+
+    const factor = buyWithStx ? 1_000_000 : 100_000_000;
+    const satsOrUstxCV = uintCV(
+      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+    );
+    if (satsOrUstxCV.value.toNumber() <= 0) {
+      errors.push('positive numbers required to swap');
+    }
+
     if (errors.length > 0) {
       setLoading(false);
       setStatus(
@@ -84,10 +90,7 @@ export function SwapCreate({
       );
       return;
     }
-    const factor = buyWithStx ? 1_000_000 : 100_000_000;
-    const satsOrUstxCV = uintCV(
-      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
-    );
+
     const contract = contracts[type];
     const seller = btcRecipientRef.current.value.trim();
     const sellerCV = buyWithStx
@@ -122,12 +125,18 @@ export function SwapCreate({
         break;
       case 'ft':
         const ftAmountCV = uintCV(amountRef.current.value.trim());
+        if (ftAmountCV.value.toNumber() <= 0) {
+          setLoading(false);
+          setStatus('positive numbers required to swap');
+          return;
+        }
         const ftReceiverCV = assetRecipientRef.current.value.trim()
           ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
           : noneCV();
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
         if (!ftAssetName) {
+          setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
@@ -144,6 +153,11 @@ export function SwapCreate({
         break;
       case 'stx':
         const stxAmountCV = uintCV(amountRef.current.value.trim());
+        if (stxAmountCV.value.toNumber() <= 0) {
+          setLoading(false);
+          setStatus('positive numbers required to swap');
+          return;
+        }
         const stxReceiverCV = assetRecipientRef.current.value.trim()
           ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
           : noneCV();
@@ -158,10 +172,15 @@ export function SwapCreate({
         break;
       case 'stx-ft':
         const ftAmount2CV = uintCV(amountRef.current.value.trim());
-
+        if (ftAmount2CV.value.toNumber() <= 0) {
+          setLoading(false);
+          setStatus('positive numbers required to swap');
+          return;
+        }
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
         if (!ftAssetName) {
+          setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }

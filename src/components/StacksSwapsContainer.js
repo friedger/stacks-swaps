@@ -224,10 +224,24 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
       </ul>
 
       {loadingSwapEntry ? (
-        <div
-          role="status"
-          className={`spinner-border spinner-border-sm text-info align-text-top mr-2`}
-        />
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col text-center">
+              <div
+                role="status"
+                className={`spinner-grow text-primary align-text-top m-5`}
+              />
+              <div
+                role="status"
+                className={`spinner-grow text-primary align-text-top m-5`}
+              />
+              <div
+                role="status"
+                className={`spinner-grow text-primary align-text-top m-5`}
+              />
+            </div>
+          </div>
+        </div>
       ) : invalidSwapId ? (
         <div className="container">
           <div className="row align-items-center">

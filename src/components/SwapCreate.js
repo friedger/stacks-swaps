@@ -481,7 +481,7 @@ export function SwapCreate({
     : !buyWithStx
     ? priceOrNaN * 100_000_000 * assetFactor
     : priceOrNaN;
-  const priceLabel = `${buyWithStx === 'STX' ? 'STX' : 'SATS'} / ${asset}`;
+  const priceLabel = `${buyWithStx ? 'STX' : 'SATS'} / ${asset}`;
   return (
     <>
       <h3>

@@ -473,7 +473,15 @@ export function SwapCreate({
   const sellType = buyWithStx ? type.split('-')[1] : type;
   const asset = getAsset(sellType, formData.trait);
   const assetName = getAssetName(sellType, formData.trait);
-
+  const createSellOrder = false;
+  const priceOrNaN = parseFloat(formData.amountSats) / parseFloat(formData.amount);
+  const assetFactor = asset === 'STX' ? 1_000_000 : 1;
+  const price = isNaN(priceOrNaN)
+    ? 0
+    : !buyWithStx
+    ? priceOrNaN * 100_000_000 * assetFactor
+    : priceOrNaN;
+  const priceLabel = `${buyWithStx === 'STX' ? 'STX' : 'SATS'} / ${asset}`;
   return (
     <>
       <h3>
@@ -594,6 +602,35 @@ export function SwapCreate({
               </div>
               <i className="bi bi-arrow-right"></i>
               <br />
+              {type !== 'nft' && (
+                <>
+                  <br />
+                  {createSellOrder ? (
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={price}
+                      onChange={e => setFormData({ ...formData, price: e.target.value })}
+                      aria-label={`amount of ${assetName} in ${
+                        type === 'stx' ? 'ustx' : 'smallest unit'
+                      }`}
+                      placeholder={`amount of ${assetName} in ${
+                        type === 'stx' ? 'ustx' : 'smallest unit'
+                      }`}
+                      required
+                      minLength="1"
+                    />
+                  ) : (
+                    <>
+                      {price}
+                      <br />
+                    </>
+                  )}
+                  {priceLabel}
+                  <br />
+                  <br />
+                </>
+              )}
               <i className="bi bi-arrow-left"></i>
               <br />
               <div className="input-group">

@@ -478,9 +478,10 @@ export function SwapCreate({
   const assetFactor = asset === 'STX' ? 1_000_000 : 1;
   const price = isNaN(priceOrNaN)
     ? 0
-    : !buyWithStx
-    ? priceOrNaN * 100_000_000 * assetFactor
-    : priceOrNaN;
+    : (!buyWithStx ? priceOrNaN * 100_000_000 * assetFactor : priceOrNaN).toLocaleString(
+        undefined,
+        { style: 'decimal', maximumFractionDigits: buyWithStx ? 6 : 0 }
+      );
   const priceLabel = `${buyWithStx ? 'STX' : 'SATS'} / ${asset}`;
   return (
     <>

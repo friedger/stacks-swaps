@@ -34,6 +34,7 @@ import { getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
+import { Price } from './Price';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -152,7 +153,7 @@ export function SwapCreate({
         ];
         break;
       case 'stx':
-        const stxAmountCV = uintCV(amountRef.current.value.trim());
+        const stxAmountCV = uintCV(amountRef.current.value.trim() * 1_000_000);
         if (stxAmountCV.value.toNumber() <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
@@ -171,6 +172,7 @@ export function SwapCreate({
         ];
         break;
       case 'stx-ft':
+        // TODO respect decimals
         const ftAmount2CV = uintCV(amountRef.current.value.trim());
         if (ftAmount2CV.value.toNumber() <= 0) {
           setLoading(false);
@@ -469,20 +471,17 @@ export function SwapCreate({
     }
   };
 
-  const buyWithAsset = buyWithStx ? 'STX' : 'BTC';
+  // sell (left to right)
   const sellType = buyWithStx ? type.split('-')[1] : type;
+  const sellDecimals = sellType === 'STX' ? 6 : 0; // TODO get decimals from trait
   const asset = getAsset(sellType, formData.trait);
   const assetName = getAssetName(sellType, formData.trait);
+  // buy (right to left)
+  const buyWithAsset = buyWithStx ? 'STX' : 'BTC';
+  const buyDecimals = buyWithStx ? 6 : 8;
+
   const createSellOrder = false;
-  const priceOrNaN = parseFloat(formData.amountSats) / parseFloat(formData.amount);
-  const assetFactor = asset === 'STX' ? 1_000_000 : 1;
-  const price = isNaN(priceOrNaN)
-    ? 0
-    : (!buyWithStx ? priceOrNaN * 100_000_000 * assetFactor : priceOrNaN).toLocaleString(
-        undefined,
-        { style: 'decimal', maximumFractionDigits: buyWithStx ? 6 : 0 }
-      );
-  const priceLabel = `${buyWithStx ? 'STX' : 'SATS'} / ${asset}`;
+
   return (
     <>
       <h3>
@@ -590,12 +589,8 @@ export function SwapCreate({
                   ref={amountRef}
                   value={formData.amount}
                   onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                  aria-label={`amount of ${assetName} in ${
-                    type === 'stx' ? 'ustx' : 'smallest unit'
-                  }`}
-                  placeholder={`amount of ${assetName} in ${
-                    type === 'stx' ? 'ustx' : 'smallest unit'
-                  }`}
+                  aria-label={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
+                  placeholder={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
                   readOnly={id}
                   required
                   minLength="1"
@@ -606,28 +601,15 @@ export function SwapCreate({
               {type !== 'nft' && (
                 <>
                   <br />
-                  {createSellOrder ? (
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={price}
-                      onChange={e => setFormData({ ...formData, price: e.target.value })}
-                      aria-label={`amount of ${assetName} in ${
-                        type === 'stx' ? 'ustx' : 'smallest unit'
-                      }`}
-                      placeholder={`amount of ${assetName} in ${
-                        type === 'stx' ? 'ustx' : 'smallest unit'
-                      }`}
-                      required
-                      minLength="1"
-                    />
-                  ) : (
-                    <>
-                      {price}
-                      <br />
-                    </>
-                  )}
-                  {priceLabel}
+                  <Price
+                    sell={{ amount: formData.amount, asset: asset, decimals: sellDecimals }}
+                    buy={{
+                      amount: formData.amountSats,
+                      asset: buyWithAsset,
+                      decimals: buyDecimals,
+                    }}
+                    editablePrice={createSellOrder}
+                  />
                   <br />
                   <br />
                 </>

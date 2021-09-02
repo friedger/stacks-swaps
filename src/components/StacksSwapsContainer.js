@@ -6,8 +6,8 @@ import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
-import { ClarityType, cvToString } from '@stacks/transactions';
-import { infoApi, smartContractsApi } from '../lib/constants';
+import { callReadOnlyFunction, ClarityType, cvToString } from '@stacks/transactions';
+import { infoApi, NETWORK, smartContractsApi } from '../lib/constants';
 import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
@@ -80,6 +80,23 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                   contractAddress,
                   contractName,
                 });
+                const decimalsResponse = await callReadOnlyFunction({
+                  contractAddress,
+                  contractName,
+                  functionName: 'get-decimals',
+                  functionArgs: [],
+                  senderAddress: contractAddress,
+                  network: NETWORK,
+                });
+                const decimals = decimalsResponse.value.value.toNumber();
+                const symbol = await callReadOnlyFunction({
+                  contractAddress,
+                  contractName,
+                  functionName: 'get-symbol',
+                  functionArgs: [],
+                  senderAddress: contractAddress,
+                  network: NETWORK,
+                });
                 ft =
                   ctrInterface.fungible_tokens.length === 1
                     ? ctrInterface.fungible_tokens[0].name
@@ -89,7 +106,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                   btcRecipient,
                   amountSats: amountBtcOrStx,
                   trait: trait + '::' + ft,
-                  amount: swapsEntry.data.amount.value.toNumber(),
+                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, decimals),
                   assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
                   assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
                   assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -101,7 +118,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                 setFormData({
                   btcRecipient,
                   amountSats: amountBtcOrStx,
-                  amount: swapsEntry.data.ustx.value.toNumber(),
+                  amount: swapsEntry.data.ustx.value.toNumber() / Math.pow(10, 6),
                   assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
                   assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
                   assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
@@ -227,18 +244,9 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         <div className="container">
           <div className="row align-items-center">
             <div className="col text-center">
-              <div
-                role="status"
-                className={`spinner-grow text-primary align-text-top m-5`}
-              />
-              <div
-                role="status"
-                className={`spinner-grow text-primary align-text-top m-5`}
-              />
-              <div
-                role="status"
-                className={`spinner-grow text-primary align-text-top m-5`}
-              />
+              <div role="status" className={`spinner-grow text-primary align-text-top m-5`} />
+              <div role="status" className={`spinner-grow text-primary align-text-top m-5`} />
+              <div role="status" className={`spinner-grow text-primary align-text-top m-5`} />
             </div>
           </div>
         </div>

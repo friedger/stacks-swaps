@@ -586,7 +586,8 @@ export function SwapCreate({
         <div className="container">
           <div className="row align-items-center m-5">
             <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx ? (
+              {((!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx) ||
+              (buyWithStx && id) ? (
                 <>
                   Seller (You)
                   <br />

@@ -218,7 +218,7 @@ export function SwapCreate({
                 makeStandardSTXPostCondition(
                   ownerStxAddress,
                   FungibleConditionCode.Equal,
-                  satsOrUstxCV
+                  satsOrUstxCV.value
                 ),
               ]
             : [

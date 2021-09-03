@@ -430,7 +430,7 @@ export function SwapCreate({
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const feeId = feeContractRef.current.value();
+        const feeId = feeContractRef.current.value;
         const feeContract = feeContracts[feeId];
         const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
         const feesResponse = await callReadOnlyFunction({
@@ -543,7 +543,7 @@ export function SwapCreate({
     <>
       <h3>
         {id ? null : 'Create'} Swap {buyWithAsset}-{asset} {id ? `#${id}` : null}{' '}
-        {formData.doneFromSwap && <>(completed)</>}
+        {formData.doneFromSwap === 1 ? <>(completed)</> : null}
       </h3>
       {type === 'nft' && (
         <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>

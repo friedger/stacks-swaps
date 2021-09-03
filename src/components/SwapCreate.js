@@ -760,6 +760,7 @@ export function SwapCreate({
                 >
                   <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
+                  <option value="mia">0% fee (MIA holders only)</option>
                 </select>
               </div>
               <div className="col" />

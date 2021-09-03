@@ -195,7 +195,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             aria-controls="createswap"
             aria-selected="true"
           >
-            {formData.doneFromSwap === 1 ? 'Swap Details' : 'Create Swap'}
+            {formData.doneFromSwap === 1 || id ? 'Swap Details' : 'Create Swap'}
           </button>
         </li>
         <li className={`nav-item ${hideSubmit}`} role="presentation">

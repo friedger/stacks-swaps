@@ -50,12 +50,25 @@ export const STX_FT_SWAP_FEE_CONTRACT = {
 export const STX_FT_SWAP_FPWR_FEE_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
   name: 'stx-ft-swap-v1-fixed-fpwr-v04-fees',
+  ft: {
+    address: 'SP1JSH2FPE8BWNTP228YZ1AZZ0HE0064PS6RXRAY4',
+    name: 'fpwr-v04',
+    assetName: 'wrapped-rewards',
+  },
 };
 
 export const feeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
-  mia: { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'cycle-2-hodl-mia-fees' },
+  mia: {
+    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+    name: 'cycle-2-hodl-mia-fees',
+    ft: {
+      address: 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
+      name: 'miamicoin-token',
+      assetName: 'miamicoin',
+    },
+  },
 };
 
 export const contracts = {

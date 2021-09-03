@@ -135,7 +135,6 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                 const feeId = Object.entries(feeContracts).find(
                   e => e[1].address === feeAddress && e[1].name === feeName
                 );
-                console.log({ feeId });
                 [contractAddress, contractName] = trait.split('.');
                 ftData = await getFTData(contractAddress, contractName);
                 setFormData({

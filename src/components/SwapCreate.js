@@ -196,15 +196,48 @@ export function SwapCreate({
         const feeId = feeContractRef.current.value;
         const feeContract = feeContracts[feeId];
         const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
-
+        const fees = await callReadOnlyFunction({
+          contractAddress: feeContract.address,
+          contractName: feeContract.name,
+          functionName: 'get-fees',
+          functionArgs: [satsOrUstxCV],
+          senderAddress: feeContract.address,
+        });
         functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV, ftCV, feesCV];
-        postConditions = [
-          makeStandardSTXPostCondition(
-            ownerStxAddress,
-            FungibleConditionCode.Equal,
-            satsOrUstxCV.value.add(satsOrUstxCV.value.divRound(new BN(100)))
-          ),
-        ];
+        postConditions =
+          feeId === 'stx'
+            ? [
+                makeStandardSTXPostCondition(
+                  ownerStxAddress,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV.value.add(fees.value.value)
+                ),
+              ]
+            : feeId === 'mia'
+            ? [
+                makeStandardSTXPostCondition(
+                  ownerStxAddress,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV
+                ),
+              ]
+            : [
+                makeStandardSTXPostCondition(
+                  ownerStxAddress,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV.value
+                ),
+                makeStandardFungiblePostCondition(
+                  ownerStxAddress,
+                  FungibleConditionCode.Equal,
+                  fees.value.value,
+                  createAssetInfo(
+                    feeContract.ft.address,
+                    feeContract.ft.name,
+                    feeContract.ft.assetName
+                  )
+                ),
+              ];
         break;
       default:
         break;
@@ -397,8 +430,8 @@ export function SwapCreate({
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const feeContractId = feeContractRef.current.value();
-        const feeContract = feeContracts[feeContractId];
+        const feeId = feeContractRef.current.value();
+        const feeContract = feeContracts[feeId];
         const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
         const feesResponse = await callReadOnlyFunction({
           contractAddress: feeContract.address,
@@ -422,12 +455,6 @@ export function SwapCreate({
             FungibleConditionCode.Equal,
             satsOrUstxCV.value
           ),
-          makeContractSTXPostCondition(
-            feeContract.address,
-            feeContract.name,
-            FungibleConditionCode.Equal,
-            fees
-          ),
           makeStandardFungiblePostCondition(
             ownerStxAddress,
             FungibleConditionCode.Equal,
@@ -435,6 +462,26 @@ export function SwapCreate({
             createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
           ),
         ];
+        if (feeId === 'stx') {
+          postConditions.push(
+            makeContractSTXPostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees
+            )
+          );
+        } else if (feeId === 'fpwr') {
+          postConditions.push(
+            makeContractFungiblePostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees,
+              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.assetName)
+            )
+          );
+        }
         break;
 
       default:
@@ -713,7 +760,6 @@ export function SwapCreate({
                 >
                   <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
-                  <option value="mia">0% fee (MIA holders only)</option>
                 </select>
               </div>
               <div className="col" />

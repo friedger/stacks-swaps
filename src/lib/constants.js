@@ -47,6 +47,17 @@ export const STX_FT_SWAP_FEE_CONTRACT = {
   name: 'stx-ft-swap-v1-fixed-fees',
 };
 
+export const STX_FT_SWAP_FPWR_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'stx-ft-swap-v1-fixed-fpwr-v04-fees',
+};
+
+export const feeContracts = {
+  stx: STX_FT_SWAP_FEE_CONTRACT,
+  fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
+  mia: { address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', name: 'cycle-2-hodl-mia-fees' },
+};
+
 export const contracts = {
   nft: BTC_NFT_SWAP_CONTRACT,
   ft: BTC_FT_SWAP_CONTRACT,

@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import {
   contracts,
+  feeContracts,
   NETWORK,
   smartContractsApi,
   STX_FT_SWAP_CONTRACT,
-  STX_FT_SWAP_FEE_CONTRACT,
 } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
@@ -51,6 +51,7 @@ export function SwapCreate({
   const amountRef = useRef();
   const assetRecipientRef = useRef();
   const traitRef = useRef();
+  const feeContractRef = useRef();
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
@@ -173,7 +174,11 @@ export function SwapCreate({
         break;
       case 'stx-ft':
         // TODO respect decimals
-        const ftAmount2CV = uintCV(amountRef.current.value.trim());
+        const sellFactor =
+          formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
+            ? Math.pow(10, 6)
+            : 1;
+        const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
         if (ftAmount2CV.value.toNumber() <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
@@ -187,11 +192,10 @@ export function SwapCreate({
           return;
         }
         ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-
-        const feesCV = contractPrincipalCV(
-          STX_FT_SWAP_FEE_CONTRACT.address,
-          STX_FT_SWAP_FEE_CONTRACT.name
-        );
+        console.log(feeContractRef.current.value);
+        const feeId = feeContractRef.current.value;
+        const feeContract = feeContracts[feeId];
+        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
 
         functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV, ftCV, feesCV];
         postConditions = [
@@ -299,6 +303,7 @@ export function SwapCreate({
   };
 
   const cancelAction = async () => {
+    setLoading(true);
     const contract = contracts[type];
     let functionArgs;
     let postConditions;
@@ -392,16 +397,15 @@ export function SwapCreate({
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const feesCV = contractPrincipalCV(
-          STX_FT_SWAP_FEE_CONTRACT.address,
-          STX_FT_SWAP_FEE_CONTRACT.name
-        );
+        const feeContractId = feeContractRef.current.value();
+        const feeContract = feeContracts[feeContractId];
+        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
         const feesResponse = await callReadOnlyFunction({
-          contractAddress: STX_FT_SWAP_FEE_CONTRACT.address,
-          contractName: STX_FT_SWAP_FEE_CONTRACT.name,
+          contractAddress: feeContract.address,
+          contractName: feeContract.name,
           functionName: 'get-fees',
           functionArgs: [satsOrUstxCV],
-          senderAddress: STX_FT_SWAP_FEE_CONTRACT.address,
+          senderAddress: feeContract.address,
         });
         const fees =
           feesResponse.type === ClarityType.OptionalNone ? undefined : feesResponse.value.value;
@@ -419,8 +423,8 @@ export function SwapCreate({
             satsOrUstxCV.value
           ),
           makeContractSTXPostCondition(
-            STX_FT_SWAP_FEE_CONTRACT.address,
-            STX_FT_SWAP_FEE_CONTRACT.name,
+            feeContract.address,
+            feeContract.name,
             FungibleConditionCode.Equal,
             fees
           ),
@@ -473,7 +477,13 @@ export function SwapCreate({
 
   // sell (left to right)
   const sellType = buyWithStx ? type.split('-')[1] : type;
-  const sellDecimals = sellType === 'STX' ? 6 : 0; // TODO get decimals from trait
+  const sellDecimals =
+    sellType === 'STX'
+      ? 6
+      : type === 'stx-ft' &&
+        formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
+      ? 6
+      : 0; // TODO get decimals from trait
   const asset = getAsset(sellType, formData.trait);
   const assetName = getAssetName(sellType, formData.trait);
   // buy (right to left)
@@ -485,7 +495,8 @@ export function SwapCreate({
   return (
     <>
       <h3>
-        Create Swap {buyWithAsset}-{asset}
+        {id ? null : 'Create'} Swap {buyWithAsset}-{asset} {id ? `#${id}` : null}{' '}
+        {formData.doneFromSwap && <>(completed)</>}
       </h3>
       {type === 'nft' && (
         <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
@@ -688,7 +699,27 @@ export function SwapCreate({
               <div className="col text-center alert">{status}</div>
             </div>
           )}
-          <div className="row">
+          {buyWithStx && (
+            <div className="row m-2">
+              <div className="col" />
+              <div className="col text-center">
+                <select
+                  class="form-select"
+                  ref={feeContractRef}
+                  value={formData.feeId || 'stx'}
+                  onChange={e => setFormData({ ...formData, feeId: e.target.value })}
+                  disabled={id}
+                  aria-label="select fee model"
+                >
+                  <option value="stx">1% fee in STX</option>
+                  <option value="fpwr">1% fee in FPWR</option>
+                  <option value="mia">0% fee (MIA holders only)</option>
+                </select>
+              </div>
+              <div className="col" />
+            </div>
+          )}
+          <div className="row m-2">
             <div className="col-12 text-center">
               {id &&
                 (formData.assetSenderFromSwap || buyWithStx) &&

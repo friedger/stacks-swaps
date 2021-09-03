@@ -7,8 +7,9 @@ import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
 import { callReadOnlyFunction, ClarityType, cvToString } from '@stacks/transactions';
-import { infoApi, NETWORK, smartContractsApi } from '../lib/constants';
+import { feeContracts, infoApi, NETWORK, smartContractsApi } from '../lib/constants';
 import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
+import { getFTData } from '../lib/fungibleTokens';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const userSession = useAtomValue(userSessionState);
@@ -71,42 +72,18 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             const amountBtcOrStx = buyWithStx
               ? swapsEntry.data.ustx.value.toNumber() / 1_000_000
               : swapsEntry.data.sats.value.toNumber() / 100_000_000;
-            let trait, ft, contractAddress, contractName, ctrInterface;
+            let trait, ftData, contractAddress, contractName, ctrInterface;
             switch (type) {
               case 'ft':
                 trait = cvToString(swapsEntry.data['ft']);
                 [contractAddress, contractName] = trait.split('.');
-                ctrInterface = await smartContractsApi.getContractInterface({
-                  contractAddress,
-                  contractName,
-                });
-                const decimalsResponse = await callReadOnlyFunction({
-                  contractAddress,
-                  contractName,
-                  functionName: 'get-decimals',
-                  functionArgs: [],
-                  senderAddress: contractAddress,
-                  network: NETWORK,
-                });
-                const decimals = decimalsResponse.value.value.toNumber();
-                const symbol = await callReadOnlyFunction({
-                  contractAddress,
-                  contractName,
-                  functionName: 'get-symbol',
-                  functionArgs: [],
-                  senderAddress: contractAddress,
-                  network: NETWORK,
-                });
-                ft =
-                  ctrInterface.fungible_tokens.length === 1
-                    ? ctrInterface.fungible_tokens[0].name
-                    : undefined;
-                console.log({ ft });
+                ftData = getFTData(contractAddress, contractName);
+
                 setFormData({
                   btcRecipient,
                   amountSats: amountBtcOrStx,
-                  trait: trait + '::' + ft,
-                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, decimals),
+                  trait: trait + '::' + ftData.assetName,
+                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, ftData.decimals),
                   assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
                   assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
                   assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -154,26 +131,24 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
                 break;
               case 'stx-ft':
                 trait = cvToString(swapsEntry.data['ft']);
+                const [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
+                const feeId = Object.entries(feeContracts).find(
+                  e => e[1].address === feeAddress && e[1].name === feeName
+                );
+                console.log({ feeId });
                 [contractAddress, contractName] = trait.split('.');
-                ctrInterface = await smartContractsApi.getContractInterface({
-                  contractAddress,
-                  contractName,
-                });
-                ft =
-                  ctrInterface.fungible_tokens.length === 1
-                    ? ctrInterface.fungible_tokens[0].name
-                    : undefined;
-                console.log({ ft });
+                ftData = await getFTData(contractAddress, contractName);
                 setFormData({
                   btcRecipient,
                   amountSats: amountBtcOrStx,
-                  trait: trait + '::' + ft,
-                  amount: swapsEntry.data.amount.value.toNumber(),
+                  trait: trait + '::' + ftData.assetName,
+                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, ftData.decimals),
                   assetRecipient: cvToString(swapsEntry.data['stx-sender']),
                   assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
                   assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
                   whenFromSwap,
                   doneFromSwap,
+                  feeId: feeId ? feeId[0] : 'stx', // TODO better fall back
                 });
                 break;
               default:

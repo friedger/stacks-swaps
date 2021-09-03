@@ -1,7 +1,7 @@
 export function Price({ sell, buy, editablePrice, onChange }) {
   const buyAsset = buy.asset === 'BTC' ? 'SATS' : buy.asset;
   const buyFactor = buy.asset === 'BTC' ? Math.pow(10, 8) : 1;
-  const sellFactor = Math.pow(10, sell.decimals);
+  const sellFactor = 1;
   const priceOrNaN = (parseFloat(buy.amount) * buyFactor) / (parseFloat(sell.amount) * sellFactor);
   const price = isNaN(priceOrNaN)
     ? 0

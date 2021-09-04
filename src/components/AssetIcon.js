@@ -2,6 +2,8 @@ import React from 'react';
 import { BOOMBOX, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
+    case 'btc':
+      return <img className="m-1" src="/bitcoin.webp" alt="BTC" />;
     case 'ft':
       switch (trait) {
         case MIA_TOKEN:
@@ -36,9 +38,7 @@ export function AssetIcon({ type, trait }) {
     default:
       switch (trait) {
         case BOOMBOX:
-          return (
-            <img src="/boom.png" className="m-1" width="50" height="50" alt="token" />
-          );
+          return <img src="/boom.png" className="m-1" width="50" height="50" alt="token" />;
 
         case THIS_IS_NUMBER_ONE:
           return (

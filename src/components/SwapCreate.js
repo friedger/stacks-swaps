@@ -192,7 +192,6 @@ export function SwapCreate({
           return;
         }
         ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        console.log(feeContractRef.current.value);
         const feeId = feeContractRef.current.value;
         const feeContract = feeContracts[feeId];
         const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
@@ -341,6 +340,7 @@ export function SwapCreate({
     let functionArgs;
     let postConditions;
     let idCV;
+    let ftContractAddress, ftTail, ftContractName, ftAssetName;
     switch (type) {
       case 'nft':
         const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
@@ -360,8 +360,8 @@ export function SwapCreate({
 
         break;
       case 'ft':
-        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        const [ftContractName, ftAssetName] = ftTail.split('::');
+        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        [ftContractName, ftAssetName] = ftTail.split('::');
 
         idCV = uintCV(id);
         functionArgs = [idCV];
@@ -386,6 +386,78 @@ export function SwapCreate({
             new BN(formData.amount)
           ),
         ];
+        break;
+      case 'stx-ft':
+        const factor = buyWithStx ? 1_000_000 : 100_000_000;
+        const satsOrUstxCV = uintCV(
+          Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+        );
+
+        // TODO respect decimals
+        const sellFactor =
+          formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
+            ? Math.pow(10, 6)
+            : 1;
+        const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
+        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
+        [ftContractName, ftAssetName] = ftTail.split('::');
+        if (!ftAssetName) {
+          setLoading(false);
+          setStatus('"ft contract :: ft name" must be set');
+          return;
+        }
+        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+        const feeId = feeContractRef.current.value;
+        const feeContract = feeContracts[feeId];
+        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
+        const fees = await callReadOnlyFunction({
+          contractAddress: feeContract.address,
+          contractName: feeContract.name,
+          functionName: 'get-fees',
+          functionArgs: [satsOrUstxCV],
+          senderAddress: feeContract.address,
+        });
+        functionArgs = [idCV, ftCV, feesCV];
+        postConditions =
+          feeId === 'stx'
+            ? [
+                makeContractSTXPostCondition(
+                  contract.address,
+                  contract.name,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV.value.add(fees.value.value)
+                ),
+              ]
+            : feeId === 'mia'
+            ? [
+                makeContractSTXPostCondition(
+                  contract.address,
+                  contract.name,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV.value
+                ),
+              ]
+            : [
+                makeContractSTXPostCondition(
+                  contract.address,
+                  contract.name,
+                  FungibleConditionCode.Equal,
+                  satsOrUstxCV.value
+                ),
+                makeContractFungiblePostCondition(
+                  contract.address,
+                  contract.name,
+                  FungibleConditionCode.Equal,
+                  fees.value.value,
+                  createAssetInfo(
+                    feeContract.ft.address,
+                    feeContract.ft.name,
+                    feeContract.ft.assetName
+                  )
+                ),
+              ];
+        idCV = uintCV(id);
+        functionArgs = [idCV];
         break;
 
       default:
@@ -705,11 +777,7 @@ export function SwapCreate({
                   minLength="1"
                 />
               </div>
-              {buyWithStx ? (
-                <AssetIcon type="stx" />
-              ) : (
-                <img className="m-1" src="/bitcoin.webp" alt="BTC" />
-              )}
+              <AssetIcon type={buyWithStx ? 'stx' : 'btc'} />
             </div>
             <div className="col text-center">
               {(!id || formData.assetSenderFromSwap === ownerStxAddress) && buyWithStx ? (

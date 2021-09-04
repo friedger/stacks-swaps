@@ -4,11 +4,13 @@ import { Router } from '@reach/router';
 import Auth from './components/Auth';
 import { userDataState, userSessionState, useConnect } from './lib/auth';
 import { useAtom } from 'jotai';
-import Landing from './pages/Landing';
+import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
 import { MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
+import LandingAtomic from './pages/LandingAtomic';
+import Landing from './pages/Landing';
 
 export default function App(props) {
   const { authOptions } = useConnect();
@@ -61,7 +63,9 @@ function Content({ userSession }) {
   return (
     <>
       <Router>
-        {!authenticated && <Landing path="/" />}
+        {!authenticated && <Landing path="/" exact />}
+        {!authenticated && <LandingCat path="/catamaran" />}
+        {!authenticated && <LandingAtomic path="/atomic" />}
         {decentralizedID && (
           <>
             <Intro path="/" default />
@@ -153,7 +157,7 @@ function Content({ userSession }) {
               decentralizedID={decentralizedID}
               userSession={userSession}
             />
-             <StacksSwaps
+            <StacksSwaps
               path="/stx-ft/:trait"
               type="stx-ft"
               decentralizedID={decentralizedID}

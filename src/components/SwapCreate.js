@@ -388,6 +388,7 @@ export function SwapCreate({
         ];
         break;
       case 'stx-ft':
+        idCV = uintCV(id);
         const factor = buyWithStx ? 1_000_000 : 100_000_000;
         const satsOrUstxCV = uintCV(
           Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
@@ -456,8 +457,6 @@ export function SwapCreate({
                   )
                 ),
               ];
-        idCV = uintCV(id);
-        functionArgs = [idCV];
         break;
 
       default:

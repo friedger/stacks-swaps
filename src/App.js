@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Connect } from '@stacks/connect-react';
 import { Router } from '@reach/router';
 import Auth from './components/Auth';
-import { userDataState, userSessionState, useConnect } from './lib/auth';
+import { userDataState, userSessionState, useConnectForAuth } from './lib/auth';
 import { useAtom } from 'jotai';
 import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
@@ -13,7 +13,7 @@ import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 
 export default function App(props) {
-  const { authOptions } = useConnect();
+  const { authOptions } = useConnectForAuth();
   const [userSession] = useAtom(userSessionState);
   const [, setUserData] = useAtom(userDataState);
 
@@ -36,8 +36,10 @@ export default function App(props) {
             <img src="/android-icon-72x72.png" width="75" alt="Catamaran Swaps Logo" />
           </a>
         </div>
-        <div>
+        <div className="text-center">
           <span className="h1">Catamaran Swaps</span>
+          <br />
+          <span className="p">Trustless exchange of digital assets</span>
         </div>
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
           <ProfileSmall userSession={userSession} />
@@ -63,128 +65,126 @@ function Content({ userSession }) {
   return (
     <>
       <Router>
-        {!authenticated && <Landing path="/" exact />}
+        <>
+          <Intro path="/" default />
+          <StacksSwaps
+            path="/nft/swap/:id"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/nft/:trait/:nftId"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/nft/:trait"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/nft"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/ft/swap/:id"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/ft/:trait"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/ft"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/mia/swap/:id"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={MIA_TOKEN}
+          />
+          <StacksSwaps
+            path="/mia"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={MIA_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx/swap/:id"
+            type="stx"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx"
+            type="stx"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/thisisnumberone/swap/:id"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={THIS_IS_NUMBER_ONE}
+          />
+          <StacksSwaps
+            path="/thisisnumberone"
+            type="nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={THIS_IS_NUMBER_ONE}
+          />
+          <StacksSwaps
+            path="/stx-ft/swap/:id"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-ft/:trait"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-ft"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-mia/swap/:id"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={MIA_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx-mia"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={MIA_TOKEN}
+          />
+        </>
+        {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}
         {!authenticated && <LandingAtomic path="/atomic" />}
-        {decentralizedID && (
-          <>
-            <Intro path="/" default />
-            <StacksSwaps
-              path="/nft/swap/:id"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/nft/:trait/:nftId"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/nft/:trait"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/nft"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/ft/swap/:id"
-              type="ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/ft/:trait"
-              type="ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/ft"
-              type="ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/mia/swap/:id"
-              type="ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={MIA_TOKEN}
-            />
-            <StacksSwaps
-              path="/mia"
-              type="ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={MIA_TOKEN}
-            />
-            <StacksSwaps
-              path="/stx/swap/:id"
-              type="stx"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/stx"
-              type="stx"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/thisisnumberone/swap/:id"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={THIS_IS_NUMBER_ONE}
-            />
-            <StacksSwaps
-              path="/thisisnumberone"
-              type="nft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={THIS_IS_NUMBER_ONE}
-            />
-            <StacksSwaps
-              path="/stx-ft/swap/:id"
-              type="stx-ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/stx-ft/:trait"
-              type="stx-ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/stx-ft"
-              type="stx-ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-            />
-            <StacksSwaps
-              path="/stx-mia/swap/:id"
-              type="stx-ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={MIA_TOKEN}
-            />
-            <StacksSwaps
-              path="/stx-mia"
-              type="stx-ft"
-              decentralizedID={decentralizedID}
-              userSession={userSession}
-              trait={MIA_TOKEN}
-            />
-          </>
-        )}
       </Router>
     </>
   );

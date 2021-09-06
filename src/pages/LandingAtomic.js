@@ -1,10 +1,10 @@
 import React from 'react';
-import { useConnect } from '../lib/auth';
+import { useConnectForAuth } from '../lib/auth';
 
 // Landing page with Stacks Connect for authentication
 
 export default function LandingAtomic(props) {
-  const { handleOpenAuth } = useConnect();
+  const { handleOpenAuth } = useConnectForAuth();
 
   return (
     <div className="Landing">
@@ -33,7 +33,7 @@ export default function LandingAtomic(props) {
             type="button"
             onClick={handleOpenAuth}
           >
-            Get Started!
+            Get Started
           </button>
         </div>
       </div>

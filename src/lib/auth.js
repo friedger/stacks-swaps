@@ -9,7 +9,7 @@ export const userSessionState = atom(new UserSession({ appConfig }));
 export const userDataState = atom();
 export const authResponseState = atom();
 
-export const useConnect = () => {
+export const useConnectForAuth = () => {
   const [userSession] = useAtom(userSessionState);
   const setUserData = useUpdateAtom(userDataState);
   const setAuthResponse = useUpdateAtom(authResponseState);

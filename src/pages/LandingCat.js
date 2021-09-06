@@ -1,17 +1,15 @@
 import React from 'react';
-import { useConnect } from '../lib/auth';
-import { AlertAllPages } from '../components/AlertAllPages';
+import { useConnectForAuth } from '../lib/auth';
 
 // Landing page with Stacks Connect for authentication
 
 export default function LandingCat(props) {
-  const { handleOpenAuth } = useConnect();
+  const { handleOpenAuth } = useConnectForAuth();
 
   return (
     <div className="Landing">
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">
         <div className="container pt-3">
-          <AlertAllPages />
           <h1>Catamaran Swaps</h1>
           <p className="h5">
             The Stacks Blockchain has knowledge about the Bitcoin blockchain. This can be used to
@@ -34,15 +32,15 @@ export default function LandingCat(props) {
           </p>
           <h2 className="mt-4">Atomic Stacks Swaps</h2>
           <p className="h5">
-            In addition to Catamaran swaps, the UI also provides support for swaps of digital
-            assets just on the Stacks chain.
+            In addition to Catamaran swaps, the UI also provides support for swaps of digital assets
+            just on the Stacks chain.
           </p>
           <button
             className="btn btn-lg btn-outline-primary mt-4"
             type="button"
             onClick={handleOpenAuth}
           >
-            Get Started!
+            Get Started
           </button>
         </div>
       </div>

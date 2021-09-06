@@ -1,12 +1,12 @@
 import { navigate } from '@reach/router';
 import React from 'react';
 import { AssetIcon } from '../components/AssetIcon';
-import { useConnect } from '../lib/auth';
+import { useConnectForAuth } from '../lib/auth';
 
 // Landing page with Stacks Connect for authentication
 
 export default function Landing(props) {
-  const { handleOpenAuth } = useConnect();
+  const { handleOpenAuth } = useConnectForAuth();
 
   return (
     <div className="Landing">
@@ -14,31 +14,54 @@ export default function Landing(props) {
         <div className="container pt-3">
           <h1 className="text-center">Swap your digital assets..</h1>
           <div className="row">
-            <div className="col" />
-            <div className="col">
+            <div className="col text-center">
               <button
                 className="btn btn-lg btn-outline-primary mt-4"
                 onClick={e => navigate('/catamaran')}
               >
-                <p className="h5 text-center">..with BTC</p>
-                <p className="text-center">
-                  <AssetIcon type="btc" />
-                </p>
+                <p className="h5 text-center">.. between BTC and STX chain</p>
+                <div className="text-center container">
+                  <div className="row align-items-center">
+                    <div className="col">
+                      <AssetIcon type="btc" />
+                    </div>
+                    <div className="col">
+                      <i className="bi bi-arrow-right"></i>
+                      <br />
+                      <i className="bi bi-arrow-left"></i>
+                    </div>
+                    <div className="col">
+                      <AssetIcon type="stx" />
+                    </div>
+                  </div>
+                </div>
+                <p className="h5 text-center">.. using catamaran swaps.</p>
               </button>
             </div>
-            <div className="col" />
-            <div className="col">
+            <div className="col text-center">
               <button
                 className="btn btn-lg btn-outline-primary mt-4"
                 onClick={e => navigate('/atomic')}
               >
-                <p className="h5 text-center">..with STX</p>
-                <p className="text-center">
-                  <AssetIcon type="stx" />
-                </p>
+                <p className="h5 text-center">.. on STX chain ..</p>
+                <div className="container">
+                  <div className="row align-items-center">
+                    <div className="col">
+                      <AssetIcon type="stx" />
+                    </div>
+                    <div className="col">
+                      <i className="bi bi-arrow-right"></i>
+                      <br />
+                      <i className="bi bi-arrow-left"></i>
+                    </div>
+                    <div className="col">
+                      <AssetIcon type="stx" />
+                    </div>
+                  </div>
+                </div>
+                <p className="h5 text-center">.. atomic swaps.</p>
               </button>
             </div>
-            <div className="col" />
           </div>
         </div>
       </div>

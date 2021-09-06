@@ -10,7 +10,6 @@ export default function Intro(props) {
     <div className="Landing">
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">
         <div className="container pt-3">
-          <AlertAllPages />
           <h1>Catamaran Swaps</h1>
           <p className="h5">
             Use catamaran swaps to exchange BTCs for digital assets on the Stacks chain.

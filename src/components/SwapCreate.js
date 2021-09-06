@@ -1,12 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
-import {
-  contracts,
-  feeContracts,
-  NETWORK,
-  smartContractsApi,
-  STX_FT_SWAP_CONTRACT,
-} from '../lib/constants';
+import { useConnectForAuth } from '../lib/auth';
+import { contracts, feeContracts, NETWORK, STX_FT_SWAP_CONTRACT } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
@@ -57,6 +52,7 @@ export function SwapCreate({
   const [status, setStatus] = useState();
   const [formData, setFormData] = useState(formData1);
   const { doContractCall } = useConnect();
+  const { handleOpenAuth } = useConnectForAuth();
 
   const buyWithStx = type.startsWith('stx-');
 
@@ -340,7 +336,7 @@ export function SwapCreate({
     let functionArgs;
     let postConditions;
     let idCV;
-    let ftContractAddress, ftTail, ftContractName, ftAssetName;
+    let ftContractAddress, ftTail, ftContractName, ftAssetName, amountInSmallestUnit;
     switch (type) {
       case 'nft':
         const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
@@ -362,7 +358,7 @@ export function SwapCreate({
       case 'ft':
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
-
+        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
         idCV = uintCV(id);
         functionArgs = [idCV];
         postConditions = [
@@ -370,12 +366,14 @@ export function SwapCreate({
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
-            new BN(formData.amount),
+            new BN(amountInSmallestUnit),
             createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
           ),
         ];
         break;
       case 'stx':
+        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
+
         idCV = uintCV(id);
         functionArgs = [idCV];
         postConditions = [
@@ -383,7 +381,7 @@ export function SwapCreate({
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
-            new BN(formData.amount)
+            new BN(amountInSmallestUnit)
           ),
         ];
         break;
@@ -395,10 +393,7 @@ export function SwapCreate({
         );
 
         // TODO respect decimals
-        const sellFactor =
-          formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
-            ? Math.pow(10, 6)
-            : 1;
+        const sellFactor = Math.pow(10, sellDecimals);
         const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
@@ -426,7 +421,13 @@ export function SwapCreate({
                   contract.address,
                   contract.name,
                   FungibleConditionCode.Equal,
-                  satsOrUstxCV.value.add(fees.value.value)
+                  satsOrUstxCV.value
+                ),
+                makeContractSTXPostCondition(
+                  feeContract.address,
+                  feeContract.name,
+                  FungibleConditionCode.Equal,
+                  fees.value.value,
                 ),
               ]
             : feeId === 'mia'
@@ -501,6 +502,7 @@ export function SwapCreate({
         const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         const [ftContractName, ftAssetName] = ftTail.split('::');
         const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
+        const amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
         const feeId = feeContractRef.current.value;
         const feeContract = feeContracts[feeId];
         const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
@@ -529,7 +531,7 @@ export function SwapCreate({
           makeStandardFungiblePostCondition(
             ownerStxAddress,
             FungibleConditionCode.Equal,
-            new BN(formData.amount),
+            new BN(amountInSmallestUnit),
             createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
           ),
         ];
@@ -596,7 +598,7 @@ export function SwapCreate({
   // sell (left to right)
   const sellType = buyWithStx ? type.split('-')[1] : type;
   const sellDecimals =
-    sellType === 'STX'
+    sellType === 'stx'
       ? 6
       : type === 'stx-ft' &&
         formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
@@ -657,8 +659,7 @@ export function SwapCreate({
         <div className="container">
           <div className="row align-items-center m-5">
             <div className="col text-center">
-              {((!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx) ||
-              (buyWithStx && id) ? (
+              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx ? (
                 <>
                   Seller (You)
                   <br />
@@ -667,7 +668,12 @@ export function SwapCreate({
               ) : (
                 <>
                   <br />
-                  Seller
+                  Seller{' '}
+                  {formData.assetSenderFromSwap === ownerStxAddress ||
+                  (!buyWithStx && !id) ||
+                  (buyWithStx && id && formData.doneFromSwap === 0)
+                    ? '(You)'
+                    : null}
                 </>
               )}
               <br />
@@ -676,7 +682,7 @@ export function SwapCreate({
                   type="text"
                   className="form-control"
                   ref={btcRecipientRef}
-                  value={formData.btcRecipient}
+                  value={formData.btcRecipient || (buyWithStx && !id ? ownerStxAddress : '')}
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                   aria-label={
                     buyWithStx
@@ -828,6 +834,7 @@ export function SwapCreate({
                 >
                   <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
+                  <option value="fri">1% fee in FRIE</option>
                   <option value="mia">0% fee (MIA holders only)</option>
                 </select>
               </div>
@@ -836,34 +843,84 @@ export function SwapCreate({
           )}
           <div className="row m-2">
             <div className="col-12 text-center">
-              {id &&
-                (formData.assetSenderFromSwap || buyWithStx) &&
-                formData.whenFromSwap + 100 < blockHeight &&
-                formData.doneFromSwap === 0 && (
+              {!ownerStxAddress ? (
+                <>
                   <button
-                    className="btn btn-block btn-primary"
+                    className="btn btn-lg btn-outline-primary mt-4"
                     type="button"
-                    onClick={cancelAction}
+                    onClick={handleOpenAuth}
                   >
-                    <div
-                      role="status"
-                      className={`${
-                        loading ? '' : 'd-none'
-                      } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                    />
-                    Cancel swap
+                    Get Started
                   </button>
-                )}
-              {id ? (
-                // show existing swap
-                buyWithStx ? (
-                  formData.doneFromSwap === 1 ? (
-                    <></>
+                </>
+              ) : (
+                <>
+                  {id &&
+                    (formData.assetSenderFromSwap === ownerStxAddress ||
+                      (buyWithStx && formData.assetRecipientFromSwap === ownerStxAddress)) &&
+                    formData.whenFromSwap + 100 < blockHeight &&
+                    formData.doneFromSwap === 0 && (
+                      <button
+                        className="btn btn-block btn-primary"
+                        type="button"
+                        onClick={cancelAction}
+                      >
+                        <div
+                          role="status"
+                          className={`${
+                            loading ? '' : 'd-none'
+                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                        />
+                        Cancel swap
+                      </button>
+                    )}
+                  {id ? (
+                    // show existing swap
+                    buyWithStx ? (
+                      formData.doneFromSwap === 1 ? (
+                        <>
+                          <button className="btn btn-block btn-success" type="button" disabled>
+                            Completed
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="btn btn-block btn-primary"
+                          type="button"
+                          onClick={submitAction}
+                        >
+                          <div
+                            role="status"
+                            className={`${
+                              loading ? '' : 'd-none'
+                            } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                          />
+                          Sell {asset}
+                        </button>
+                      ) // handle buy with btc
+                    ) : formData.assetRecipientFromSwap ? (
+                      <></>
+                    ) : (
+                      <button
+                        className="btn btn-block btn-primary"
+                        type="button"
+                        onClick={setRecipientAction}
+                      >
+                        <div
+                          role="status"
+                          className={`${
+                            loading ? '' : 'd-none'
+                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
+                        />
+                        Buy {asset}
+                      </button>
+                    )
                   ) : (
+                    // create new swap
                     <button
                       className="btn btn-block btn-primary"
                       type="button"
-                      onClick={submitAction}
+                      onClick={createAction}
                     >
                       <div
                         role="status"
@@ -871,37 +928,10 @@ export function SwapCreate({
                           loading ? '' : 'd-none'
                         } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                       />
-                      Sell {asset}
+                      {buyWithStx ? 'Buy' : 'Sell'} {asset}
                     </button>
-                  ) // handle buy with btc
-                ) : formData.assetRecipientFromSwap ? (
-                  <></>
-                ) : (
-                  <button
-                    className="btn btn-block btn-primary"
-                    type="button"
-                    onClick={setRecipientAction}
-                  >
-                    <div
-                      role="status"
-                      className={`${
-                        loading ? '' : 'd-none'
-                      } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                    />
-                    Buy {asset}
-                  </button>
-                )
-              ) : (
-                // create new swap
-                <button className="btn btn-block btn-primary" type="button" onClick={createAction}>
-                  <div
-                    role="status"
-                    className={`${
-                      loading ? '' : 'd-none'
-                    } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                  />
-                  {buyWithStx ? 'Buy' : 'Sell'} {asset}
-                </button>
+                  )}
+                </>
               )}
             </div>
           </div>

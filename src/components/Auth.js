@@ -1,12 +1,12 @@
 import React from 'react';
-import { useConnect, userSessionState } from '../lib/auth';
+import { useConnectForAuth, userSessionState } from '../lib/auth';
 import { useAtom } from 'jotai';
 
 // Authentication button adapting to status
 
 export default function Auth() {
-  const { handleOpenAuth } = useConnect();
-  const { handleSignOut } = useConnect();
+  const { handleOpenAuth } = useConnectForAuth();
+  const { handleSignOut } = useConnectForAuth();
   const [userSession] = useAtom(userSessionState);
 
   if (userSession?.isUserSignedIn()) {

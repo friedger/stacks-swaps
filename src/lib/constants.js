@@ -60,6 +60,16 @@ export const STX_FT_SWAP_FPWR_FEE_CONTRACT = {
 export const feeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
+  frie: {
+    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+    name: 'stx-ft-swap-v1-fixed-frie-fees',
+    ft: {
+      address: 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X',
+      name: 'friedger-token-v1',
+      assetName: 'friedger',
+    },
+  },
+
   mia: {
     address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
     name: 'cycle-2-hodl-mia-fees',

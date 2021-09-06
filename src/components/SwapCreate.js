@@ -392,9 +392,6 @@ export function SwapCreate({
           Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
         );
 
-        // TODO respect decimals
-        const sellFactor = Math.pow(10, sellDecimals);
-        const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
         if (!ftAssetName) {
@@ -837,7 +834,7 @@ export function SwapCreate({
                 >
                   <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
-                  <option value="fri">1% fee in FRIE</option>
+                  <option value="frie">1% fee in FRIE</option>
                   <option value="mia">0% fee (MIA holders only)</option>
                 </select>
               </div>

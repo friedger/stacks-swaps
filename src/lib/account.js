@@ -29,7 +29,7 @@ export function getStacksAccount(appPrivateKey) {
   return { privateKey, address };
 }
 
-export async function getUserAddress(userSession, username) {
+export async function resolveBNS(username) {
   const parts = username.split('.');
   if (parts.length === 2) {
     console.log(parts);
@@ -42,12 +42,12 @@ export async function getUserAddress(userSession, username) {
       senderAddress: GENESIS_CONTRACT_ADDRESS,
     });
     if (result.type === ClarityType.ResponseOk) {
-      return { address: cvToString(result.value.data.owner) };
+      return cvToString(result.value.data.owner);
     } else {
-      return undefined;
+      return username;
     }
   } else {
-    return undefined;
+    return username;
   }
 }
 
@@ -62,7 +62,7 @@ export function fetchAccount(addressAsString) {
       .getAccountBalance({ principal: addressAsString })
       .then(response => response.stx);
   } else {
-    return Promise.reject("addressAsString not defined");
+    return Promise.reject('addressAsString not defined');
   }
 }
 

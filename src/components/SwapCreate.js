@@ -30,6 +30,7 @@ import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
 import { Price } from './Price';
+import { resolveBNS } from '../lib/account';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -41,10 +42,10 @@ export function SwapCreate({
   userSession,
 }) {
   const amountSatsRef = useRef();
-  const btcRecipientRef = useRef();
+  const assetSellerRef = useRef();
   const nftIdRef = useRef();
   const amountRef = useRef();
-  const assetRecipientRef = useRef();
+  const assetBuyerRef = useRef();
   const traitRef = useRef();
   const feeContractRef = useRef();
   const [txId, setTxId] = useState();
@@ -64,7 +65,7 @@ export function SwapCreate({
       errors.push('positive numbers required to swap');
     }
 
-    if (!buyWithStx && btcRecipientRef.current.value.trim() === '') {
+    if (!buyWithStx && assetSellerRef.current.value.trim() === '') {
       errors.push('BTC address is required');
     }
 
@@ -90,7 +91,7 @@ export function SwapCreate({
     }
 
     const contract = contracts[type];
-    const seller = btcRecipientRef.current.value.trim();
+    const seller = await resolveBNS(assetSellerRef.current.value.trim());
     const sellerCV = buyWithStx
       ? seller
         ? someCV(standardPrincipalCV(seller))
@@ -100,14 +101,21 @@ export function SwapCreate({
     let functionArgs;
     let postConditions;
     let ftContractAddress, ftTail, ftContractName, ftAssetName, ftCV;
+    const assetBuyer = await resolveBNS();
     switch (type) {
       case 'nft':
+        if (!assetBuyer) {
+          setStatus('Buyer address must be set.');
+          setLoading(false);
+          return;
+        }
         const nftIdCV = uintCV(nftIdRef.current.value.trim());
-        const nftReceiverCV = standardPrincipalCV(assetRecipientRef.current.value.trim());
+        const nftReceiverCV = standardPrincipalCV(assetBuyer);
         const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
         const [nftContractName, nftAssetName] = nftTail.split('::');
         if (!nftAssetName) {
           setStatus('"nft contract :: nft name" must be set');
+          setLoading(false);
           return;
         }
         const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
@@ -128,9 +136,7 @@ export function SwapCreate({
           setStatus('positive numbers required to swap');
           return;
         }
-        const ftReceiverCV = assetRecipientRef.current.value.trim()
-          ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
-          : noneCV();
+        const ftReceiverCV = assetBuyer ? someCV(standardPrincipalCV(assetBuyer)) : noneCV();
         [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
         [ftContractName, ftAssetName] = ftTail.split('::');
         if (!ftAssetName) {
@@ -156,9 +162,7 @@ export function SwapCreate({
           setStatus('positive numbers required to swap');
           return;
         }
-        const stxReceiverCV = assetRecipientRef.current.value.trim()
-          ? someCV(standardPrincipalCV(assetRecipientRef.current.value.trim()))
-          : noneCV();
+        const stxReceiverCV = assetBuyer ? someCV(standardPrincipalCV(assetBuyer)) : noneCV();
         functionArgs = [satsOrUstxCV, sellerCV, stxAmountCV, stxReceiverCV];
         postConditions = [
           makeStandardSTXPostCondition(
@@ -270,7 +274,7 @@ export function SwapCreate({
   const setRecipientAction = async () => {
     setLoading(true);
     const errors = [];
-    if (assetRecipientRef.current.value.trim() === '') {
+    if (assetBuyerRef.current.value.trim() === '') {
       errors.push('Receiver is required');
     }
     if (errors.length > 0) {
@@ -541,14 +545,15 @@ export function SwapCreate({
               fees
             )
           );
-        } else if (feeId === 'fpwr') {
+        } else if (feeId === 'mia') {
+        } else {
           postConditions.push(
             makeContractFungiblePostCondition(
               feeContract.address,
               feeContract.name,
               FungibleConditionCode.Equal,
               fees,
-              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.assetName)
+              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
             )
           );
         }
@@ -608,7 +613,6 @@ export function SwapCreate({
   const buyDecimals = buyWithStx ? 6 : 8;
 
   const createSellOrder = false;
-
   return (
     <>
       <h3>
@@ -665,11 +669,14 @@ export function SwapCreate({
               ) : (
                 <>
                   <br />
-                  Seller{' '}
+                  Seller
                   {formData.assetSenderFromSwap === ownerStxAddress ||
                   (!buyWithStx && !id) ||
-                  (buyWithStx && id && formData.doneFromSwap === 0)
-                    ? '(You)'
+                  (buyWithStx &&
+                    id &&
+                    ((formData.doneFromSwap === 0 && formData.assetSenderFromSwap === 'none') ||
+                      formData.assetSenderFromSwap === `(some ${ownerStxAddress})`))
+                    ? ' (You)'
                     : null}
                 </>
               )}
@@ -678,7 +685,7 @@ export function SwapCreate({
                 <input
                   type="text"
                   className="form-control"
-                  ref={btcRecipientRef}
+                  ref={assetSellerRef}
                   value={
                     formData.btcRecipient ||
                     (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
@@ -803,7 +810,7 @@ export function SwapCreate({
                 <input
                   type="text"
                   className="form-control"
-                  ref={assetRecipientRef}
+                  ref={assetBuyerRef}
                   value={formData.assetRecipient}
                   onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
                   aria-label={`${assetName} receiver's Stacks address`}
@@ -832,7 +839,9 @@ export function SwapCreate({
                   disabled={id}
                   aria-label="select fee model"
                 >
-                  <option value="stx">1% fee in STX</option>
+                  <option value="stx">
+                    1% fee in STX <AssetIcon type="stx" />
+                  </option>
                   <option value="fpwr">1% fee in FPWR</option>
                   <option value="frie">1% fee in FRIE</option>
                   <option value="mia">0% fee (MIA holders only)</option>

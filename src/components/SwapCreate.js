@@ -427,7 +427,7 @@ export function SwapCreate({
                   feeContract.address,
                   feeContract.name,
                   FungibleConditionCode.Equal,
-                  fees.value.value,
+                  fees.value.value
                 ),
               ]
             : feeId === 'mia'
@@ -682,7 +682,10 @@ export function SwapCreate({
                   type="text"
                   className="form-control"
                   ref={btcRecipientRef}
-                  value={formData.btcRecipient || (buyWithStx && !id ? ownerStxAddress : '')}
+                  value={
+                    formData.btcRecipient ||
+                    (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
+                  }
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                   aria-label={
                     buyWithStx

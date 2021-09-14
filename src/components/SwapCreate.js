@@ -101,7 +101,7 @@ export function SwapCreate({
     let functionArgs;
     let postConditions;
     let ftContractAddress, ftTail, ftContractName, ftAssetName, ftCV;
-    const assetBuyer = await resolveBNS();
+    const assetBuyer = await resolveBNS(assetBuyerRef.current.value.trim());
     switch (type) {
       case 'nft':
         if (!assetBuyer) {
@@ -481,6 +481,14 @@ export function SwapCreate({
       onFinish: result => {
         setLoading(false);
         setTxId(result.txId);
+        saveTxData(result, userSession)
+          .then(r => {
+            setLoading(false);
+          })
+          .catch(e => {
+            console.log(e);
+            setLoading(false);
+          });
       },
     });
   };
@@ -687,8 +695,10 @@ export function SwapCreate({
                   className="form-control"
                   ref={assetSellerRef}
                   value={
-                    formData.btcRecipient ||
-                    (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
+                    formData.btcRecipient || formData.assetSenderFromSwap !== 'none'
+                      ? formData.assetSenderFromSwap.substr(6, formData.assetSenderFromSwap.length - 7)
+                      : undefined ||
+                        (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
                   }
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                   aria-label={
@@ -839,9 +849,7 @@ export function SwapCreate({
                   disabled={id}
                   aria-label="select fee model"
                 >
-                  <option value="stx">
-                    1% fee in STX <AssetIcon type="stx" />
-                  </option>
+                  <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
                   <option value="frie">1% fee in FRIE</option>
                   <option value="mia">0% fee (MIA holders only)</option>

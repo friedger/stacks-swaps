@@ -5,6 +5,9 @@ import { Amount } from './Amount';
 import {} from 'react-jdenticon';
 import { useAtom } from 'jotai';
 import { refreshPrice, STX_USD } from '../lib/price';
+import { getTxs } from '../lib/transactions';
+import { ClarityType, hexToCV } from '@stacks/transactions';
+import { contracts } from '../lib/constants';
 
 export function ProfileFull({ stxAddress, userSession }) {
   const [profileState, setProfileState] = useState({
@@ -13,6 +16,7 @@ export function ProfileFull({ stxAddress, userSession }) {
 
   const [, setStxUsd] = useAtom(STX_USD);
   const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState();
 
   useEffect(() => {
     refreshPrice(setStxUsd);
@@ -29,6 +33,10 @@ export function ProfileFull({ stxAddress, userSession }) {
         .catch(e => setLoading(false));
     }
   }, [stxAddress]);
+
+  useEffect(() => {
+    getTxs(userSession).then(txs => setTransactions(txs));
+  }, [userSession]);
 
   return (
     <div
@@ -128,8 +136,50 @@ export function ProfileFull({ stxAddress, userSession }) {
               <Amount ustx={BigInt(profileState.account.balance)} stxAddress={stxAddress} />
             </>
           )}
+          {transactions && (
+            <>
+              <h5 className="mb-3">Your swaps</h5>
+              {Object.entries(
+                transactions
+                  .filter(t => t.apiData?.tx_status === 'success')
+                  .reduce((swaps, t) => {
+                    let id;
+                    const swap = swaps[t.data.txId];
+                    const ctr = Object.entries(contracts).find(
+                      c => `${c[1].address}.${c[1].name}` === t.apiData.contract_call.contract_id
+                    );
+                    const swapType = ctr ? ctr[0] : undefined;
+                    switch (t.apiData?.contract_call?.function_name) {
+                      case 'create-swap':
+                        id =
+                          hexToCV(t.apiData.contract_call.tx_result.hex).type ===
+                          ClarityType.ResponseOk
+                            ? hexToCV(t.apiData.contract_call.tx_result.hex).value.value.toNumber()
+                            : t.data.txId;
+                        swaps[t.data.txId] = { ...swap, id, swapType };
+                        break;
+                      case 'submit-swap':
+                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value.toNumber();
+                        console.log(id, t.data.txId);
+                        swaps[t.data.txId] = { ...swap, id, swapType };
+                        break;
+                      default:
+                    }
+                    return swaps;
+                  }, {})
+              ).map((e, key) => {
+                const txId = e[0];
+                const swap = e[1];
+                return (
+                  <a href={`https://catamaranswaps.org/${swap.swapType}/swap/${swap.id}`} key={key}>
+                    Swap #{swap.id}
+                  </a>
+                );
+              })}
+            </>
+          )}
         </div>
-      </div>{' '}
+      </div>
     </div>
   );
 }

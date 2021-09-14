@@ -128,7 +128,7 @@ export async function getTxsAsCSV(userSession, filter) {
                 tx.apiData.burn_block_time_iso
               }, https://explorer.stacks.co/txid/${
                 tx.apiData.tx_id
-              }, https://stacks-send-many.pages.dev/txid/${tx.apiData.tx_id}\n`
+              }, https://sendstx.com/txid/${tx.apiData.tx_id}\n`
             );
           }, '')
       );
@@ -151,7 +151,7 @@ export async function getTxsAsJSON(userSession, filter) {
               amount: e.asset.amount / 1000000,
               timestamp: tx.apiData.burn_block_time_iso,
               explorer_url: `https://explorer.stacks.co/txid/${tx.apiData.tx_id}`,
-              send_many_url: `https://stacks-send-many.pages.dev/txid/${tx.apiData.tx_id}`,
+              send_many_url: `https://sendstx.com/txid/${tx.apiData.tx_id}`,
             };
             return exportedTx;
           })

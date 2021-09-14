@@ -204,8 +204,8 @@ async function createTxWithApiData(txId, tx, storage) {
   let apiData = undefined;
   while (!apiData || events.length < apiData.event_count) {
     eventOffset = events.length;
-    apiData = await transactionsApi.getTransactionById({ txId, eventOffset, offsetLimit });
-    console.log(eventOffset, apiData.events.length, apiData.event_count);
+    apiData = await transactionsApi.getTransactionById({ txId: `0x${txId}`, eventOffset, offsetLimit });
+    console.log(txId, apiData, eventOffset, apiData.events, apiData.event_count);
     events = events.concat(apiData.events);
     console.log(apiData.event_count);
   }

@@ -842,7 +842,7 @@ export function SwapCreate({
               <div className="col" />
               <div className="col text-center">
                 <select
-                  class="form-select form-select-sm"
+                  className="form-select form-select-sm"
                   ref={feeContractRef}
                   value={formData.feeId || 'stx'}
                   onChange={e => setFormData({ ...formData, feeId: e.target.value })}

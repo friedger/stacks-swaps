@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchAccount } from '../lib/account';
 import { Address } from './Address';
 import { Amount } from './Amount';
+import { TxStatus } from './TxStatus';
 import {} from 'react-jdenticon';
 import { useAtom } from 'jotai';
 import { refreshPrice, STX_USD } from '../lib/price';
@@ -141,6 +142,50 @@ export function ProfileFull({ stxAddress, userSession }) {
               <h5 className="mb-3">Your swaps</h5>
               {Object.entries(
                 transactions
+                  .filter(t => t.apiData?.tx_status === 'pending')
+                  .reduce((swaps, t) => {
+                    let id;
+                    const swap = swaps[t.data.txId];
+                    const ctr = Object.entries(contracts).find(
+                      c => `${c[1].address}.${c[1].name}` === t.apiData.contract_call.contract_id
+                    );
+                    const swapType = ctr ? ctr[0] : undefined;
+                    switch (t.apiData?.contract_call?.function_name) {
+                      case 'create-swap':
+                        swaps[t.data.txId] = { ...swap, swapType };
+                        break;
+                      case 'submit-swap':
+                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value.toNumber();
+                        console.log(id, t.data.txId);
+                        swaps[t.data.txId] = { ...swap, id, swapType };
+                        break;
+                      default:
+                    }
+                    return swaps;
+                  }, {})
+              ).map((e, key) => {
+                const txId = e[0];
+                const swap = e[1];
+                if (swap.id) {
+                  return (
+                    <a
+                      href={`/${swap.swapType}/swap/${swap.id}`}
+                      key={key}
+                    >
+                      Pending Swap #{swap.id}
+                    </a>
+                  );
+                } else {
+                  return (
+                    <React.Fragment key={key}>
+                      Pending Swap <TxStatus txId={txId} />
+                    </React.Fragment>
+                  );
+                }
+              })}
+
+              {Object.entries(
+                transactions
                   .filter(t => t.apiData?.tx_status === 'success')
                   .reduce((swaps, t) => {
                     let id;
@@ -152,9 +197,9 @@ export function ProfileFull({ stxAddress, userSession }) {
                     switch (t.apiData?.contract_call?.function_name) {
                       case 'create-swap':
                         id =
-                          hexToCV(t.apiData.contract_call.tx_result.hex).type ===
+                          hexToCV(t.apiData.tx_result.hex).type ===
                           ClarityType.ResponseOk
-                            ? hexToCV(t.apiData.contract_call.tx_result.hex).value.value.toNumber()
+                            ? hexToCV(t.apiData.tx_result.hex).value.value.toNumber()
                             : t.data.txId;
                         swaps[t.data.txId] = { ...swap, id, swapType };
                         break;
@@ -171,7 +216,7 @@ export function ProfileFull({ stxAddress, userSession }) {
                 const txId = e[0];
                 const swap = e[1];
                 return (
-                  <a href={`https://catamaranswaps.org/${swap.swapType}/swap/${swap.id}`} key={key}>
+                  <a href={`/${swap.swapType}/swap/${swap.id}`} key={key}>
                     Swap #{swap.id}
                   </a>
                 );

@@ -694,7 +694,7 @@ export function SwapCreate({
                   type="text"
                   className="form-control"
                   ref={assetSellerRef}
-                  value={
+                  defaultValue={
                     formData.btcRecipient || formData.assetSenderFromSwap !== 'none'
                       ? formData.assetSenderFromSwap.substr(6, formData.assetSenderFromSwap.length - 7)
                       : undefined ||

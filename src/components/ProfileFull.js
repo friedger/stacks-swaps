@@ -168,18 +168,15 @@ export function ProfileFull({ stxAddress, userSession }) {
                 const swap = e[1];
                 if (swap.id) {
                   return (
-                    <a
-                      href={`/${swap.swapType}/swap/${swap.id}`}
-                      key={key}
-                    >
-                      Pending Swap #{swap.id}
-                    </a>
+                    <div key={key}>
+                      <a href={`/${swap.swapType}/swap/${swap.id}`}>Pending Swap #{swap.id} ({swap.swapType})</a>
+                    </div>
                   );
                 } else {
                   return (
-                    <React.Fragment key={key}>
+                    <div key={key}>
                       Pending Swap <TxStatus txId={txId} />
-                    </React.Fragment>
+                    </div>
                   );
                 }
               })}
@@ -197,8 +194,7 @@ export function ProfileFull({ stxAddress, userSession }) {
                     switch (t.apiData?.contract_call?.function_name) {
                       case 'create-swap':
                         id =
-                          hexToCV(t.apiData.tx_result.hex).type ===
-                          ClarityType.ResponseOk
+                          hexToCV(t.apiData.tx_result.hex).type === ClarityType.ResponseOk
                             ? hexToCV(t.apiData.tx_result.hex).value.value.toNumber()
                             : t.data.txId;
                         swaps[t.data.txId] = { ...swap, id, swapType };
@@ -216,9 +212,9 @@ export function ProfileFull({ stxAddress, userSession }) {
                 const txId = e[0];
                 const swap = e[1];
                 return (
-                  <a href={`/${swap.swapType}/swap/${swap.id}`} key={key}>
-                    Swap #{swap.id}
-                  </a>
+                  <div key={key}>
+                    <a href={`/${swap.swapType}/swap/${swap.id}`}>Swap #{swap.id} ({swap.swapType})</a>
+                  </div>
                 );
               })}
             </>

@@ -695,10 +695,15 @@ export function SwapCreate({
                   className="form-control"
                   ref={assetSellerRef}
                   defaultValue={
-                    formData.btcRecipient || formData.assetSenderFromSwap !== 'none'
-                      ? formData.assetSenderFromSwap.substr(6, formData.assetSenderFromSwap.length - 7)
-                      : undefined ||
-                        (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
+                    (formData.btcRecipient
+                      ? formData.btcRecipient
+                      : formData.assetSenderFromSwap !== 'none'
+                      ? formData.assetSenderFromSwap.substr(
+                          6,
+                          formData.assetSenderFromSwap.length - 7
+                        )
+                      : undefined) ||
+                    (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
                   }
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                   aria-label={

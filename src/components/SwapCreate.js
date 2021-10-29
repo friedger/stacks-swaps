@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { useConnectForAuth } from '../lib/auth';
 import { contracts, feeContracts, NETWORK, STX_FT_SWAP_CONTRACT } from '../lib/constants';
@@ -31,6 +31,7 @@ import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
 import { Price } from './Price';
 import { resolveBNS } from '../lib/account';
+import { getFTData } from '../lib/fungibleTokens';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -52,10 +53,23 @@ export function SwapCreate({
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
   const [formData, setFormData] = useState(formData1);
+  const [ftData, setFtData] = useState();
   const { doContractCall } = useConnect();
   const { handleOpenAuth } = useConnectForAuth();
 
   const buyWithStx = type.startsWith('stx-');
+
+  useEffect(() => {
+    console.log({ type, formData });
+    if (type === 'stx-ft' && formData && formData.trait) {
+      const [contractId] = formData.trait.split('::');
+      const [address, name] = contractId.split('.');
+      getFTData(address, name).then(result => {
+        console.log({ ftData: result });
+        setFtData(result);
+      });
+    }
+  }, [formData, type]);
 
   const createAction = async () => {
     setLoading(true);
@@ -173,10 +187,11 @@ export function SwapCreate({
         ];
         break;
       case 'stx-ft':
-        // TODO respect decimals
         const sellFactor =
           formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
             ? Math.pow(10, 6)
+            : ftData
+            ? Math.pow(10, ftData.decimals)
             : 1;
         const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
         if (ftAmount2CV.value.toNumber() <= 0) {
@@ -613,7 +628,9 @@ export function SwapCreate({
       : type === 'stx-ft' &&
         formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
       ? 6
-      : 0; // TODO get decimals from trait
+      : type === 'stx-ft' && ftData
+      ? ftData.decimals
+      : 0;
   const asset = getAsset(sellType, formData.trait);
   const assetName = getAssetName(sellType, formData.trait);
   // buy (right to left)

@@ -1,5 +1,6 @@
 export const MIA_TOKEN = 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token::miamicoin';
-export const BOOMBOX = 'SP497E7RX3233ATBS2AB9G4WTHB63X5PBSP5VGAQ.boomboxes-cycle-14::b-14';
+export const FARI_TOKEN = 'SP213KNHB5QD308TEESY1ZMX1BP8EZDPG4JWD0MEA.fari-token-mn::fari';
+export const BOOMBOX = 'SP1QK1AZ24R132C0D84EEQ8Y2JDHARDR58R72E1ZW.boomboxes-cycle-20-v1::b-20';
 export const THIS_IS_NUMBER_ONE =
   'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.thisisnumberone-v2::my-nft';
 
@@ -7,7 +8,9 @@ export function getAsset(type, trait) {
   return trait === MIA_TOKEN
     ? 'MIA'
     : trait === BOOMBOX
-    ? 'BOOMBOX'
+    ? 'Boombox [5th Edition]'
+    : trait === FARI_TOKEN
+    ? 'FARI'
     : trait === THIS_IS_NUMBER_ONE
     ? '#1'
     : type.toUpperCase();
@@ -24,6 +27,10 @@ export function getDeepLink(type, trait) {
       : '/mia'
     : trait === THIS_IS_NUMBER_ONE
     ? '/thisisnumberone'
+    : trait === FARI_TOKEN
+    ? type === 'stx-ft'
+      ? '/stx-fari'
+      : '/fari'
     : trait
     ? `/${type}/${trait}`
     : `/${type}`;

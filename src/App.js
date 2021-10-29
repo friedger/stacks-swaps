@@ -8,7 +8,7 @@ import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
+import { FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 
@@ -123,6 +123,20 @@ function Content({ userSession }) {
             userSession={userSession}
             trait={MIA_TOKEN}
           />
+           <StacksSwaps
+            path="/fari/swap/:id"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={FARI_TOKEN}
+          />
+          <StacksSwaps
+            path="/fari"
+            type="ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={FARI_TOKEN}
+          />
           <StacksSwaps
             path="/stx/swap/:id"
             type="stx"
@@ -180,6 +194,20 @@ function Content({ userSession }) {
             decentralizedID={decentralizedID}
             userSession={userSession}
             trait={MIA_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx-fari/swap/:id"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={FARI_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx-fari"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={FARI_TOKEN}
           />
         </>
         {!authenticated && <Landing path="/" exact default />}

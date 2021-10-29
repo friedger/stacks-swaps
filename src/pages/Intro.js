@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
 import { CatamaranIntroButton } from '../components/CatamaranIntroButton';
-import { BOOMBOX, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
+import { BOOMBOX, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
 import { AtomicIntroButton } from '../components/AtomicIntroButton';
 // Intro page with choice of swaps
 
@@ -23,19 +23,27 @@ export default function Intro(props) {
                 <CatamaranIntroButton type="ft" trait={MIA_TOKEN} />
               </div>
               <div className="col">
-                <CatamaranIntroButton type="nft" trait={BOOMBOX} />
+                <CatamaranIntroButton type="ft" trait={FARI_TOKEN} />
               </div>
             </div>
             <div className="row">
               <div className="col">
+                <CatamaranIntroButton type="nft" trait={BOOMBOX} />
+              </div>
+              <div className="col">
                 <CatamaranIntroButton type="nft" trait={THIS_IS_NUMBER_ONE} />
               </div>
-
+              <div className="col">
+              </div>
+            </div>
+            <div className="row">
               <div className="col">
                 <CatamaranIntroButton type="ft" />
               </div>
               <div className="col">
                 <CatamaranIntroButton type="nft" />
+              </div>
+              <div className="col">
               </div>
             </div>
           </div>
@@ -47,10 +55,13 @@ export default function Intro(props) {
           <div className="container">
             <div className="row">
               <div className="col">
-                <AtomicIntroButton type="stx-ft" />
+                <AtomicIntroButton type="stx-ft" trait={MIA_TOKEN} />
               </div>
               <div className="col">
-                <AtomicIntroButton type="stx-ft" trait={MIA_TOKEN} />
+                <AtomicIntroButton type="stx-ft" trait={FARI_TOKEN} />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="stx-ft" />
               </div>
             </div>
           </div>

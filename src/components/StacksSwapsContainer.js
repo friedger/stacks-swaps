@@ -6,8 +6,8 @@ import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
-import { callReadOnlyFunction, ClarityType, cvToString } from '@stacks/transactions';
-import { feeContracts, infoApi, NETWORK, smartContractsApi } from '../lib/constants';
+import { ClarityType, cvToString } from '@stacks/transactions';
+import { feeContracts, infoApi, smartContractsApi } from '../lib/constants';
 import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
 import { getFTData } from '../lib/fungibleTokens';
 

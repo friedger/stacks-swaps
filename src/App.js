@@ -54,6 +54,7 @@ export default function App(props) {
           <Auth />
         </div>
       </header>
+<div><b>All features disabled until further notice</b> </div>
       <Content userSession={userSession} path="/" />
     </Connect>
   );

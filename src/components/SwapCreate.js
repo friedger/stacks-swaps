@@ -227,14 +227,6 @@ export function SwapCreate({
                   satsOrUstxCV.value.add(fees.value.value)
                 ),
               ]
-            : feeId === 'mia'
-            ? [
-                makeStandardSTXPostCondition(
-                  ownerStxAddress,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value
-                ),
-              ]
             : [
                 makeStandardSTXPostCondition(
                   ownerStxAddress,
@@ -446,15 +438,6 @@ export function SwapCreate({
                   fees.value.value
                 ),
               ]
-            : feeId === 'mia'
-            ? [
-                makeContractSTXPostCondition(
-                  contract.address,
-                  contract.name,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value
-                ),
-              ]
             : [
                 makeContractSTXPostCondition(
                   contract.address,
@@ -568,7 +551,6 @@ export function SwapCreate({
               fees
             )
           );
-        } else if (feeId === 'mia') {
         } else {
           postConditions.push(
             makeContractFungiblePostCondition(
@@ -874,7 +856,6 @@ export function SwapCreate({
                   <option value="stx">1% fee in STX</option>
                   <option value="fpwr">1% fee in FPWR</option>
                   <option value="frie">1% fee in FRIE</option>
-                  <option value="mia">0% fee (MIA holders only)</option>
                 </select>
               </div>
               <div className="col" />

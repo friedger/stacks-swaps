@@ -54,8 +54,7 @@ export default function App(props) {
           <Auth />
         </div>
       </header>
-<div><b>All features disabled until further notice</b> </div>
-
+      <Content userSession={userSession} path="/" />
     </Connect>
   );
 }
@@ -69,76 +68,6 @@ function Content({ userSession }) {
         <>
           <Intro path="/" default />
           <StacksSwaps
-            path="/nft/swap/:id"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/nft/:trait/:nftId"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/nft/:trait"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/nft"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/ft/swap/:id"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/ft/:trait"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/ft"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/mia/swap/:id"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={MIA_TOKEN}
-          />
-          <StacksSwaps
-            path="/mia"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={MIA_TOKEN}
-          />
-           <StacksSwaps
-            path="/fari/swap/:id"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={FARI_TOKEN}
-          />
-          <StacksSwaps
-            path="/fari"
-            type="ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={FARI_TOKEN}
-          />
-          <StacksSwaps
             path="/stx/swap/:id"
             type="stx"
             decentralizedID={decentralizedID}
@@ -149,20 +78,6 @@ function Content({ userSession }) {
             type="stx"
             decentralizedID={decentralizedID}
             userSession={userSession}
-          />
-          <StacksSwaps
-            path="/thisisnumberone/swap/:id"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={THIS_IS_NUMBER_ONE}
-          />
-          <StacksSwaps
-            path="/thisisnumberone"
-            type="nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={THIS_IS_NUMBER_ONE}
           />
           <StacksSwaps
             path="/stx-ft/swap/:id"

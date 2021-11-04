@@ -19,32 +19,6 @@ export default function Intro(props) {
               <div className="col">
                 <CatamaranIntroButton type="stx" />
               </div>
-              <div className="col">
-                <CatamaranIntroButton type="ft" trait={MIA_TOKEN} />
-              </div>
-              <div className="col">
-                <CatamaranIntroButton type="ft" trait={FARI_TOKEN} />
-              </div>
-            </div>
-            <div className="row">
-              <div className="col">
-                <CatamaranIntroButton type="nft" trait={BOOMBOX} />
-              </div>
-              <div className="col">
-                <CatamaranIntroButton type="nft" trait={THIS_IS_NUMBER_ONE} />
-              </div>
-              <div className="col">
-              </div>
-            </div>
-            <div className="row">
-              <div className="col">
-                <CatamaranIntroButton type="ft" />
-              </div>
-              <div className="col">
-                <CatamaranIntroButton type="nft" />
-              </div>
-              <div className="col">
-              </div>
             </div>
           </div>
 

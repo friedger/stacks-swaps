@@ -17,7 +17,7 @@ export function AmountStx({ ustx }) {
       &nbsp;Ӿ
       <br />
       ($
-      {((ustx * BigInt(rate.value * 1000000)) / 1000000000000n).toLocaleString(
+      {((ustx * BigInt(Math.floor(rate.value * 1000000))) / 1000000000000n).toLocaleString(
         undefined,
         {
           style: 'decimal',

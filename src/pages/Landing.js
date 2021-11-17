@@ -1,13 +1,10 @@
 import { navigate } from '@reach/router';
 import React from 'react';
 import { AssetIcon } from '../components/AssetIcon';
-import { useConnectForAuth } from '../lib/auth';
 
 // Landing page with Stacks Connect for authentication
 
 export default function Landing(props) {
-  const { handleOpenAuth } = useConnectForAuth();
-
   return (
     <div className="Landing">
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">

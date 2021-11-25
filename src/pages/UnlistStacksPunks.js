@@ -1,11 +1,14 @@
 import { useConnect } from '@stacks/connect-react';
 import {
   createAssetInfo,
+  FungibleConditionCode,
   makeContractNonFungiblePostCondition,
+  makeContractSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
   uintCV,
 } from '@stacks/transactions';
+import { BN } from 'bn.js';
 import React, { useState } from 'react';
 import { NETWORK } from '../lib/constants';
 
@@ -35,6 +38,12 @@ export default function UnlistStacksPunks({ userSession }) {
               functionArgs: [idCV],
               postConditionMode: PostConditionMode.Deny,
               postConditions: [
+                makeContractSTXPostCondition(
+                  'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
+                  'stacks-punks-market',
+                  FungibleConditionCode.GreaterEqual,
+                  new BN(0)
+                ),
                 makeContractNonFungiblePostCondition(
                   'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
                   'stacks-punks-market',

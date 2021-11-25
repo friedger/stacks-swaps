@@ -11,6 +11,7 @@ import { ProfileSmall } from './components/ProfileSmall';
 import { FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
+import UnlistStacksPunks from './pages/UnlistStacksPunks';
 
 export default function App(props) {
   const { authOptions } = useConnectForAuth();
@@ -125,6 +126,9 @@ function Content({ userSession }) {
             userSession={userSession}
             trait={FARI_TOKEN}
           />
+          {authenticated && (
+            <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
+          )}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

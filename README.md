@@ -14,4 +14,4 @@ A new browser window will open to `localhost:3000`.
 
 ## Deploy your own with netlify
 
-![https://www.netlify.com/img/deploy/button.svg](https://app.netlify.com/start/deploy?repository=https://github.com/friedger/stacks-swaps)
+[![deploy](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/friedger/stacks-swaps)

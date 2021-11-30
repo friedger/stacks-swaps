@@ -47,7 +47,7 @@ export default function App(props) {
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
           <ProfileSmall userSession={userSession} />
           <a
-            href="https://stacks-swaps.readthedocs.io"
+            href="https://docs.catamaranswaps.org"
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline-primary"

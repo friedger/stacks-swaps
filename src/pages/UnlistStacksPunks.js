@@ -9,7 +9,7 @@ import {
   uintCV,
 } from '@stacks/transactions';
 import { BN } from 'bn.js';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NETWORK } from '../lib/constants';
 
 export default function UnlistStacksPunks({ userSession }) {

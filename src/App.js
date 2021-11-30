@@ -6,6 +6,8 @@ import { userDataState, userSessionState, useConnectForAuth } from './lib/auth';
 import { useAtom } from 'jotai';
 import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
+
+import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
 import { FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
@@ -45,7 +47,7 @@ export default function App(props) {
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
           <ProfileSmall userSession={userSession} />
           <a
-            href="https://app.sigle.io/friedger.id/A-l0d8h0Bq7uEGTWl004B"
+            href="https://stacks-swaps.readthedocs.io"
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline-primary"
@@ -68,6 +70,7 @@ function Content({ userSession }) {
       <Router>
         <>
           <Intro path="/" default />
+          <Tac path="/tac"/>
           <StacksSwaps
             path="/stx/swap/:id"
             type="stx"

@@ -1,6 +1,6 @@
-# Swap BTC for tokens on Stacks chain
+# Swap BTC and other assets for tokens on Stacks chain
 
-Information and basic UI to inspect and execute trustless swaps between Bitcoins and fungible and non-fungible tokens on the Stacks chain.
+Information and basic UI to inspect and execute trustless swaps between Bitcoin (and other tokens) and fungible and non-fungible tokens on the Stacks chain.
 
 ## Testing
 

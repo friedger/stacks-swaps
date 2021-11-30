@@ -71,10 +71,10 @@ Example of a completed swap: `https://catamaranswaps.org/stx-ft/swap/77 <https:/
 
 Smart Contract
 --------------
-The smart contract was deployed at [stx-ft-swap-v1](https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1?chain=mainnet) by
+The smart contract was deployed at `stx-ft-swap-v1 <https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1?chain=mainnet>`_ by
 SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.
 
 The fee contracts are
 
-* [STX fees](https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-fees?chain=mainnet): stx-ft-swap-v1-fixed-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9
-* [FRIE fees](https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-frie-fees?chain=mainnet): stx-ft-swap-v1-fixed-frie-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9
+* `STX fees <https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-fees?chain=mainnet>`_: stx-ft-swap-v1-fixed-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9
+* `FRIE fees <https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-frie-fees?chain=mainnet>`_: stx-ft-swap-v1-fixed-frie-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9

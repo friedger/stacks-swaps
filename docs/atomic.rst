@@ -40,7 +40,7 @@ The transaction result looks something like this:
 
 .. image:: /_static/tx-result.png
 
-The details of the swap with id *8* can then be found at `https://catmaranswaps.org/stx-ft/swap/8 <https://catmaranswaps.org/stx-ft/swap/8>`_.
+The details of the swap with id *8* can then be found at `https://catamaranswaps.org/stx-ft/swap/8 <https://catamaranswaps.org/stx-ft/swap/8>`_.
 For other swaps, just replace the id at the end of the link.
 
 Finalize Swap
@@ -56,9 +56,9 @@ STX - FARI
 ----------
 Follow the steps of any fungible token. The token identifier is prefilled if used ``stx-fari``
 instead of the ``stx-ft``. The start url is
-`https://catmaranswaps.org/stx-fari <https://catmaranswaps.org/stx-fari>`_.
+`https://catamaranswaps.org/stx-fari <https://catamaranswaps.org/stx-fari>`_.
 
-Example of a completed swap: `https://catmaranswaps.org/stx-fari/swap/15 <https://catmaranswaps.org/stx-fari/swap/15>`_.
+Example of a completed swap: `https://catamaranswaps.org/stx-fari/swap/15 <https://catamaranswaps.org/stx-fari/swap/15>`_.
 
 STX - NYCC
 ----------
@@ -66,7 +66,7 @@ Follow the steps of any fungible token using the follwoing url:
 
 `https://www.catamaranswaps.org/stx-ft/SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token::newyorkcitycoin <https://www.catamaranswaps.org/stx-ft/SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token::newyorkcitycoin>`_.
 
-Example of a completed swap: `https://catmaranswaps.org/stx-ft/swap/77 <https://catmaranswaps.org/stx-ft/swap/77>`_.
+Example of a completed swap: `https://catamaranswaps.org/stx-ft/swap/77 <https://catamaranswaps.org/stx-ft/swap/77>`_.
 
 
 Smart Contract
@@ -75,5 +75,6 @@ The smart contract was deployed at [stx-ft-swap-v1](https://explorer.stacks.co/t
 SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.
 
 The fee contracts are
+
 * [STX fees](https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-fees?chain=mainnet): stx-ft-swap-v1-fixed-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9
 * [FRIE fees](https://explorer.stacks.co/txid/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.stx-ft-swap-v1-fixed-frie-fees?chain=mainnet): stx-ft-swap-v1-fixed-frie-fees by SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9

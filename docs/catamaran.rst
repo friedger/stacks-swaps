@@ -14,7 +14,7 @@ A swap consists of three steps:
 #. the buyer of BTC makes a btc transaction to the specified BTC address of the seller.
 #. the seller or buyer submits the transaction id of the bitcoin transaction and the escrowed STX are released.
 
-:note: currently, many restrictions apply to the bitcoin transaction for cataran swaps. This means that swapping partners need to trust each other in case the BTC tx could not be verified.
+:note: currently, many restrictions apply to the bitcoin transaction for catamaran swaps. This means that swapping partners need to trust each other in case the BTC tx could not be verified.
 
 Segwit transactions are not supported. Transaction with many inputs or outputs
 can't be verified neither. These restrictions will be hopefully lifted
@@ -32,7 +32,7 @@ The result looks something like this:
 
     (ok u72)
 
-The details of the swap can then be found at `https://catmaranswaps.org/stx/swap/72 <https://catmaranswaps.org/stx/swap/72>`_.
+The details of the swap can then be found at `https://catamaranswaps.org/stx/swap/72 <https://catamaranswaps.org/stx/swap/72>`_.
 
 Make a Bitcoin transaction
 --------------------------

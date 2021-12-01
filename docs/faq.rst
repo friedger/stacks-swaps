@@ -1,6 +1,10 @@
 Frequently Asked Questions
 ==========================
 
+What can go wrong with catamaran swaps (BTC - STX)?
+---------------------------------------------------
+With Stacks 2.0x, it can happen that Bitcoin transactions can't be verified on the Stacks blockchain due to so-called flash blocks. These Bitcoin blocks were not mined by Stacks miners and they are not visible to the Stacks blockchain. This changes with Stacks 2.1. Therefore, only use these swaps with users that you trust to resolve such a case off-chain.
+
 What can go wrong with atomic swaps?
 ------------------------------------
 

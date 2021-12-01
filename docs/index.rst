@@ -2,6 +2,7 @@
 
 catamaranswaps.org - Documentation
 ===================================
+.. image:: /_static/logo.png
 
 .. toctree::
    :maxdepth: 2
@@ -33,10 +34,3 @@ Naming
 Swaps between Bitcoin and Stacks are called *Catamaran Swaps* because
 - unlike `Submarine Swap <https://wiki.ion.radar.tech/tech/research/submarine-swap>`_ -
 the two parts happen on-chain/above water, just on two different chains.
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`

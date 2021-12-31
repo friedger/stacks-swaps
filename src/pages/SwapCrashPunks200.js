@@ -66,7 +66,7 @@ export default function SwapCrashPunks200({ userSession }) {
     doContractCall({
       contractAddress: 'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ',
       contractName: 'crashpunks-v2',
-      functionName: 'set-approve-all',
+      functionName: 'set-approved-all',
       functionArgs: [
         contractPrincipalCV('SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', 'stx-cp-many-swap-v1'),
         trueCV(),

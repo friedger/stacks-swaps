@@ -14,6 +14,7 @@ import { FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/UnlistStacksPunks';
+import SwapCrashPunks200 from './pages/SwapCrashPunks200';
 
 export default function App(props) {
   const { authOptions } = useConnectForAuth();
@@ -131,6 +132,9 @@ function Content({ userSession }) {
           />
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
+          )}
+          {authenticated && (
+            <SwapCrashPunks200 path="/swap-crash-punks-200" userSession={userSession} />
           )}
         </>
         {!authenticated && <Landing path="/" exact default />}

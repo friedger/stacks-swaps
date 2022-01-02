@@ -43,7 +43,10 @@ export default function SwapCrashPunks200({ userSession }) {
           unanchored: true,
         });
         const result = response.results.filter(
-          tx => tx.tx_status === 'success' && tx.tx_type === 'contract_call'
+          tx =>
+            tx.tx_status === 'success' &&
+            tx.tx_type === 'contract_call' &&
+            tx.contract_call.function_name === 'create-swap'
         );
         console.log(result);
         const txsForUser = result.filter(tx => {

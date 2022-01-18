@@ -1,7 +1,6 @@
 import React from 'react';
-import { AlertAllPages } from '../components/AlertAllPages';
 import { CatamaranIntroButton } from '../components/CatamaranIntroButton';
-import { BOOMBOX, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
+import { CRASHPUNKS, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from '../components/assets';
 import { AtomicIntroButton } from '../components/AtomicIntroButton';
 // Intro page with choice of swaps
 
@@ -36,6 +35,19 @@ export default function Intro(props) {
               </div>
               <div className="col">
                 <AtomicIntroButton type="stx-ft" />
+              </div>
+            </div>
+          </div>
+          <div className="container">
+            <div className="row">
+              <div className="col">
+                <AtomicIntroButton type="stx-nft" trait={CRASHPUNKS} />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="stx-nft" trait={THIS_IS_NUMBER_ONE} />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="stx-nft" />
               </div>
             </div>
           </div>

@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { useConnectForAuth } from '../lib/auth';
-import { contracts, feeContracts, NETWORK, STX_FT_SWAP_CONTRACT } from '../lib/constants';
+import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
   AnchorMode,
-  callReadOnlyFunction,
-  ClarityType,
-  contractPrincipalCV,
   createAssetInfo,
+  cvToString,
   FungibleConditionCode,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
@@ -31,7 +29,10 @@ import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
 import { Price } from './Price';
 import { resolveBNS } from '../lib/account';
-import { getFTData } from '../lib/fungibleTokens';
+import { getFTData, getNFTData } from '../lib/tokenData';
+import { contractToFees } from '../lib/fees';
+import { splitAssetIdentifier } from '../lib/assets';
+import { makeCancelSwapPostConditions, makeCreateSwapPostConditions } from '../lib/swaps';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -67,6 +68,12 @@ export function SwapCreate({
       getFTData(address, name).then(result => {
         console.log({ ftData: result });
         setFtData(result);
+      });
+    } else if (type === 'stx-nft' && formData && formData.trait) {
+      const [contractId] = formData.trait.split('::');
+      const [address, name] = contractId.split('.');
+      getNFTData(address, name).then(result => {
+        console.log({ nftData: result });
       });
     }
   }, [formData, type]);
@@ -111,11 +118,12 @@ export function SwapCreate({
         ? someCV(standardPrincipalCV(seller))
         : noneCV()
       : btcAddressToPubscriptCV(seller);
-
-    let functionArgs;
-    let postConditions;
-    let ftContractAddress, ftTail, ftContractName, ftAssetName, ftCV;
     const assetBuyer = await resolveBNS(assetBuyerRef.current.value.trim());
+
+    let functionArgs, postConditions;
+    let ftAmountCV, nftIdCV;
+    let feeId, feeContract, feesCV, fees;
+    let assetContractAddress, assetContractName, assetName, assetContractCV;
     switch (type) {
       case 'nft':
         if (!assetBuyer) {
@@ -123,49 +131,48 @@ export function SwapCreate({
           setLoading(false);
           return;
         }
-        const nftIdCV = uintCV(nftIdRef.current.value.trim());
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
         const nftReceiverCV = standardPrincipalCV(assetBuyer);
-        const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
-        const [nftContractName, nftAssetName] = nftTail.split('::');
-        if (!nftAssetName) {
-          setStatus('"nft contract :: nft name" must be set');
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
           setLoading(false);
+          setStatus('"nft contract :: nft name" must be set');
           return;
         }
-        const nftCV = contractPrincipalCV(nftContractAddress, nftContractName);
-        functionArgs = [satsOrUstxCV, sellerCV, nftIdCV, nftReceiverCV, nftCV];
+        functionArgs = [satsOrUstxCV, sellerCV, nftIdCV, nftReceiverCV, assetContractCV];
         postConditions = [
           makeStandardNonFungiblePostCondition(
             ownerStxAddress,
             NonFungibleConditionCode.DoesNotOwn,
-            createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
+            createAssetInfo(assetContractAddress, assetContractName, assetName),
             nftIdCV
           ),
         ];
         break;
       case 'ft':
-        const ftAmountCV = uintCV(amountRef.current.value.trim());
+        ftAmountCV = uintCV(amountRef.current.value.trim());
         if (ftAmountCV.value.toNumber() <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
         }
         const ftReceiverCV = assetBuyer ? someCV(standardPrincipalCV(assetBuyer)) : noneCV();
-        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        [ftContractName, ftAssetName] = ftTail.split('::');
-        if (!ftAssetName) {
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        functionArgs = [satsOrUstxCV, sellerCV, ftAmountCV, ftReceiverCV, ftCV];
+
+        functionArgs = [satsOrUstxCV, sellerCV, ftAmountCV, ftReceiverCV, assetContractCV];
         postConditions = [
           makeStandardFungiblePostCondition(
             ownerStxAddress,
             FungibleConditionCode.Equal,
             ftAmountCV.value,
-            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+            createAssetInfo(assetContractAddress, assetContractName, assetName)
           ),
         ];
         break;
@@ -193,57 +200,55 @@ export function SwapCreate({
             : ftData
             ? Math.pow(10, ftData.decimals)
             : 1;
-        const ftAmount2CV = uintCV(amountRef.current.value.trim() * sellFactor);
-        if (ftAmount2CV.value.toNumber() <= 0) {
+        ftAmountCV = uintCV(amountRef.current.value.trim() * sellFactor);
+        if (ftAmountCV.value.toNumber() <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
         }
-        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        [ftContractName, ftAssetName] = ftTail.split('::');
-        if (!ftAssetName) {
+        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const feeId = feeContractRef.current.value;
-        const feeContract = feeContracts[feeId];
-        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
-        const fees = await callReadOnlyFunction({
-          contractAddress: feeContract.address,
-          contractName: feeContract.name,
-          functionName: 'get-fees',
-          functionArgs: [satsOrUstxCV],
-          senderAddress: feeContract.address,
-        });
-        functionArgs = [satsOrUstxCV, ftAmount2CV, sellerCV, ftCV, feesCV];
-        postConditions =
-          feeId === 'stx'
-            ? [
-                makeStandardSTXPostCondition(
-                  ownerStxAddress,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value.add(fees.value.value)
-                ),
-              ]
-            : [
-                makeStandardSTXPostCondition(
-                  ownerStxAddress,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value
-                ),
-                makeStandardFungiblePostCondition(
-                  ownerStxAddress,
-                  FungibleConditionCode.Equal,
-                  fees.value.value,
-                  createAssetInfo(
-                    feeContract.ft.address,
-                    feeContract.ft.name,
-                    feeContract.ft.assetName
-                  )
-                ),
-              ];
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [satsOrUstxCV, ftAmountCV, sellerCV, assetContractCV, feesCV];
+        postConditions = makeCreateSwapPostConditions(
+          feeId,
+          ownerStxAddress,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
+        break;
+      case 'stx-nft':
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
+        if (nftIdCV.value.toNumber() <= 0) {
+          setLoading(false);
+          setStatus('positive numbers required to swap');
+          return;
+        }
+        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
+          setLoading(false);
+          setStatus('"nft contract :: nft name" must be set');
+          return;
+        }
+        feeId = feeContractRef.current.value;
+        console.log({ feeId });
+        feeContract = nftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
+        postConditions = makeCreateSwapPostConditions(
+          feeId,
+          ownerStxAddress,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
         break;
       default:
         break;
@@ -344,49 +349,51 @@ export function SwapCreate({
   const cancelAction = async () => {
     setLoading(true);
     const contract = contracts[type];
+    const swapIdCV = uintCV(id);
+
     let functionArgs;
     let postConditions;
-    let idCV;
-    let ftContractAddress, ftTail, ftContractName, ftAssetName, amountInSmallestUnit;
+    let amountInSmallestUnit, nftIdCV;
+    let assetContractCV, assetName, assetContractName, assetContractAddress;
+    let feeId, feeContract, feesCV, fees;
     switch (type) {
       case 'nft':
-        const [nftContractAddress, nftTail] = traitRef.current.value.trim().split('.');
-        const [nftContractName, nftAssetName] = nftTail.split('::');
-
-        idCV = uintCV(id);
-        functionArgs = [idCV];
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
+        [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
+          traitRef.current.value.trim()
+        );
+        functionArgs = [swapIdCV];
         postConditions = [
           makeContractNonFungiblePostCondition(
             contract.address,
             contract.name,
             NonFungibleConditionCode.DoesNotOwn,
-            createAssetInfo(nftContractAddress, nftContractName, nftAssetName),
-            idCV
+            createAssetInfo(assetContractAddress, assetContractName, assetName),
+            nftIdCV
           ),
         ];
 
         break;
       case 'ft':
-        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        [ftContractName, ftAssetName] = ftTail.split('::');
+        [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
+          traitRef.current.value.trim()
+        );
         amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
-        idCV = uintCV(id);
-        functionArgs = [idCV];
+        functionArgs = [swapIdCV];
         postConditions = [
           makeContractFungiblePostCondition(
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
             new BN(amountInSmallestUnit),
-            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+            createAssetInfo(assetContractAddress, assetContractName, assetName)
           ),
         ];
         break;
       case 'stx':
         amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
 
-        idCV = uintCV(id);
-        functionArgs = [idCV];
+        functionArgs = [swapIdCV];
         postConditions = [
           makeContractSTXPostCondition(
             contract.address,
@@ -397,68 +404,52 @@ export function SwapCreate({
         ];
         break;
       case 'stx-ft':
-        idCV = uintCV(id);
-        const factor = buyWithStx ? 1_000_000 : 100_000_000;
+        const factor = 1_000_000;
         const satsOrUstxCV = uintCV(
           Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
         );
 
-        [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        [ftContractName, ftAssetName] = ftTail.split('::');
-        if (!ftAssetName) {
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const feeId = feeContractRef.current.value;
-        const feeContract = feeContracts[feeId];
-        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
-        const fees = await callReadOnlyFunction({
-          contractAddress: feeContract.address,
-          contractName: feeContract.name,
-          functionName: 'get-fees',
-          functionArgs: [satsOrUstxCV],
-          senderAddress: feeContract.address,
-        });
-        functionArgs = [idCV, ftCV, feesCV];
-        postConditions =
-          feeId === 'stx'
-            ? [
-                makeContractSTXPostCondition(
-                  contract.address,
-                  contract.name,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value
-                ),
-                makeContractSTXPostCondition(
-                  feeContract.address,
-                  feeContract.name,
-                  FungibleConditionCode.Equal,
-                  fees.value.value
-                ),
-              ]
-            : [
-                makeContractSTXPostCondition(
-                  contract.address,
-                  contract.name,
-                  FungibleConditionCode.Equal,
-                  satsOrUstxCV.value
-                ),
-                makeContractFungiblePostCondition(
-                  contract.address,
-                  contract.name,
-                  FungibleConditionCode.Equal,
-                  fees.value.value,
-                  createAssetInfo(
-                    feeContract.ft.address,
-                    feeContract.ft.name,
-                    feeContract.ft.assetName
-                  )
-                ),
-              ];
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        postConditions = makeCancelSwapPostConditions(
+          feeId,
+          contract,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
         break;
+      case 'stx-nft':
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
 
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
+          setLoading(false);
+          setStatus('"ft contract :: ft name" must be set');
+          return;
+        }
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        postConditions = makeCancelSwapPostConditions(
+          feeId,
+          contract,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
+        break;
       default:
         setLoading(false);
         return;
@@ -504,34 +495,31 @@ export function SwapCreate({
 
     let functionArgs;
     let postConditions;
+
+    let amountInSmallestUnit, nftIdCV;
+    let assetContractCV, assetName, assetContractName, assetContractAddress;
+    let feeId, feeContract, feesCV, fees;
+
     switch (type) {
       case 'stx-ft':
-        const [ftContractAddress, ftTail] = traitRef.current.value.trim().split('.');
-        const [ftContractName, ftAssetName] = ftTail.split('::');
-        const ftCV = contractPrincipalCV(ftContractAddress, ftContractName);
-        const amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
-        const feeId = feeContractRef.current.value;
-        const feeContract = feeContracts[feeId];
-        const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
-        const feesResponse = await callReadOnlyFunction({
-          contractAddress: feeContract.address,
-          contractName: feeContract.name,
-          functionName: 'get-fees',
-          functionArgs: [satsOrUstxCV],
-          senderAddress: feeContract.address,
-        });
-        const fees =
-          feesResponse.type === ClarityType.OptionalNone ? undefined : feesResponse.value.value;
+        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
+
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         if (!fees) {
           setLoading(false);
           setStatus("Couldn't load fees.");
           return;
         }
-        functionArgs = [swapIdCV, ftCV, feesCV];
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = [
           makeContractSTXPostCondition(
-            STX_FT_SWAP_CONTRACT.address,
-            STX_FT_SWAP_CONTRACT.name,
+            contract.address,
+            contract.name,
             FungibleConditionCode.Equal,
             satsOrUstxCV.value
           ),
@@ -539,7 +527,7 @@ export function SwapCreate({
             ownerStxAddress,
             FungibleConditionCode.Equal,
             new BN(amountInSmallestUnit),
-            createAssetInfo(ftContractAddress, ftContractName, ftAssetName)
+            createAssetInfo(assetContractAddress, assetContractName, assetName)
           ),
         ];
         if (feeId === 'stx') {
@@ -564,6 +552,60 @@ export function SwapCreate({
         }
         break;
 
+      case 'stx-nft':
+        nftIdCV = uintCV(formData.nftId);
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+
+        feeId = feeContractRef.current.value;
+        feeContract = nftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        if (!fees) {
+          setLoading(false);
+          setStatus("Couldn't load fees.");
+          return;
+        }
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        console.log(cvToString(satsOrUstxCV), {
+          ownerStxAddress,
+          assetContractAddress,
+          assetContractName,
+        });
+        postConditions = [
+          makeContractSTXPostCondition(
+            contract.address,
+            contract.name,
+            FungibleConditionCode.Equal,
+            satsOrUstxCV.value
+          ),
+          makeStandardNonFungiblePostCondition(
+            ownerStxAddress,
+            NonFungibleConditionCode.DoesNotOwn,
+            createAssetInfo(assetContractAddress, assetContractName, assetName),
+            nftIdCV
+          ),
+        ];
+        if (feeId === 'stx') {
+          postConditions.push(
+            makeContractSTXPostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees
+            )
+          );
+        } else {
+          postConditions.push(
+            makeContractFungiblePostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees,
+              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
+            )
+          );
+        }
+        break;
       default:
         setLoading(false);
         return;
@@ -584,8 +626,14 @@ export function SwapCreate({
           setLoading(false);
         },
         onFinish: result => {
+          console.log(result);
+          console.log(result.txId);
           setLoading(false);
-          setTxId(result.txId);
+          if (result.txId.error) {
+            setStatus(result.txId.error + ' ' + result.txId.reason);
+            return;
+          }
+          setTxId(result.txId.txid);
           saveTxData(result, userSession)
             .then(r => {
               setLoading(false);
@@ -634,6 +682,9 @@ export function SwapCreate({
       )}
       {type === 'stx-ft' && (
         <p>For a swap of Stacks and a token on Stacks, the token has to comply with SIP-10.</p>
+      )}
+      {type === 'stx-nft' && (
+        <p>For a swap of Stacks and a NFT on Stacks, the token has to comply with SIP-9.</p>
       )}
       {buyWithStx ? (
         <p>
@@ -725,7 +776,9 @@ export function SwapCreate({
             <div className="col text-center border-left">
               <AssetIcon type={sellType} trait={formData.trait} />
               <br />
-              <div className={`input-group ${type === 'nft' ? '' : 'd-none'}`}>
+              <div
+                className={`input-group ${type === 'nft' || type === 'stx-nft' ? '' : 'd-none'}`}
+              >
                 <input
                   type="number"
                   className="form-control"
@@ -739,7 +792,9 @@ export function SwapCreate({
                   minLength="1"
                 />
               </div>
-              <div className={`input-group ${type === 'nft' ? 'd-none' : ''}`}>
+              <div
+                className={`input-group ${type === 'nft' || type === 'stx-nft' ? 'd-none' : ''}`}
+              >
                 <input
                   type="number"
                   className="form-control"
@@ -755,7 +810,7 @@ export function SwapCreate({
               </div>
               <i className="bi bi-arrow-right"></i>
               <br />
-              {type !== 'nft' && (
+              {type !== 'nft' && type !== 'stx-nft' && (
                 <>
                   <br />
                   <Price
@@ -782,7 +837,7 @@ export function SwapCreate({
                   onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
                   aria-label={
                     buyWithStx
-                      ? type === 'nft'
+                      ? type === 'stx-nft'
                         ? `Price for NFT in STXs`
                         : `amount of STXs`
                       : type === 'nft'
@@ -791,7 +846,7 @@ export function SwapCreate({
                   }
                   placeholder={
                     buyWithStx
-                      ? type === 'nft'
+                      ? type === 'stx-nft'
                         ? `Price for NFT in STXs`
                         : `amount of STXs`
                       : type === 'nft'
@@ -854,8 +909,7 @@ export function SwapCreate({
                   aria-label="select fee model"
                 >
                   <option value="stx">1% fee in STX</option>
-                  <option value="fpwr">1% fee in FPWR</option>
-                  <option value="frie">1% fee in FRIE</option>
+                  {type !== 'stx-nft' && <option value="frie">1% fee in FRIE</option>}
                 </select>
               </div>
               <div className="col" />

@@ -7,7 +7,6 @@ import {
   FungibleConditionCode,
   hexToCV,
   listCV,
-  makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
@@ -20,7 +19,7 @@ import {
 } from '@stacks/transactions';
 import { BN } from 'bn.js';
 import React, { useEffect, useState } from 'react';
-import { accountsApi, NETWORK } from '../lib/constants';
+import { accountsApi, NETWORK } from '../../lib/constants';
 
 const feesCV = contractPrincipalCV(
   'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',

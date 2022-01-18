@@ -10,11 +10,11 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE } from './components/assets';
+import { FARI_TOKEN, MIA_TOKEN } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
-import UnlistStacksPunks from './pages/UnlistStacksPunks';
-import SwapCrashPunks200 from './pages/SwapCrashPunks200';
+import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
+import SwapCrashPunks200 from './pages/special/SwapCrashPunks200';
 
 export default function App(props) {
   const { authOptions } = useConnectForAuth();
@@ -71,7 +71,7 @@ function Content({ userSession }) {
       <Router>
         <>
           <Intro path="/" default />
-          <Tac path="/tac"/>
+          <Tac path="/tac" />
           <StacksSwaps
             path="/stx/swap/:id"
             type="stx"
@@ -99,6 +99,24 @@ function Content({ userSession }) {
           <StacksSwaps
             path="/stx-ft"
             type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-nft/swap/:id"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-nft/:trait"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/stx-ft"
+            type="stx-nft"
             decentralizedID={decentralizedID}
             userSession={userSession}
           />

@@ -27,3 +27,16 @@ export async function getFTData(contractAddress, contractName) {
     ctrInterface.fungible_tokens.length === 1 ? ctrInterface.fungible_tokens[0].name : undefined;
   return { decimals, symbol, assetName };
 }
+
+export async function getNFTData(contractAddress, contractName) {
+  const ctrInterface = await smartContractsApi.getContractInterface({
+    contractAddress,
+    contractName,
+  });
+  const assetName =
+    ctrInterface.non_fungible_tokens.length === 1
+      ? ctrInterface.non_fungible_tokens[0].name
+      : undefined;
+  console.log({ nft: assetName });
+  return { assetName };
+}

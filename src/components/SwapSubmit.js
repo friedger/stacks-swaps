@@ -53,7 +53,6 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, from
     const btcTxId = btcTxIdRef.current.value.trim();
     const {
       txCV,
-      txPartsCV,
       proofCV,
       block,
       blockCV,

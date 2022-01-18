@@ -57,7 +57,17 @@ export const STX_FT_SWAP_FPWR_FEE_CONTRACT = {
   },
 };
 
-export const feeContracts = {
+export const STX_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'stx-nft-swap-v1',
+};
+
+export const STX_NFT_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'stx-nft-fixed-fees',
+};
+
+export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
   frie: {
@@ -79,6 +89,11 @@ export const feeContracts = {
       assetName: 'miamicoin',
     },
   },
+  stxnft: STX_NFT_SWAP_FEE_CONTRACT,
+};
+
+export const nftFeeContracts = {
+  stx: STX_NFT_SWAP_FEE_CONTRACT,
 };
 
 export const contracts = {
@@ -86,6 +101,7 @@ export const contracts = {
   ft: BTC_FT_SWAP_CONTRACT,
   stx: BTC_STX_SWAP_CONTRACT,
   'stx-ft': STX_FT_SWAP_CONTRACT,
+  'stx-nft': STX_NFT_SWAP_CONTRACT,
 };
 
 // TODO: add Freehold API endpoint?

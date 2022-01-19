@@ -10,7 +10,7 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { FARI_TOKEN, MIA_TOKEN } from './components/assets';
+import { CRASHPUNKS, FARI_TOKEN, MIA_TOKEN } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
@@ -115,7 +115,7 @@ function Content({ userSession }) {
             userSession={userSession}
           />
           <StacksSwaps
-            path="/stx-ft"
+            path="/stx-nft"
             type="stx-nft"
             decentralizedID={decentralizedID}
             userSession={userSession}
@@ -147,6 +147,20 @@ function Content({ userSession }) {
             decentralizedID={decentralizedID}
             userSession={userSession}
             trait={FARI_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx-cp/swap/:id"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={CRASHPUNKS}
+          />
+          <StacksSwaps
+            path="/stx-cp"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={CRASHPUNKS}
           />
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />

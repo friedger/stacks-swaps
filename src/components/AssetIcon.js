@@ -1,5 +1,14 @@
 import React from 'react';
-import { BOOMBOX, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE, CRASHPUNKS, BANANA_TOKEN } from './assets';
+import {
+  BOOMBOX,
+  FARI_TOKEN,
+  MIA_TOKEN,
+  THIS_IS_NUMBER_ONE,
+  CRASHPUNKS,
+  BANANA_TOKEN,
+  USDA_TOKEN,
+  DIKO_TOKEN,
+} from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
     case 'btc':
@@ -10,9 +19,13 @@ export function AssetIcon({ type, trait }) {
           return <img src="/mia.png" className="m-1" width="50" height="50" alt="mia" />;
         case FARI_TOKEN:
           return <img src="/fari.png" className="m-1" width="50" height="50" alt="fari" />;
-          case BANANA_TOKEN:
-            return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
-          default:
+        case BANANA_TOKEN:
+          return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
+        case USDA_TOKEN:
+          return <img src="/usda.svg" className="m-1" width="50" height="50" alt="usda" />;
+        case DIKO_TOKEN:
+          return <img src="/diko.svg" className="m-1" width="50" height="50" alt="diko" />;
+        default:
           return (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -47,9 +60,8 @@ export function AssetIcon({ type, trait }) {
           return (
             <img src="/thisisnumberone.png" className="m-1" width="50" height="50" alt="token" />
           );
-        case CRASHPUNKS:return (
-          <img src="/crashpunks.gif" className="m-1" width="50" height="50" alt="token" />
-        );
+        case CRASHPUNKS:
+          return <img src="/crashpunks.gif" className="m-1" width="50" height="50" alt="token" />;
 
         default:
           return (

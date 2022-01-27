@@ -10,7 +10,7 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { CRASHPUNKS, FARI_TOKEN, MIA_TOKEN } from './components/assets';
+import { BANANA_TOKEN, CRASHPUNKS, FARI_TOKEN, MIA_TOKEN } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
@@ -147,6 +147,20 @@ function Content({ userSession }) {
             decentralizedID={decentralizedID}
             userSession={userSession}
             trait={FARI_TOKEN}
+          />
+           <StacksSwaps
+            path="/stx-banana/swap/:id"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={BANANA_TOKEN}
+          />
+          <StacksSwaps
+            path="/stx-banana"
+            type="stx-ft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={BANANA_TOKEN}
           />
           <StacksSwaps
             path="/stx-cp/swap/:id"

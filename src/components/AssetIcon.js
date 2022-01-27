@@ -1,5 +1,5 @@
 import React from 'react';
-import { BOOMBOX, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE, CRASHPUNKS } from './assets';
+import { BOOMBOX, FARI_TOKEN, MIA_TOKEN, THIS_IS_NUMBER_ONE, CRASHPUNKS, BANANA_TOKEN } from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
     case 'btc':
@@ -10,7 +10,9 @@ export function AssetIcon({ type, trait }) {
           return <img src="/mia.png" className="m-1" width="50" height="50" alt="mia" />;
         case FARI_TOKEN:
           return <img src="/fari.png" className="m-1" width="50" height="50" alt="fari" />;
-        default:
+          case BANANA_TOKEN:
+            return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
+          default:
           return (
             <svg
               xmlns="http://www.w3.org/2000/svg"

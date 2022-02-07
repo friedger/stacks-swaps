@@ -6,6 +6,7 @@ import {
   DIKO_TOKEN,
   FARI_TOKEN,
   MIA_TOKEN,
+  SATOSHIBLES,
   THIS_IS_NUMBER_ONE,
   USDA_TOKEN,
 } from '../components/assets';
@@ -65,11 +66,18 @@ export default function Intro(props) {
                 <AtomicIntroButton type="stx-nft" trait={CRASHPUNKS} />
               </div>
               <div className="col">
+                <AtomicIntroButton type="stx-nft" trait={SATOSHIBLES} />
+              </div>
+              <div className="col"></div>
+            </div>
+            <div className="row">
+              <div className="col">
                 <AtomicIntroButton type="stx-nft" trait={THIS_IS_NUMBER_ONE} />
               </div>
               <div className="col">
                 <AtomicIntroButton type="stx-nft" />
               </div>
+              <div className="col"></div>
             </div>
           </div>
         </div>

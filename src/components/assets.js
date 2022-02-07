@@ -7,6 +7,7 @@ export const BOOMBOX = 'SP1QK1AZ24R132C0D84EEQ8Y2JDHARDR58R72E1ZW.boomboxes-cycl
 export const THIS_IS_NUMBER_ONE =
   'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.thisisnumberone-v2::my-nft';
 export const CRASHPUNKS = 'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.crashpunks-v2::crashpunks-v2';
+export const SATOSHIBLES = 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C/satoshibles::Satoshibles';
 
 export function getAsset(type, trait) {
   return trait === MIA_TOKEN
@@ -17,10 +18,12 @@ export function getAsset(type, trait) {
     ? 'FARI'
     : trait === BANANA_TOKEN
     ? 'BANANA'
+    : trait === SATOSHIBLES
+    ? 'SATOSHIBLE'
     : trait === USDA_TOKEN
-    ? "USDA"
+    ? 'USDA'
     : trait === DIKO_TOKEN
-    ? "DIKO"
+    ? 'DIKO'
     : trait === THIS_IS_NUMBER_ONE
     ? '#1'
     : trait === CRASHPUNKS
@@ -45,6 +48,10 @@ export function getDeepLink(type, trait) {
     ? type === 'stx-ft'
       ? '/stx-banana'
       : '/banana'
+    : trait === SATOSHIBLES
+    ? type === 'stx-ft'
+      ? '/stx-satoshibles'
+      : '/satoshibles'
     : trait
     ? `/${type}/${trait}`
     : `/${type}`;

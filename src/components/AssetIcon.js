@@ -8,6 +8,7 @@ import {
   BANANA_TOKEN,
   USDA_TOKEN,
   DIKO_TOKEN,
+  SATOSHIBLES,
 } from './assets';
 export function AssetIcon({ type, trait }) {
   switch (type) {
@@ -62,7 +63,8 @@ export function AssetIcon({ type, trait }) {
           );
         case CRASHPUNKS:
           return <img src="/crashpunks.gif" className="m-1" width="50" height="50" alt="token" />;
-
+        case SATOSHIBLES:
+          return <img src="/satoshibles.gif" className="m-1" width="50" height="50" alt="diko" />;
         default:
           return (
             <svg

@@ -10,7 +10,7 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { BANANA_TOKEN, CRASHPUNKS, FARI_TOKEN, MIA_TOKEN } from './components/assets';
+import { BANANA_TOKEN, CRASHPUNKS, FARI_TOKEN, MIA_TOKEN, SATOSHIBLES } from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
@@ -175,6 +175,20 @@ function Content({ userSession }) {
             decentralizedID={decentralizedID}
             userSession={userSession}
             trait={CRASHPUNKS}
+          />
+          <StacksSwaps
+            path="/stx-satoshibles/swap/:id"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={SATOSHIBLES}
+          />
+          <StacksSwaps
+            path="/stx-satoshibles"
+            type="stx-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={SATOSHIBLES}
           />
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />

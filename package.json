@@ -28,7 +28,7 @@
     "lodash.groupby": "^4.6.0",
     "merkletreejs": "0.2.27",
     "micro-stacks": "^0.2.2",
-    "number-to-words": "github:OmgImAlexis/number-to-words",
+    "number-to-words": "git+https://github.com/OmgImAlexis/number-to-words.git",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-download-link": "^2.3.0",

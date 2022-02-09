@@ -34,6 +34,7 @@ export default function Intro(props) {
           <p className="h5">
             Use atomic swaps to exchange digital assets only on the Stacks chain.
           </p>
+          <h2>STX tokens</h2>
           <div className="container">
             <div className="row">
               <div className="col">
@@ -59,8 +60,6 @@ export default function Intro(props) {
                 </div>
               </div>
             </div>
-          </div>
-          <div className="container">
             <div className="row">
               <div className="col">
                 <AtomicIntroButton type="stx-nft" trait={CRASHPUNKS} />
@@ -77,6 +76,16 @@ export default function Intro(props) {
               <div className="col">
                 <AtomicIntroButton type="stx-nft" />
               </div>
+              <div className="col"></div>
+            </div>
+          </div>
+          <h2>BANANA tokens</h2>
+          <div className="container">
+            <div className="row">
+              <div className="col">
+                <AtomicIntroButton type="banana-nft" />
+              </div>
+              <div className="col"></div>
               <div className="col"></div>
             </div>
           </div>

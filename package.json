@@ -8,15 +8,12 @@
       "name": "Friedger Müffke",
       "email": "mail@friedger.de",
       "url": "https://friedger.de/"
-    },
-    {
-      "name": "Jason Schrader"
     }
   ],
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/citycoins/citycoin-ui.git"
+    "url": "git+https://github.com/friedger/stacks-swaps.git"
   },
   "dependencies": {
     "@reach/router": "^1.3.4",

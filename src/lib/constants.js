@@ -67,6 +67,21 @@ export const STX_NFT_SWAP_FEE_CONTRACT = {
   name: 'stx-nft-fixed-fees',
 };
 
+export const BANANA_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'banana-nft-swap-v1',
+};
+
+export const BANANA_NFT_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'banana-nft-swap-v1-fixed-fees',
+  ft: {
+    address: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
+    name: 'bitcoin-monkeys-bananas',
+    assetName: 'BANANA',
+  },
+};
+
 export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
@@ -94,6 +109,17 @@ export const ftFeeContracts = {
 
 export const nftFeeContracts = {
   stx: STX_NFT_SWAP_FEE_CONTRACT,
+  mia: {
+    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+    name: 'cycle-2-hodl-mia-fees',
+    ft: {
+      address: 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
+      name: 'miamicoin-token',
+      assetName: 'miamicoin',
+    },
+  },
+
+  banana: BANANA_NFT_SWAP_FEE_CONTRACT,
 };
 
 export const contracts = {
@@ -102,6 +128,7 @@ export const contracts = {
   stx: BTC_STX_SWAP_CONTRACT,
   'stx-ft': STX_FT_SWAP_CONTRACT,
   'stx-nft': STX_NFT_SWAP_CONTRACT,
+  'banana-nft': BANANA_NFT_SWAP_CONTRACT,
 };
 
 // TODO: add Freehold API endpoint?

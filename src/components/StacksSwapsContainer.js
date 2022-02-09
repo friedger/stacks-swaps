@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { userSessionState } from '../lib/auth';
+
 import { useStxAddresses } from '../lib/hooks';
-import { useAtomValue } from 'jotai/utils';
 import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
-import { fetchSwapsEntry, optionalCVToString } from '../lib/transactions';
-import { ClarityType, cvToString } from '@stacks/transactions';
-import { ftFeeContracts, nftFeeContracts, infoApi } from '../lib/constants';
-import { pubscriptCVToBtcAddress } from '../lib/btcTransactions';
-import { getFTData, getNFTData } from '../lib/tokenData';
+import { fetchSwapsEntry } from '../lib/transactions';
+import { infoApi } from '../lib/constants';
+import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
 
 export function StacksSwapsContainer({ type, trait, id }) {
   const userSession = useAtomValue(userSessionState);
   const { ownerStxAddress } = useStxAddresses(userSession);
 
-  const buyWithStx = type.startsWith('stx-');
+  const atomicSwap = isAtomic(type);
+
   const [loadingSwapEntry, setLoadingSwapEntry] = useState();
   const [invalidSwapId, setInvalidSwapId] = useState(false);
   const [blockHeight, setBlockHeight] = useState(0);
@@ -30,7 +29,7 @@ export function StacksSwapsContainer({ type, trait, id }) {
   });
 
   useEffect(() => {
-    if (buyWithStx) {
+    if (atomicSwap) {
       setFormData({
         trait: trait,
         btcRecipient: '',
@@ -40,7 +39,7 @@ export function StacksSwapsContainer({ type, trait, id }) {
         assetSenderFromSwap: '',
       });
     }
-  }, [buyWithStx, ownerStxAddress, trait]);
+  }, [atomicSwap, ownerStxAddress, trait]);
 
   useEffect(() => {
     infoApi.getCoreApiInfo().then(info => {
@@ -54,113 +53,8 @@ export function StacksSwapsContainer({ type, trait, id }) {
         const asyncFetchSwapEntry = async () => {
           const swapsEntry = await fetchSwapsEntry(type, id);
           console.log(swapsEntry);
-          const buyWithStx = type.startsWith('stx-');
           if (swapsEntry) {
-            const whenFromSwap = swapsEntry.data['when'].value.toNumber();
-            const doneFromSwap = swapsEntry.data['done']
-              ? swapsEntry.data['done'].value.toNumber()
-              : swapsEntry.data['open'].type === ClarityType.BoolTrue
-              ? 0
-              : 1;
-            const btcRecipient = buyWithStx
-              ? undefined
-              : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
-            const amountBtcOrStx = buyWithStx
-              ? swapsEntry.data.ustx.value.toNumber() / 1_000_000
-              : swapsEntry.data.sats.value.toNumber() / 100_000_000;
-            let trait, ftData, nftData, contractAddress, contractName;
-            let feeAddress, feeName, feeId;
-            switch (type) {
-              case 'ft':
-                trait = cvToString(swapsEntry.data['ft']);
-                [contractAddress, contractName] = trait.split('.');
-                ftData = await getFTData(contractAddress, contractName);
-
-                setFormData({
-                  btcRecipient,
-                  amountSats: amountBtcOrStx,
-                  trait: trait + '::' + ftData.assetName,
-                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, ftData.decimals),
-                  assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
-                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              case 'stx':
-                setFormData({
-                  btcRecipient,
-                  amountSats: amountBtcOrStx,
-                  amount: swapsEntry.data.ustx.value.toNumber() / Math.pow(10, 6),
-                  assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
-                  assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              case 'nft':
-                trait = cvToString(swapsEntry.data['nft']);
-                nftData = await getNFTData(trait);
-
-                setFormData({
-                  btcRecipient,
-                  amountSats: amountBtcOrStx,
-                  trait: trait + '::' + nftData.assetName,
-                  nftId: swapsEntry.data['nft-id'].value.toNumber(),
-                  assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
-                  assetRecipientFromSwap: cvToString(swapsEntry.data['nft-receiver']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                });
-                break;
-              case 'stx-ft':
-                trait = cvToString(swapsEntry.data['ft']);
-                [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-                feeId = Object.entries(ftFeeContracts).find(
-                  e => e[1].address === feeAddress && e[1].name === feeName
-                );
-                [contractAddress, contractName] = trait.split('.');
-                ftData = await getFTData(contractAddress, contractName);
-                setFormData({
-                  btcRecipient,
-                  amountSats: amountBtcOrStx,
-                  trait: trait + '::' + ftData.assetName,
-                  amount: swapsEntry.data.amount.value.toNumber() / Math.pow(10, ftData.decimals),
-                  assetRecipient: cvToString(swapsEntry.data['stx-sender']),
-                  assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                  feeId: feeId ? feeId[0] : 'stx', // TODO better fall back
-                });
-                break;
-              case 'stx-nft':
-                trait = cvToString(swapsEntry.data['nft']);
-                [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-                feeId = Object.entries(nftFeeContracts).find(
-                  e => e[1].address === feeAddress && e[1].name === feeName
-                );
-                [contractAddress, contractName] = trait.split('.');
-                nftData = await getNFTData(contractAddress, contractName);
-                setFormData({
-                  btcRecipient,
-                  amountSats: amountBtcOrStx,
-                  trait: trait + '::' + nftData.assetName,
-                  nftId: swapsEntry.data['nft-id'].value.toNumber(),
-                  assetRecipient: cvToString(swapsEntry.data['stx-sender']),
-                  assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
-                  assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-                  whenFromSwap,
-                  doneFromSwap,
-                  feeId: feeId ? feeId[0] : 'stx', // TODO better fall back
-                });
-                break;
-              default:
-                console.log('unsupported type ' + type);
-            }
+            await setFromDataFromSwapsEntry(swapsEntry, type, setFormData);
           } else {
             setInvalidSwapId(true);
           }
@@ -172,8 +66,8 @@ export function StacksSwapsContainer({ type, trait, id }) {
         setLoadingSwapEntry(false);
       }
     }
-  }, [type, id]);
-  const hideSubmit = id && !buyWithStx ? '' : 'd-none';
+  }, [atomicSwap, type, id]);
+  const hideSubmitUIClassname = id && !atomicSwap ? '' : 'd-none';
   return (
     <div>
       <ul className="nav nav-tabs">
@@ -205,7 +99,7 @@ export function StacksSwapsContainer({ type, trait, id }) {
             {formData.doneFromSwap === 1 || id ? 'Swap Details' : 'Create Swap'}
           </button>
         </li>
-        <li className={`nav-item ${hideSubmit}`} role="presentation">
+        <li className={`nav-item ${hideSubmitUIClassname}`} role="presentation">
           <button
             className="nav-link"
             id="miningclaim-tab"
@@ -252,11 +146,10 @@ export function StacksSwapsContainer({ type, trait, id }) {
               id={id}
               formData={formData}
               blockHeight={blockHeight}
-              userSession={userSession}
             />
           </div>
           <div
-            className={`tab-pane fade show active ${hideSubmit}`}
+            className={`tab-pane fade show active ${hideSubmitUIClassname}`}
             id="miningclaim"
             role="tabpanel"
             aria-labelledby="miningclaim-tab"

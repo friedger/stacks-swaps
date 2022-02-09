@@ -23,7 +23,7 @@ import {
 } from '@stacks/transactions';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
-import { getAsset, getAssetName } from './assets';
+import { BANANA_TOKEN, getAsset, getAssetName } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
@@ -31,18 +31,27 @@ import { Price } from './Price';
 import { resolveBNS } from '../lib/account';
 import { getFTData, getNFTData } from '../lib/tokenData';
 import { contractToFees } from '../lib/fees';
-import { splitAssetIdentifier } from '../lib/assets';
+import {
+  buyAssetFromType,
+  buyAssetIdFromType,
+  buyAssetTypeFromSwapType,
+  buyDecimalsFromType,
+  factorForType,
+  isAtomic,
+  splitAssetIdentifier,
+} from '../lib/assets';
 import { makeCancelSwapPostConditions, makeCreateSwapPostConditions } from '../lib/swaps';
 
-export function SwapCreate({
-  ownerStxAddress,
-  type,
-  trait,
-  id,
-  formData: formData1,
-  blockHeight,
-  userSession,
-}) {
+function readFloat(ref) {
+  const result = parseFloat(ref.current.value.trim());
+  return isNaN(result) ? undefined : result;
+}
+
+function nftSwap(type) {
+  return type === 'nft' || type === 'stx-nft' || type === 'banana-nft';
+}
+
+export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formData1, blockHeight }) {
   const amountSatsRef = useRef();
   const assetSellerRef = useRef();
   const nftIdRef = useRef();
@@ -58,7 +67,7 @@ export function SwapCreate({
   const { doContractCall } = useConnect();
   const { handleOpenAuth } = useConnectForAuth();
 
-  const buyWithStx = type.startsWith('stx-');
+  const atomicSwap = isAtomic(type);
 
   useEffect(() => {
     console.log({ type, formData });
@@ -82,22 +91,21 @@ export function SwapCreate({
     setLoading(true);
     setStatus('');
     const errors = [];
-    if (amountSatsRef.current.value.trim() === '') {
-      errors.push('positive numbers required to swap');
-    }
-
-    if (!buyWithStx && assetSellerRef.current.value.trim() === '') {
+    if (!atomicSwap && assetSellerRef.current.value.trim() === '') {
       errors.push('BTC address is required');
     }
-
-    const factor = buyWithStx ? 1_000_000 : 100_000_000;
-    const satsOrUstxCV = uintCV(
-      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
-    );
-    if (satsOrUstxCV.value.toNumber() <= 0) {
-      errors.push('positive numbers required to swap');
+    const factor = factorForType(type);
+    const amountInputFloat = readFloat(amountSatsRef) || 0;
+    const satsOrUstxCV = uintCV(BigInt(Math.floor(amountInputFloat * factor)));
+    if (satsOrUstxCV.value <= 0) {
+      errors.push('positive amount required to swap');
     }
-
+    if (isNaN(parseInt(formData.nftId))) {
+      errors.push('not a valid NFT id');
+    }
+    if (!traitRef.current.value.trim()) {
+      errors.push('Missing token contract');
+    }
     if (errors.length > 0) {
       setLoading(false);
       setStatus(
@@ -113,7 +121,7 @@ export function SwapCreate({
 
     const contract = contracts[type];
     const seller = await resolveBNS(assetSellerRef.current.value.trim());
-    const sellerCV = buyWithStx
+    const sellerCV = atomicSwap
       ? seller
         ? someCV(standardPrincipalCV(seller))
         : noneCV()
@@ -152,7 +160,7 @@ export function SwapCreate({
         break;
       case 'ft':
         ftAmountCV = uintCV(amountRef.current.value.trim());
-        if (ftAmountCV.value.toNumber() <= 0) {
+        if (ftAmountCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
@@ -178,7 +186,7 @@ export function SwapCreate({
         break;
       case 'stx':
         const stxAmountCV = uintCV(amountRef.current.value.trim() * 1_000_000);
-        if (stxAmountCV.value.toNumber() <= 0) {
+        if (stxAmountCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
@@ -201,7 +209,7 @@ export function SwapCreate({
             ? Math.pow(10, ftData.decimals)
             : 1;
         ftAmountCV = uintCV(amountRef.current.value.trim() * sellFactor);
-        if (ftAmountCV.value.toNumber() <= 0) {
+        if (ftAmountCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
@@ -225,12 +233,40 @@ export function SwapCreate({
         );
         break;
       case 'stx-nft':
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
-        if (nftIdCV.value.toNumber() <= 0) {
+        nftIdCV = uintCV(BigInt(nftIdRef.current.value.trim()));
+        if (nftIdCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
         }
+        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
+          setLoading(false);
+          setStatus('"nft contract :: nft name" must be set');
+          return;
+        }
+        feeId = feeContractRef.current.value;
+        console.log({ feeId });
+        feeContract = nftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
+        postConditions = makeCreateSwapPostConditions(
+          feeId,
+          ownerStxAddress,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
+        break;
+      case 'banana-nft':
+        nftIdCV = uintCV(formData.nftId);
+        if (nftIdCV.value <= 0) {
+          setLoading(false);
+          setStatus('positive numbers required to swap');
+          return;
+        }
+        console.log(nftIdCV);
+        console.log(serializeCV(nftIdCV));
         [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
         if (!assetName) {
           setLoading(false);
@@ -450,6 +486,28 @@ export function SwapCreate({
           feeContract
         );
         break;
+      case 'banana-nft':
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
+
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
+          setLoading(false);
+          setStatus('"ft contract :: ft name" must be set');
+          return;
+        }
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        postConditions = makeCancelSwapPostConditions(
+          feeId,
+          contract,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
+        break;
       default:
         setLoading(false);
         return;
@@ -485,7 +543,7 @@ export function SwapCreate({
   const submitAction = async () => {
     setLoading(true);
 
-    const factor = buyWithStx ? 1_000_000 : 100_000_000;
+    const factor = factorForType(type);
     const satsOrUstxCV = uintCV(
       Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
     );
@@ -606,6 +664,63 @@ export function SwapCreate({
           );
         }
         break;
+      case 'banana-nft':
+        nftIdCV = uintCV(formData.nftId);
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+
+        feeId = feeContractRef.current.value;
+        feeContract = nftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        if (!fees) {
+          setLoading(false);
+          setStatus("Couldn't load fees.");
+          return;
+        }
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        console.log(cvToString(satsOrUstxCV), {
+          ownerStxAddress,
+          assetContractAddress,
+          assetContractName,
+        });
+        const [, bananaAssetName, bananaContractName, bananaContractAddress] =
+          splitAssetIdentifier(BANANA_TOKEN);
+        postConditions = [
+          makeContractFungiblePostCondition(
+            contract.address,
+            contract.name,
+            FungibleConditionCode.Equal,
+            satsOrUstxCV.value,
+            createAssetInfo(bananaContractAddress, bananaContractName, bananaAssetName)
+          ),
+          makeStandardNonFungiblePostCondition(
+            ownerStxAddress,
+            NonFungibleConditionCode.DoesNotOwn,
+            createAssetInfo(assetContractAddress, assetContractName, assetName),
+            nftIdCV
+          ),
+        ];
+        if (feeId === 'stx') {
+          postConditions.push(
+            makeContractSTXPostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees
+            )
+          );
+        } else {
+          postConditions.push(
+            makeContractFungiblePostCondition(
+              feeContract.address,
+              feeContract.name,
+              FungibleConditionCode.Equal,
+              fees,
+              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
+            )
+          );
+        }
+        break;
       default:
         setLoading(false);
         return;
@@ -651,7 +766,7 @@ export function SwapCreate({
   };
 
   // sell (left to right)
-  const sellType = buyWithStx ? type.split('-')[1] : type;
+  const sellType = atomicSwap ? type.split('-')[1] : type;
   const sellDecimals =
     sellType === 'stx'
       ? 6
@@ -664,8 +779,8 @@ export function SwapCreate({
   const asset = getAsset(sellType, formData.trait);
   const assetName = getAssetName(sellType, formData.trait);
   // buy (right to left)
-  const buyWithAsset = buyWithStx ? 'STX' : 'BTC';
-  const buyDecimals = buyWithStx ? 6 : 8;
+  const buyWithAsset = buyAssetFromType(type);
+  const buyDecimals = buyDecimalsFromType(type);
 
   const createSellOrder = false;
   return (
@@ -674,24 +789,13 @@ export function SwapCreate({
         {id ? null : 'Create'} Swap {buyWithAsset}-{asset} {id ? `#${id}` : null}{' '}
         {formData.doneFromSwap === 1 ? <>(completed)</> : null}
       </h3>
-      {type === 'nft' && (
-        <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
-      )}
-      {type === 'ft' && (
-        <p>For a swap of Bitcoins and a token on Stacks, the token has to comply with SIP-10.</p>
-      )}
-      {type === 'stx-ft' && (
-        <p>For a swap of Stacks and a token on Stacks, the token has to comply with SIP-10.</p>
-      )}
-      {type === 'stx-nft' && (
-        <p>For a swap of Stacks and a NFT on Stacks, the token has to comply with SIP-9.</p>
-      )}
-      {buyWithStx ? (
+      <Hint type={type} />
+      {atomicSwap ? (
         <p>
-          Your Stacks tokens will be sent to the contract now (including 1% fees) and will be
-          released to the buyer if the {assetName} {sellType === 'nft' ? ' is ' : ' are '}{' '}
+          Your {buyWithAsset} tokens will be sent to the contract now (including 1% fees) and will
+          be released to the buyer if the {assetName} {sellType === 'nft' ? ' is ' : ' are '}{' '}
           transferred to you. If the swap expired after 100 Stacks blocks and you called "cancel"
-          your Stacks tokens including fees are returned to you.
+          your {buyWithAsset} tokens including fees are returned to you.
         </p>
       ) : (
         <p>
@@ -718,7 +822,7 @@ export function SwapCreate({
         <div className="container">
           <div className="row align-items-center m-5">
             <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !buyWithStx ? (
+              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !atomicSwap ? (
                 <>
                   Seller (You)
                   <br />
@@ -729,8 +833,8 @@ export function SwapCreate({
                   <br />
                   Seller
                   {formData.assetSenderFromSwap === ownerStxAddress ||
-                  (!buyWithStx && !id) ||
-                  (buyWithStx &&
+                  (!atomicSwap && !id) ||
+                  (atomicSwap &&
                     id &&
                     ((formData.doneFromSwap === 0 && formData.assetSenderFromSwap === 'none') ||
                       formData.assetSenderFromSwap === `(some ${ownerStxAddress})`))
@@ -753,16 +857,16 @@ export function SwapCreate({
                           formData.assetSenderFromSwap.length - 7
                         )
                       : undefined) ||
-                    (buyWithStx && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
+                    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
                   }
                   onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
                   aria-label={
-                    buyWithStx
+                    atomicSwap
                       ? 'Stacks address or name (optional)'
                       : 'Bitcoin recipient address (must start with 1)'
                   }
                   placeholder={
-                    buyWithStx
+                    atomicSwap
                       ? 'Stacks address or name (optional)'
                       : 'Bitcoin recipient address (must start with 1)'
                   }
@@ -776,9 +880,7 @@ export function SwapCreate({
             <div className="col text-center border-left">
               <AssetIcon type={sellType} trait={formData.trait} />
               <br />
-              <div
-                className={`input-group ${type === 'nft' || type === 'stx-nft' ? '' : 'd-none'}`}
-              >
+              <div className={`input-group ${nftSwap(type) ? '' : 'd-none'}`}>
                 <input
                   type="number"
                   className="form-control"
@@ -792,9 +894,7 @@ export function SwapCreate({
                   minLength="1"
                 />
               </div>
-              <div
-                className={`input-group ${type === 'nft' || type === 'stx-nft' ? 'd-none' : ''}`}
-              >
+              <div className={`input-group ${nftSwap(type) ? 'd-none' : ''}`}>
                 <input
                   type="number"
                   className="form-control"
@@ -810,7 +910,7 @@ export function SwapCreate({
               </div>
               <i className="bi bi-arrow-right"></i>
               <br />
-              {type !== 'nft' && type !== 'stx-nft' && (
+              {!nftSwap(type) && (
                 <>
                   <br />
                   <Price
@@ -836,18 +936,22 @@ export function SwapCreate({
                   value={formData.amountSats}
                   onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
                   aria-label={
-                    buyWithStx
+                    atomicSwap
                       ? type === 'stx-nft'
                         ? `Price for NFT in STXs`
+                        : type === 'banana-nft'
+                        ? 'Price of NFT in BANANAs'
                         : `amount of STXs`
                       : type === 'nft'
                       ? `Price for NFT in Bitcoin`
                       : `amount of Bitcoins`
                   }
                   placeholder={
-                    buyWithStx
+                    atomicSwap
                       ? type === 'stx-nft'
                         ? `Price for NFT in STXs`
+                        : type === 'banana-nft'
+                        ? 'Price of NFT in BANANAs'
                         : `amount of STXs`
                       : type === 'nft'
                       ? `Price for NFT in Bitcoin`
@@ -858,10 +962,10 @@ export function SwapCreate({
                   minLength="1"
                 />
               </div>
-              <AssetIcon type={buyWithStx ? 'stx' : 'btc'} />
+              <AssetIcon type={buyAssetTypeFromSwapType(type)} />
             </div>
             <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && buyWithStx ? (
+              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && atomicSwap ? (
                 <>
                   Buyer (You)
                   <br />
@@ -884,7 +988,7 @@ export function SwapCreate({
                   onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
                   aria-label={`${assetName} receiver's Stacks address`}
                   placeholder={`${assetName} receiver's Stacks address`}
-                  readOnly={(id && formData.assetRecipientFromSwap) || buyWithStx}
+                  readOnly={(id && formData.assetRecipientFromSwap) || atomicSwap}
                   required
                   minLength="1"
                 />
@@ -896,19 +1000,21 @@ export function SwapCreate({
               <div className="col text-center alert">{status}</div>
             </div>
           )}
-          {buyWithStx && (
+          {atomicSwap && (
+            // fees
             <div className="row m-2">
               <div className="col" />
               <div className="col text-center">
                 <select
                   className="form-select form-select-sm"
                   ref={feeContractRef}
-                  value={formData.feeId || 'stx'}
+                  value={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
                   onChange={e => setFormData({ ...formData, feeId: e.target.value })}
                   disabled={id}
                   aria-label="select fee model"
                 >
-                  <option value="stx">1% fee in STX</option>
+                  {type !== 'banana-nft' && <option value="stx">1% fee in STX</option>}
+                  {type === 'banana-nft' && <option value="banana">1% fee in BANANA</option>}
                   {type !== 'stx-nft' && <option value="frie">1% fee in FRIE</option>}
                 </select>
               </div>
@@ -922,7 +1028,7 @@ export function SwapCreate({
                   <button
                     className="btn btn-lg btn-outline-primary mt-4"
                     type="button"
-                    onClick={handleOpenAuth}
+                    onClick={handleSignIn}
                   >
                     Get Started
                   </button>
@@ -931,7 +1037,7 @@ export function SwapCreate({
                 <>
                   {id &&
                     (formData.assetSenderFromSwap === ownerStxAddress ||
-                      (buyWithStx && formData.assetRecipientFromSwap === ownerStxAddress)) &&
+                      (atomicSwap && formData.assetRecipientFromSwap === ownerStxAddress)) &&
                     formData.whenFromSwap + 100 < blockHeight &&
                     formData.doneFromSwap === 0 && (
                       <button
@@ -950,7 +1056,7 @@ export function SwapCreate({
                     )}
                   {id ? (
                     // show existing swap
-                    buyWithStx ? (
+                    atomicSwap ? (
                       formData.doneFromSwap === 1 ? (
                         <>
                           <button className="btn btn-block btn-success" type="button" disabled>
@@ -1002,7 +1108,7 @@ export function SwapCreate({
                           loading ? '' : 'd-none'
                         } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                       />
-                      {buyWithStx ? 'Buy' : 'Sell'} {asset}
+                      {atomicSwap ? 'Buy' : 'Sell'} {asset}
                     </button>
                   )}
                 </>
@@ -1015,3 +1121,28 @@ export function SwapCreate({
     </>
   );
 }
+
+const Hint = ({ type }) => {
+  return (
+    <>
+      {type === 'nft' && (
+        <p>For a swap of Bitcoins and an NFT on Stacks, the NFT has to comply with SIP-9.</p>
+      )}
+      {type === 'ft' && (
+        <p>For a swap of Bitcoins and a token on Stacks, the token has to comply with SIP-10.</p>
+      )}
+      {type === 'stx-ft' && (
+        <p>For a swap of Stacks and a token on Stacks, the token has to comply with SIP-10.</p>
+      )}
+      {type === 'stx-nft' && (
+        <p>For a swap of Stacks and a NFT on Stacks, the token has to comply with SIP-9.</p>
+      )}
+      {type === 'stx-nft' && (
+        <p>For a swap of Stacks and a NFT on Stacks, the token has to comply with SIP-9.</p>
+      )}
+      {type === 'banana-nft' && (
+        <p>For a swap of BANANAs and a NFT on Stacks, the NFT has to comply with SIP-9.</p>
+      )}
+    </>
+  );
+};

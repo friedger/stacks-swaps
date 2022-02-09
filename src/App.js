@@ -190,6 +190,24 @@ function Content({ userSession }) {
             userSession={userSession}
             trait={SATOSHIBLES}
           />
+          <StacksSwaps
+            path="/banana-nft/swap/:id"
+            type="banana-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/banana-nft/:trait"
+            type="banana-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/banana-nft"
+            type="banana-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}

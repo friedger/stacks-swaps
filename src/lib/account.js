@@ -30,7 +30,7 @@ export function getStacksAccount(appPrivateKey) {
 }
 
 export async function resolveBNS(username) {
-  const parts = username ? username.split('.') : []
+  const parts = username ? username.split('.') : [];
   if (parts.length === 2) {
     console.log(parts);
     const result = await callReadOnlyFunction({

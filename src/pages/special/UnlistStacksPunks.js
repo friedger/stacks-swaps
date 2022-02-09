@@ -1,4 +1,4 @@
-import { useConnect } from '@stacks/connect-react';
+import { uintCV } from 'micro-stacks/clarity';
 import {
   createAssetInfo,
   FungibleConditionCode,
@@ -6,8 +6,8 @@ import {
   makeContractSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
-  uintCV,
-} from '@stacks/transactions';
+} from 'micro-stacks/transactions';
+import { useContractCall } from '@micro-stacks/react';
 import { BN } from 'bn.js';
 import React, { useState } from 'react';
 import { NETWORK } from '../../lib/constants';
@@ -16,7 +16,20 @@ export default function UnlistStacksPunks({ userSession }) {
   const [id, setId] = useState();
   const [status, setStatus] = useState();
 
-  const { doContractCall } = useConnect();
+  const { handleContractCall } = useContractCall({
+    contractAddress: 'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
+    contractName: 'stacks-punks-market',
+    functionName: 'unlist-punk',
+    postConditionMode: PostConditionMode.Deny,
+    userSession,
+    network: NETWORK,
+    onFinish: result => {
+      setStatus(result);
+    },
+    onCancel: () => {
+      setStatus('Tx not sent.');
+    },
+  });
 
   return (
     <main className="container">
@@ -31,12 +44,8 @@ export default function UnlistStacksPunks({ userSession }) {
           disabled={!userSession || !userSession.isUserSignedIn()}
           onClick={() => {
             const idCV = uintCV(id);
-            doContractCall({
-              contractAddress: 'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
-              contractName: 'stacks-punks-market',
-              functionName: 'unlist-punk',
+            handleContractCall({
               functionArgs: [idCV],
-              postConditionMode: PostConditionMode.Deny,
               postConditions: [
                 makeContractSTXPostCondition(
                   'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
@@ -56,14 +65,6 @@ export default function UnlistStacksPunks({ userSession }) {
                   idCV
                 ),
               ],
-              userSession,
-              network: NETWORK,
-              onFinish: result => {
-                setStatus(result);
-              },
-              onCancel: () => {
-                setStatus('Tx not sent.');
-              },
             });
           }}
         >

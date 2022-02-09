@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { userSessionState } from '../lib/auth';
+import { useSession } from '@micro-stacks/react';
 
 import { useStxAddresses } from '../lib/hooks';
 import { StacksSwapsDashboard } from './StacksSwapsDashboard';
@@ -10,8 +10,7 @@ import { infoApi } from '../lib/constants';
 import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
 
 export function StacksSwapsContainer({ type, trait, id }) {
-  const userSession = useAtomValue(userSessionState);
-  const { ownerStxAddress } = useStxAddresses(userSession);
+  const { ownerStxAddress } = useStxAddresses();
 
   const atomicSwap = isAtomic(type);
 
@@ -160,7 +159,6 @@ export function StacksSwapsContainer({ type, trait, id }) {
               trait={id ? formData.trait : trait}
               id={id}
               formData={formData}
-              userSession={userSession}
             />
           </div>
           <div

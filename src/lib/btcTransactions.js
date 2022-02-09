@@ -1,12 +1,5 @@
-import {
-  bufferCV,
-  callReadOnlyFunction,
-  ClarityType,
-  cvToString,
-  listCV,
-  tupleCV,
-  uintCV,
-} from '@stacks/transactions';
+import { bufferCV, ClarityType, cvToString, listCV, tupleCV, uintCV } from 'micro-stacks/clarity';
+import { callReadOnlyFunction } from 'micro-stacks/transactions';
 import MerkleTree from 'merkletreejs';
 import reverse from 'buffer-reverse';
 import SHA256 from 'crypto-js/sha256';
@@ -250,10 +243,10 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   const txCV = bufferCV(MerkleTree.bufferify(txForHash(tx.hex)));
 
   let version;
-  if (tx.hex.substr(9, 10) === "00") {
-    version = tx.hex.substr(0, 12)
+  if (tx.hex.substr(9, 10) === '00') {
+    version = tx.hex.substr(0, 12);
   } else {
-    version = tx.hex.substr(0, 8)
+    version = tx.hex.substr(0, 8);
   }
 
   // tx decomposed

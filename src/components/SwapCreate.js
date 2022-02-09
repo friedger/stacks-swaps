@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useConnect } from '@stacks/connect-react';
-import { useConnectForAuth } from '../lib/auth';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
+import { cvToString, noneCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
 import {
   AnchorMode,
   createAssetInfo,
-  cvToString,
+  NonFungibleConditionCode,
+  PostConditionMode,
   FungibleConditionCode,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
@@ -14,13 +14,9 @@ import {
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
-  noneCV,
-  NonFungibleConditionCode,
-  PostConditionMode,
-  someCV,
-  standardPrincipalCV,
-  uintCV,
-} from '@stacks/transactions';
+} from 'micro-stacks/transactions';
+
+import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
 import { BANANA_TOKEN, getAsset, getAssetName } from './assets';
@@ -41,6 +37,7 @@ import {
   splitAssetIdentifier,
 } from '../lib/assets';
 import { makeCancelSwapPostConditions, makeCreateSwapPostConditions } from '../lib/swaps';
+import { serializeCV } from 'micro-stacks/clarity';
 
 function readFloat(ref) {
   const result = parseFloat(ref.current.value.trim());
@@ -64,8 +61,16 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
   const [status, setStatus] = useState();
   const [formData, setFormData] = useState(formData1);
   const [ftData, setFtData] = useState();
-  const { doContractCall } = useConnect();
-  const { handleOpenAuth } = useConnectForAuth();
+
+  const contract = contracts[type];
+  const { handleContractCall } = useContractCall({
+    contractAddress: contract.address,
+    contractName: contract.name,
+    network: NETWORK,
+    anchorMode: AnchorMode.Any,
+  });
+  const { handleSignIn } = useAuth();
+  const [userSession] = useSession();
 
   const atomicSwap = isAtomic(type);
 
@@ -119,7 +124,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       return;
     }
 
-    const contract = contracts[type];
     const seller = await resolveBNS(assetSellerRef.current.value.trim());
     const sellerCV = atomicSwap
       ? seller
@@ -289,13 +293,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       default:
         break;
     }
-    await doContractCall({
-      contractAddress: contract.address,
-      contractName: contract.name,
+    await handleContractCall({
       functionName: 'create-swap',
       functionArgs,
-      network: NETWORK,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions,
 
@@ -337,7 +337,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       );
       return;
     }
-    const contract = contracts[type];
     let functionArgs;
     let postConditions;
     let functionName;
@@ -362,13 +361,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       default:
         break;
     }
-    await doContractCall({
-      contractAddress: contract.address,
-      contractName: contract.name,
+    await handleContractCall({
       functionName,
       functionArgs,
-      network: NETWORK,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions,
 
@@ -384,7 +379,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
 
   const cancelAction = async () => {
     setLoading(true);
-    const contract = contracts[type];
     const swapIdCV = uintCV(id);
 
     let functionArgs;
@@ -512,13 +506,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         setLoading(false);
         return;
     }
-    await doContractCall({
-      contractAddress: contract.address,
-      contractName: contract.name,
+    await handleContractCall({
       functionName: 'cancel',
       functionArgs,
-      network: NETWORK,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions,
 
@@ -549,7 +539,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     );
 
     const swapIdCV = uintCV(id);
-    const contract = contracts[type];
 
     let functionArgs;
     let postConditions;
@@ -727,16 +716,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     }
     try {
       // submit
-      await doContractCall({
-        contractAddress: contract.address,
-        contractName: contract.name,
+      await handleContractCall({
         functionName: 'submit-swap',
         functionArgs,
         postConditionMode: PostConditionMode.Deny,
         postConditions,
-        userSession,
-        network: NETWORK,
-        anchorMode: AnchorMode.Any,
         onCancel: () => {
           setLoading(false);
         },

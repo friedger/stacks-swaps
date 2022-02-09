@@ -1,9 +1,7 @@
-import React, { useEffect } from 'react';
-import { Connect } from '@stacks/connect-react';
+import React from 'react';
 import { Router } from '@reach/router';
+import { MicroStacksProvider, useSession, useAuth } from '@micro-stacks/react';
 import Auth from './components/Auth';
-import { userDataState, userSessionState, useConnectForAuth } from './lib/auth';
-import { useAtom } from 'jotai';
 import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
 
@@ -16,21 +14,16 @@ import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 import SwapCrashPunks200 from './pages/special/SwapCrashPunks200';
 
+const authOptions = {
+  appDetails: {
+    name: 'Catamaran Swaps',
+    icon: 'https://catamaranswaps.org/android-icon-192x192.png',
+  },
+};
+
 export default function App(props) {
-  const { authOptions } = useConnectForAuth();
-  const [userSession] = useAtom(userSessionState);
-  const [, setUserData] = useAtom(userDataState);
-
-  useEffect(() => {
-    if (userSession?.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
-    } else if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn();
-    }
-  }, [userSession, setUserData]);
-
   return (
-    <Connect authOptions={authOptions}>
+    <MicroStacksProvider authOptions={authOptions}>
       <header className="d-flex flex-wrap justify-content-between align-items-center mx-3 py-3 mb-4 border-bottom">
         <div>
           <a
@@ -46,7 +39,7 @@ export default function App(props) {
           <span className="p">Trustless exchange of digital assets</span>
         </div>
         <div className="btn-group btn-group-lg" role="group" aria-label="Basic outlined example">
-          <ProfileSmall userSession={userSession} />
+          <ProfileSmall />
           <a
             href="https://docs.catamaranswaps.org"
             target="_blank"
@@ -58,14 +51,16 @@ export default function App(props) {
           <Auth />
         </div>
       </header>
-      <Content userSession={userSession} path="/" />
-    </Connect>
+      <Content path="/" />
+    </MicroStacksProvider>
   );
 }
-function Content({ userSession }) {
-  const authenticated = userSession && userSession.isUserSignedIn();
-  const decentralizedID =
-    userSession && userSession.isUserSignedIn() && userSession.loadUserData().decentralizedID;
+function Content() {
+  const [userSession] = useSession();
+  const { isSignedIn } = useAuth();
+
+  const authenticated = userSession && isSignedIn;
+  const decentralizedID = authenticated && userSession.decentralizedID;
   return (
     <>
       <Router>
@@ -148,7 +143,7 @@ function Content({ userSession }) {
             userSession={userSession}
             trait={FARI_TOKEN}
           />
-           <StacksSwaps
+          <StacksSwaps
             path="/stx-banana/swap/:id"
             type="stx-ft"
             decentralizedID={decentralizedID}

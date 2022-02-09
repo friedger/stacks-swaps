@@ -1,21 +1,21 @@
-import { getUserData } from '@stacks/connect-react';
-import { addressToString } from '@stacks/transactions';
-
+import { addressToString } from 'micro-stacks/clarity';
+import { useSession, useIsSignedIn } from '@micro-stacks/react';
 import { useState, useEffect } from 'react';
 import { getStacksAccount } from './account';
 
-export function useStxAddresses(userSession) {
+export function useStxAddresses() {
   const [ownerStxAddress, setOwnerStxAddress] = useState();
   const [appStxAddress, setAppStxAddress] = useState();
-  const authenticated = userSession && userSession.isUserSignedIn();
+  const [userSession] = useSession();
+  const isUserSignedIn = useIsSignedIn();
+
+  const authenticated = userSession && isUserSignedIn;
 
   useEffect(() => {
-    if (authenticated && userSession) {
-      getUserData(userSession).then(userData => {
-        const { address } = getStacksAccount(userData.appPrivateKey);
-        setAppStxAddress(addressToString(address));
-        setOwnerStxAddress(userData.profile.stxAddress['mainnet']);
-      });
+    if (authenticated) {
+      const { address } = getStacksAccount(userSession.appPrivateKey);
+      setAppStxAddress(addressToString(address));
+      setOwnerStxAddress(userSession.addresses?.mainnet);
     }
   }, [userSession, authenticated]);
 

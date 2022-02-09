@@ -4,7 +4,8 @@ import {
   uintCV,
   ClarityType,
   cvToString,
-} from '@stacks/transactions';
+} from 'micro-stacks/clarity';
+import { getFile, putFile } from 'micro-stacks/storage';
 import {
   accountsApi,
   chainSuffix,
@@ -12,7 +13,6 @@ import {
   smartContractsApi,
   transactionsApi,
 } from './constants';
-import { Storage } from '@stacks/storage';
 
 export async function fetchSwapTxList(type) {
   const contract = contracts[type];
@@ -79,30 +79,28 @@ const indexFileName = 'index-mainnet.json';
 
 export async function saveTxData(data, userSession) {
   console.log(JSON.stringify(data));
-  const storage = new Storage({ userSession });
   let indexArray;
   try {
-    const indexFile = await storage.getFile(indexFileName);
+    const indexFile = await getFile(indexFileName);
     indexArray = JSON.parse(indexFile);
   } catch (e) {
     console.log(e);
     indexArray = [];
   }
   indexArray.push(data.txId);
-  await storage.putFile(indexFileName, JSON.stringify(indexArray));
-  await storage.putFile(`txs/${data.txId}.json`, JSON.stringify({ data }));
+  await putFile(indexFileName, JSON.stringify(indexArray));
+  await putFile(`txs/${data.txId}.json`, JSON.stringify({ data }));
 }
 
-export async function getTxs(userSession) {
-  const storage = new Storage({ userSession });
+export async function getTxs() {
   let indexArray;
   try {
     let indexFile;
-    indexFile = await storage.getFile(indexFileName);
+    indexFile = await getFile(indexFileName);
     indexArray = JSON.parse(indexFile);
     return Promise.all(
       indexArray.map(async txId => {
-        return getTxWithStorage(txId, storage);
+        return getTxWithStorage(txId);
       })
     );
   } catch (e) {
@@ -160,21 +158,21 @@ export async function getTxsAsJSON(userSession, filter) {
   return txsAsJSON;
 }
 
-async function getTxWithStorage(txId, storage) {
+async function getTxWithStorage(txId) {
   try {
-    const txFile = await storage.getFile(`txs/${txId}.json`);
+    const txFile = await getFile(`txs/${txId}.json`);
     let tx = JSON.parse(txFile);
     if (!tx.data) {
       tx = { data: { txId } };
     }
     if (!tx.apiData || tx.apiData.tx_status === 'pending') {
-      tx = await createTxWithApiData(txId, tx, storage);
+      tx = await createTxWithApiData(txId, tx);
     }
     return tx;
   } catch (e) {
     console.log(e);
     let tx = { data: { txId } };
-    tx = await createTxWithApiData(txId, tx, storage);
+    tx = await createTxWithApiData(txId, tx);
     return tx;
   }
 }
@@ -190,14 +188,13 @@ async function getTxWithoutStorage(txId) {
 
 export async function getTx(txId, userSession) {
   if (userSession && userSession.isUserSignedIn()) {
-    const storage = new Storage({ userSession });
-    return getTxWithStorage(txId, storage);
+    return getTxWithStorage(txId);
   } else {
     return getTxWithoutStorage(txId);
   }
 }
 
-async function createTxWithApiData(txId, tx, storage) {
+async function createTxWithApiData(txId, tx) {
   let eventOffset = 0;
   const offsetLimit = 400;
   let events = [];
@@ -210,8 +207,8 @@ async function createTxWithApiData(txId, tx, storage) {
     console.log(apiData.event_count);
   }
   const txWithApiData = { ...tx, apiData: { ...apiData, events } };
-  if (storage && apiData.tx_status !== 'pending') {
-    await storage.putFile(`txs/${txId}.json`, JSON.stringify(txWithApiData));
+  if (apiData.tx_status !== 'pending') {
+    await putFile(`txs/${txId}.json`, JSON.stringify(txWithApiData));
   }
   return txWithApiData;
 }

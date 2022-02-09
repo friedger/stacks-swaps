@@ -6,7 +6,7 @@ import {
   InfoApi,
   BlocksApi,
 } from '@stacks/blockchain-api-client';
-import { StacksMainnet } from '@stacks/network';
+import { StacksMainnet } from 'micro-stacks/network';
 
 export const mainnet = window.location.search.includes('chain=mainnet');
 
@@ -136,8 +136,9 @@ export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';
 export const STACKS_API_WS_URL = 'wss://stacks-node-api.mainnet.stacks.co/';
 export const STACKS_API_ACCOUNTS_URL = `${STACK_API_URL}/v2/accounts`;
 
-export const NETWORK = new StacksMainnet();
-NETWORK.coreApiUrl = STACK_API_URL;
+export const NETWORK = new StacksMainnet({
+  coreApiUrl: STACK_API_URL,
+});
 
 const basePath = STACK_API_URL;
 const config = new Configuration({ basePath });

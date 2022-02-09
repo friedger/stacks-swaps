@@ -1,15 +1,13 @@
 import React from 'react';
-import { useConnectForAuth, userSessionState } from '../lib/auth';
+import { useAuth } from '@micro-stacks/react';
 import { useAtom } from 'jotai';
 
 // Authentication button adapting to status
 
 export default function Auth() {
-  const { handleOpenAuth } = useConnectForAuth();
-  const { handleSignOut } = useConnectForAuth();
-  const [userSession] = useAtom(userSessionState);
+  const { handleSignIn, handleSignOut, isSignedIn } = useAuth();
 
-  if (userSession?.isUserSignedIn()) {
+  if (isSignedIn) {
     return (
       <button
         className="btn btn-outline-primary"
@@ -23,7 +21,7 @@ export default function Auth() {
     );
   } else {
     return (
-      <button type="button" className="btn btn-outline-primary" onClick={handleOpenAuth}>
+      <button type="button" className="btn btn-outline-primary" onClick={handleSignIn}>
         Get Started
       </button>
     );

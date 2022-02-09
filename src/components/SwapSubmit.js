@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { useConnect } from '@stacks/connect-react';
 import {
   BTC_FT_SWAP_CONTRACT,
   BTC_NFT_SWAP_CONTRACT,
@@ -9,21 +8,18 @@ import {
   smartContractsApi,
 } from '../lib/constants';
 import { TxStatus } from './TxStatus';
+import { contractPrincipalCV, cvToHex, cvToString, hexToCV, uintCV } from 'micro-stacks/clarity';
 import {
   AnchorMode,
-  contractPrincipalCV,
   createAssetInfo,
-  cvToHex,
-  cvToString,
   FungibleConditionCode,
-  hexToCV,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
-  uintCV,
-} from '@stacks/transactions';
+} from 'micro-stacks/transactions';
+import { useContractCall, useSession } from '@micro-stacks/react';
 import {
   getReversedTxId,
   paramsFromTx,
@@ -38,7 +34,7 @@ import {
 import { getAsset, getAssetName } from './assets';
 import { saveTxData } from '../lib/transactions';
 
-export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, fromData }) {
+export function SwapSubmit({ ownerStxAddress, type, trait, id, fromData }) {
   const swapIdRef = useRef();
   const nftIdRef = useRef();
   const traitRef = useRef();
@@ -47,20 +43,13 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, from
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [changed, setChanged] = useState(true);
-  const { doContractCall } = useConnect();
+  const [userSession] = useSession();
+  const { handleContractCall } = useContractCall({});
 
   const verifyAction = async () => {
     const btcTxId = btcTxIdRef.current.value.trim();
-    const {
-      txCV,
-      proofCV,
-      block,
-      blockCV,
-      header,
-      headerParts,
-      headerPartsCV,
-      stacksBlock,
-    } = await paramsFromTx(btcTxId);
+    const { txCV, proofCV, block, blockCV, header, headerParts, headerPartsCV, stacksBlock } =
+      await paramsFromTx(btcTxId);
     const height = stacksBlock.height;
     console.log({
       btcTxId,
@@ -176,7 +165,7 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, from
     }
     try {
       // submit
-      await doContractCall({
+      await handleContractCall({
         contractAddress: contract.address,
         contractName: contract.name,
         functionName: 'submit-swap',
@@ -193,13 +182,13 @@ export function SwapSubmit({ ownerStxAddress, userSession, type, trait, id, from
           setLoading(false);
           setTxId(result.txId);
           saveTxData(result, userSession)
-          .then(r => {
-            setLoading(false);
-          })
-          .catch(e => {
-            console.log(e);
-            setLoading(false);
-          });
+            .then(r => {
+              setLoading(false);
+            })
+            .catch(e => {
+              console.log(e);
+              setLoading(false);
+            });
         },
       });
     } catch (e) {

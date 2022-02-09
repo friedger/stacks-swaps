@@ -1,4 +1,4 @@
-import { contractPrincipalCV } from '@stacks/transactions';
+import { ClarityType, contractPrincipalCV, cvToString } from 'micro-stacks/clarity';
 import { pubscriptCVToBtcAddress } from './btcTransactions';
 import { getFTData, getNFTData } from './tokenData';
 import { optionalCVToString } from './transactions';

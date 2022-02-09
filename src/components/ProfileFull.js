@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSession } from '@micro-stacks/react';
 import { fetchAccount } from '../lib/account';
 import { Address } from './Address';
 import { Amount } from './Amount';
@@ -7,14 +8,13 @@ import {} from 'react-jdenticon';
 import { useAtom } from 'jotai';
 import { refreshPrice, STX_USD } from '../lib/price';
 import { getTxs } from '../lib/transactions';
-import { ClarityType, hexToCV } from '@stacks/transactions';
+import { ClarityType, hexToCV } from 'micro-stacks/clarity';
 import { contracts } from '../lib/constants';
 
 export function ProfileFull({ stxAddress, userSession }) {
   const [profileState, setProfileState] = useState({
     account: undefined,
   });
-
   const [, setStxUsd] = useAtom(STX_USD);
   const [loading, setLoading] = useState(false);
   const [transactions, setTransactions] = useState();
@@ -155,7 +155,7 @@ export function ProfileFull({ stxAddress, userSession }) {
                         swaps[t.data.txId] = { ...swap, swapType };
                         break;
                       case 'submit-swap':
-                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value.toNumber();
+                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value;
                         console.log(id, t.data.txId);
                         swaps[t.data.txId] = { ...swap, id, swapType };
                         break;
@@ -169,7 +169,9 @@ export function ProfileFull({ stxAddress, userSession }) {
                 if (swap.id) {
                   return (
                     <div key={key}>
-                      <a href={`/${swap.swapType}/swap/${swap.id}`}>Pending Swap #{swap.id} ({swap.swapType})</a>
+                      <a href={`/${swap.swapType}/swap/${swap.id}`}>
+                        Pending Swap #{swap.id} ({swap.swapType})
+                      </a>
                     </div>
                   );
                 } else {
@@ -195,12 +197,12 @@ export function ProfileFull({ stxAddress, userSession }) {
                       case 'create-swap':
                         id =
                           hexToCV(t.apiData.tx_result.hex).type === ClarityType.ResponseOk
-                            ? hexToCV(t.apiData.tx_result.hex).value.value.toNumber()
+                            ? hexToCV(t.apiData.tx_result.hex).value.value
                             : t.data.txId;
                         swaps[t.data.txId] = { ...swap, id, swapType };
                         break;
                       case 'submit-swap':
-                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value.toNumber();
+                        id = hexToCV(t.apiData.contract_call.function_args[0].hex).value;
                         console.log(id, t.data.txId);
                         swaps[t.data.txId] = { ...swap, id, swapType };
                         break;
@@ -213,7 +215,9 @@ export function ProfileFull({ stxAddress, userSession }) {
                 const swap = e[1];
                 return (
                   <div key={key}>
-                    <a href={`/${swap.swapType}/swap/${swap.id}`}>Swap #{swap.id} ({swap.swapType})</a>
+                    <a href={`/${swap.swapType}/swap/${swap.id}`}>
+                      Swap #{swap.id} ({swap.swapType})
+                    </a>
                   </div>
                 );
               })}

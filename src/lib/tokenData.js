@@ -1,4 +1,4 @@
-import { callReadOnlyFunction } from '@stacks/transactions';
+import { callReadOnlyFunction } from 'micro-stacks/transactions';
 import { NETWORK, smartContractsApi } from './constants';
 
 export async function getFTData(contractAddress, contractName) {
@@ -14,7 +14,7 @@ export async function getFTData(contractAddress, contractName) {
     senderAddress: contractAddress,
     network: NETWORK,
   });
-  const decimals = decimalsResponse.value.value.toNumber();
+  const decimals = decimalsResponse.value.value;
   const symbol = await callReadOnlyFunction({
     contractAddress,
     contractName,

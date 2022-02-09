@@ -1,22 +1,24 @@
-import { useConnect } from '@stacks/connect-react';
+import { useContractCall } from '@micro-stacks/react';
 import {
-  AnchorMode,
   contractPrincipalCV,
-  createAssetInfo,
   cvToString,
-  FungibleConditionCode,
   hexToCV,
   listCV,
+  someCV,
+  standardPrincipalCV,
+  trueCV,
+  uintCV,
+} from 'micro-stacks/clarity';
+import {
+  AnchorMode,
+  createAssetInfo,
+  FungibleConditionCode,
   makeContractSTXPostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
   NonFungibleConditionCode,
   PostConditionMode,
-  someCV,
-  standardPrincipalCV,
-  trueCV,
-  uintCV,
-} from '@stacks/transactions';
+} from 'micro-stacks/transactions';
 import { BN } from 'bn.js';
 import React, { useEffect, useState } from 'react';
 import { accountsApi, NETWORK } from '../../lib/constants';
@@ -30,7 +32,7 @@ export default function SwapCrashPunks200({ userSession }) {
   const [status, setStatus] = useState();
   const [swapForUser, setSwapsForUser] = useState();
 
-  const { doContractCall } = useConnect();
+  const { handleContractCall } = useContractCall({ network: NETWORK });
 
   useEffect(() => {
     if (userSession && userSession.isUserSignedIn()) {
@@ -65,7 +67,7 @@ export default function SwapCrashPunks200({ userSession }) {
   }, [userSession]);
 
   const approveContract = async () => {
-    doContractCall({
+    handleContractCall({
       contractAddress: 'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ',
       contractName: 'crashpunks-v2',
       functionName: 'set-approved-all',
@@ -93,7 +95,7 @@ export default function SwapCrashPunks200({ userSession }) {
     const amountCV = uintCV(BigInt(ids.length * 50_000_000));
     const idsCV = listCV(ids.map(id => uintCV(id)));
     const nftSenderCV = someCV(standardPrincipalCV(nftOwner));
-    doContractCall({
+    handleContractCall({
       contractAddress: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
       contractName: 'stx-cp-many-swap-v1',
       functionName: 'create-swap',
@@ -152,7 +154,7 @@ export default function SwapCrashPunks200({ userSession }) {
       )
     );
 
-    doContractCall({
+    handleContractCall({
       contractAddress: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
       contractName: 'stx-cp-many-swap-v1',
       functionName: 'submit-swap',

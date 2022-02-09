@@ -5,7 +5,7 @@ import {
   makeContractSTXPostCondition,
   makeStandardFungiblePostCondition,
   makeStandardSTXPostCondition,
-} from '@stacks/transactions';
+} from 'micro-stacks/transactions';
 
 export function makeCreateSwapPostConditions(
   feeId,
@@ -20,6 +20,21 @@ export function makeCreateSwapPostConditions(
           ownerStxAddress,
           FungibleConditionCode.Equal,
           satsOrUstxCV.value.add(fees)
+        ),
+      ]
+    : feeId === 'banana'
+    ? [
+        makeStandardFungiblePostCondition(
+          ownerStxAddress,
+          FungibleConditionCode.Equal,
+          satsOrUstxCV.value,
+          createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
+        ),
+        makeStandardFungiblePostCondition(
+          ownerStxAddress,
+          FungibleConditionCode.Equal,
+          fees,
+          createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
         ),
       ]
     : [

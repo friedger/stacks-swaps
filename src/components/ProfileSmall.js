@@ -1,12 +1,13 @@
 import React from 'react';
 import { ProfileFull } from './ProfileFull';
-import { useStxAddresses } from '../lib/hooks';
 import { Address } from './Address';
+import { useAuth } from '@micro-stacks/react';
+import { useStxAddresses } from '../lib/hooks';
 
-export function ProfileSmall({ userSession }) {
-  const { ownerStxAddress } = useStxAddresses(userSession);
-
-  if (userSession?.isUserSignedIn()) {
+export function ProfileSmall() {
+  const { mainnet: ownerStxAddress } = useStxAddresses();
+  const { session, isSignedIn } = useAuth();
+  if (isSignedIn) {
     return (
       <>
         <div>
@@ -21,7 +22,7 @@ export function ProfileSmall({ userSession }) {
             {ownerStxAddress ? <Address addr={ownerStxAddress} /> : 'Profile'}
           </a>
         </div>
-        <ProfileFull stxAddress={ownerStxAddress} userSession={userSession} />
+        <ProfileFull stxAddress={ownerStxAddress} userSession={session} />
       </>
     );
   } else {

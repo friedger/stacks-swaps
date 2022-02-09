@@ -1,4 +1,5 @@
-import { callReadOnlyFunction, ClarityType, contractPrincipalCV } from '@stacks/transactions';
+import { ClarityType, contractPrincipalCV } from 'micro-stacks/clarity';
+import { callReadOnlyFunction } from 'micro-stacks/transactions';
 
 export async function contractToFees(feeContract, satsOrUstxCV) {
   const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);

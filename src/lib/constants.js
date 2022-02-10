@@ -69,15 +69,15 @@ export const STX_NFT_SWAP_FEE_CONTRACT = {
 
 export const BANANA_NFT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'banana-nft-swap-v1',
+  name: 'banana-nft-swap-v2',
 };
 
 export const BANANA_NFT_SWAP_FEE_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'banana-nft-swap-v1-fixed-fees',
+  name: 'banana-nft-swap-v2-fixed-fees',
   ft: {
     address: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
-    name: 'bitcoin-monkeys-bananas',
+    name: 'btc-monkeys-bananas',
     assetName: 'BANANA',
   },
 };

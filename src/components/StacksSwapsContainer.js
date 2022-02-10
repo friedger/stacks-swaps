@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from '@micro-stacks/react';
-
 import { useStxAddresses } from '../lib/hooks';
 import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
@@ -9,7 +7,7 @@ import { fetchSwapsEntry } from '../lib/transactions';
 import { infoApi } from '../lib/constants';
 import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
 
-export function StacksSwapsContainer({ type, trait, id }) {
+export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const { ownerStxAddress } = useStxAddresses();
 
   const atomicSwap = isAtomic(type);
@@ -21,7 +19,7 @@ export function StacksSwapsContainer({ type, trait, id }) {
     trait: trait,
     btcRecipient: '',
     amountSats: '',
-    nftId: '',
+    nftId: nftId,
     assetRecipient: '',
     amount: '',
     assetSenderFromSwap: '',
@@ -33,12 +31,13 @@ export function StacksSwapsContainer({ type, trait, id }) {
         trait: trait,
         btcRecipient: '',
         amountSats: '',
+        nftId: nftId,
         assetRecipient: ownerStxAddress,
         amount: '',
         assetSenderFromSwap: '',
       });
     }
-  }, [atomicSwap, ownerStxAddress, trait]);
+  }, [atomicSwap, ownerStxAddress, trait, nftId]);
 
   useEffect(() => {
     infoApi.getCoreApiInfo().then(info => {

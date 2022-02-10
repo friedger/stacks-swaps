@@ -13,7 +13,7 @@ import {
 export function AssetIcon({ type, trait }) {
   switch (type) {
     case 'btc':
-      return <img className="m-1" src="/bitcoin.webp" alt="BTC" />;
+      return <img className="m-1" src="/bitcoin.webp" width="50" height="50" alt="BTC" />;
     case 'ft':
       switch (trait) {
         case MIA_TOKEN:

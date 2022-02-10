@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAuth } from '@micro-stacks/react';
-import { useAtom } from 'jotai';
 
 // Authentication button adapting to status
 

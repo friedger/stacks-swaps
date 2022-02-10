@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
-import { cvToString, noneCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
+import {
+  ClarityType,
+  cvToString,
+  noneCV,
+  someCV,
+  standardPrincipalCV,
+  uintCV,
+} from 'micro-stacks/clarity';
 import {
   AnchorMode,
   createAssetInfo,
@@ -14,6 +21,7 @@ import {
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
+  callReadOnlyFunction,
 } from 'micro-stacks/transactions';
 
 import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
@@ -29,7 +37,6 @@ import { getFTData, getNFTData } from '../lib/tokenData';
 import { contractToFees } from '../lib/fees';
 import {
   buyAssetFromType,
-  buyAssetIdFromType,
   buyAssetTypeFromSwapType,
   buyDecimalsFromType,
   factorForType,
@@ -38,6 +45,8 @@ import {
 } from '../lib/assets';
 import { makeCancelSwapPostConditions, makeCreateSwapPostConditions } from '../lib/swaps';
 import { serializeCV } from 'micro-stacks/clarity';
+import { fetchPrivate } from 'micro-stacks/common';
+import { fetchNamesByAddress } from 'micro-stacks/api';
 
 function readFloat(ref) {
   const result = parseFloat(ref.current.value.trim());
@@ -61,6 +70,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
   const [status, setStatus] = useState();
   const [formData, setFormData] = useState(formData1);
   const [ftData, setFtData] = useState();
+  const [previewed, setPreviewed] = useState(false);
+  const [assetUrl, setAssetUrl] = useState();
 
   const contract = contracts[type];
   const { handleContractCall } = useContractCall({
@@ -101,7 +112,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     }
     const factor = factorForType(type);
     const amountInputFloat = readFloat(amountSatsRef) || 0;
-    const satsOrUstxCV = uintCV(BigInt(Math.floor(amountInputFloat * factor)));
+    const satsOrUstxCV = uintCV(Math.floor(amountInputFloat * factor));
     if (satsOrUstxCV.value <= 0) {
       errors.push('positive amount required to swap');
     }
@@ -319,6 +330,72 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     });
   };
 
+  const previewAction = async () => {
+    const [, , contractName, contractAddress] = splitAssetIdentifier(traitRef.current.value.trim());
+    if (nftSwap(type)) {
+      try {
+        const tokenUriCV = await callReadOnlyFunction({
+          contractAddress,
+          contractName,
+          functionName: 'get-token-uri',
+          functionArgs: [uintCV(formData.nftId)],
+        });
+        console.log({ tokenUriCV: tokenUriCV.value.value });
+        const nftUrl =
+          tokenUriCV.value.type === ClarityType.OptionalSome
+            ? tokenUriCV.value.value.data
+            : undefined;
+        console.log(nftUrl);
+        if (nftUrl) {
+          let url = nftUrl.replace('{id}', formData.nftId);
+          console.log(url);
+          url = url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+          const metaDataResponse = await fetchPrivate(url);
+          console.log(metaDataResponse);
+          const metaData = await metaDataResponse.json();
+          console.log({ metaData });
+          let image = metaData.image || metaData.properties.image;
+          console.log(image);
+          image = image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+          console.log(image);
+          setAssetUrl(image);
+        }
+      } catch (e) {
+        // ignore
+        console.log(e);
+        setStatus('NFT image not found');
+      }
+      try {
+        const ownerCV = await callReadOnlyFunction({
+          contractAddress,
+          contractName,
+          functionName: 'get-owner',
+          functionArgs: [uintCV(formData.nftId)],
+        });
+        const owner =
+          ownerCV.value.type === ClarityType.OptionalSome
+            ? cvToString(ownerCV.value.value)
+            : undefined;
+        console.log(owner);
+        const namesResponse = await fetchNamesByAddress({
+          url: NETWORK.bnsLookupUrl,
+          address: owner,
+          blockchain: 'stacks',
+        });
+        console.log(namesResponse);
+        const account = namesResponse.names?.length ? namesResponse.names[0] : owner;
+        console.log(account);
+        if (isAtomic) {
+          assetSellerRef.current.value = account;
+        } else {
+          assetBuyerRef.current.value = account;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    setPreviewed(true);
+  };
   const setRecipientAction = async () => {
     setLoading(true);
     const errors = [];
@@ -386,6 +463,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     let amountInSmallestUnit, nftIdCV;
     let assetContractCV, assetName, assetContractName, assetContractAddress;
     let feeId, feeContract, feesCV, fees;
+    const factor = factorForType(type);
+    const satsOrUstxCV = uintCV(
+      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+    );
+
     switch (type) {
       case 'nft':
         nftIdCV = uintCV(nftIdRef.current.value.trim());
@@ -434,11 +516,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         ];
         break;
       case 'stx-ft':
-        const factor = 1_000_000;
-        const satsOrUstxCV = uintCV(
-          Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
-        );
-
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
           splitAssetIdentifier(traitRef.current.value.trim());
         if (!assetName) {
@@ -862,7 +939,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
               </div>
             </div>
             <div className="col text-center border-left">
-              <AssetIcon type={sellType} trait={formData.trait} />
+              {previewed && nftSwap(type) && assetUrl ? (
+                <img className="m-1" src={assetUrl} width={50} height={50} alt="BTC" />
+              ) : (
+                <AssetIcon type={sellType} trait={formData.trait} />
+              )}
               <br />
               <div className={`input-group ${nftSwap(type) ? '' : 'd-none'}`}>
                 <input
@@ -1084,7 +1165,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                     <button
                       className="btn btn-block btn-primary"
                       type="button"
-                      onClick={createAction}
+                      onClick={previewed ? createAction : previewAction}
                     >
                       <div
                         role="status"
@@ -1092,7 +1173,13 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                           loading ? '' : 'd-none'
                         } spinner-border spinner-border-sm text-info align-text-top mr-2`}
                       />
-                      {atomicSwap ? 'Buy' : 'Sell'} {asset}
+                      {previewed ? (
+                        <>
+                          {atomicSwap ? 'Buy' : 'Sell'} {asset}
+                        </>
+                      ) : (
+                        <>Preview {asset} swap</>
+                      )}
                     </button>
                   )}
                 </>

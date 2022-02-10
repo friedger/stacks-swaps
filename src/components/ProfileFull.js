@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from '@micro-stacks/react';
 import { fetchAccount } from '../lib/account';
 import { Address } from './Address';
 import { Amount } from './Amount';
@@ -211,6 +210,7 @@ export function ProfileFull({ stxAddress, userSession }) {
                     return swaps;
                   }, {})
               ).map((e, key) => {
+                // eslint-disable-next-line no-unused-vars
                 const txId = e[0];
                 const swap = e[1];
                 return (

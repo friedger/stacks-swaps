@@ -192,7 +192,7 @@ function Content() {
             userSession={userSession}
           />
           <StacksSwaps
-            path="/banana-nft/:trait"
+            path="/banana-nft/:trait/:nftId"
             type="banana-nft"
             decentralizedID={decentralizedID}
             userSession={userSession}

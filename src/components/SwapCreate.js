@@ -280,8 +280,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           setStatus('positive numbers required to swap');
           return;
         }
-        console.log(nftIdCV);
-        console.log(serializeCV(nftIdCV));
         [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
         if (!assetName) {
           setLoading(false);
@@ -342,6 +340,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         });
         console.log({ tokenUriCV: tokenUriCV.value.value });
         const nftUrl =
+          tokenUriCV.type === ClarityType.ResponseOk &&
           tokenUriCV.value.type === ClarityType.OptionalSome
             ? tokenUriCV.value.value.data
             : undefined;
@@ -373,7 +372,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           functionArgs: [uintCV(formData.nftId)],
         });
         const owner =
-          ownerCV.value.type === ClarityType.OptionalSome
+          ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
             ? cvToString(ownerCV.value.value)
             : undefined;
         console.log(owner);
@@ -382,9 +381,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           address: owner,
           blockchain: 'stacks',
         });
-        console.log(namesResponse);
         const account = namesResponse.names?.length ? namesResponse.names[0] : owner;
-        console.log(account);
         if (isAtomic) {
           assetSellerRef.current.value = account;
         } else {

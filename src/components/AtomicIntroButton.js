@@ -10,7 +10,7 @@ export function AtomicIntroButton({ type, trait }) {
   const buyWithName = getAsset(buyWith);
   return (
     <Link to={to} type="button">
-      <AssetIcon type={sell} trait={trait} />
+      <AssetIcon type={buyWith === 'stx' ? sell : buyWith} trait={trait} />
       Swap {buyWithName} for {assetName}
     </Link>
   );

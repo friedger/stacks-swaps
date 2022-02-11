@@ -8,7 +8,14 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import { BANANA_TOKEN, CRASHPUNKS, FARI_TOKEN, MIA_TOKEN, SATOSHIBLES } from './components/assets';
+import {
+  BANANA_TOKEN,
+  BITCOIN_MONKEYS,
+  CRASHPUNKS,
+  FARI_TOKEN,
+  MIA_TOKEN,
+  SATOSHIBLES,
+} from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
@@ -215,6 +222,45 @@ function Content() {
             decentralizedID={decentralizedID}
             userSession={userSession}
           />
+          <StacksSwaps
+            path="/banana-bitoinmonkeys/swap/:id"
+            type="banana-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={BITCOIN_MONKEYS}
+          />
+          <StacksSwaps
+            path="/banana-bitoinmonkeys"
+            type="banana-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={BITCOIN_MONKEYS}
+          />
+          <StacksSwaps
+            path="/xbtc-nft/swap/:id"
+            type="xbtc-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/xbtc-nft/:trait/:nftId"
+            type="xbtc-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/xbtc-nft/:trait"
+            type="xbtc-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+          <StacksSwaps
+            path="/xbtc-nft"
+            type="xbtc-nft"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
+
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}

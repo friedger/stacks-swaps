@@ -79,13 +79,15 @@ export default function Intro(props) {
               <div className="col"></div>
             </div>
           </div>
-          <h2>BANANA tokens</h2>
+          <h2>Swap NFTs for other tokens</h2>
           <div className="container">
             <div className="row">
               <div className="col">
                 <AtomicIntroButton type="banana-nft" />
               </div>
-              <div className="col"></div>
+              <div className="col">
+                <AtomicIntroButton type="xbtc-nft" />
+              </div>
               <div className="col"></div>
             </div>
           </div>

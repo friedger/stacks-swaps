@@ -8,6 +8,8 @@ export const THIS_IS_NUMBER_ONE =
   'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.thisisnumberone-v2::my-nft';
 export const CRASHPUNKS = 'SP3QSAJQ4EA8WXEDSRRKMZZ29NH91VZ6C5X88FGZQ.crashpunks-v2::crashpunks-v2';
 export const SATOSHIBLES = 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C/satoshibles::Satoshibles';
+export const BITCOIN_MONKEYS =
+  'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys::bitcoin-monkeys';
 
 export function getAsset(type, trait) {
   return trait === MIA_TOKEN

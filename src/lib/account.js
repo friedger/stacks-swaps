@@ -38,6 +38,8 @@ export async function resolveBNS(username) {
       functionArgs: [bufferCVFromString(parts[1]), bufferCVFromString(parts[0])],
       network: NETWORK,
       senderAddress: GENESIS_CONTRACT_ADDRESS,
+    }).catch(e => {
+      return { type: ClarityType.ResponseErr };
     });
     if (result.type === ClarityType.ResponseOk) {
       return cvToString(result.value.data.owner);

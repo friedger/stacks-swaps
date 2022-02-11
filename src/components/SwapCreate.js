@@ -3,8 +3,10 @@ import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/cons
 import { TxStatus } from './TxStatus';
 import {
   ClarityType,
+  contractPrincipalCV,
   cvToString,
   noneCV,
+  principalCV,
   someCV,
   standardPrincipalCV,
   uintCV,
@@ -23,8 +25,9 @@ import {
   makeStandardSTXPostCondition,
   callReadOnlyFunction,
 } from 'micro-stacks/transactions';
+import { fetchAccountBalances } from 'micro-stacks/api';
 
-import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
+import { useAuth, useContractCall, useSession, useStxAddresses } from '@micro-stacks/react';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
 import { BANANA_TOKEN, getAsset, getAssetName } from './assets';
@@ -85,6 +88,12 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
 
   const atomicSwap = isAtomic(type);
 
+  const satsOrUstxCVFromInput = () => {
+    const factor = factorForType(type);
+    const amountInputFloat = readFloat(amountSatsRef) || 0;
+    return uintCV(Math.floor(amountInputFloat * factor));
+  };
+
   useEffect(() => {
     console.log({ type, formData });
     if (type === 'stx-ft' && formData && formData.trait) {
@@ -110,9 +119,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     if (!atomicSwap && assetSellerRef.current.value.trim() === '') {
       errors.push('BTC address is required');
     }
-    const factor = factorForType(type);
-    const amountInputFloat = readFloat(amountSatsRef) || 0;
-    const satsOrUstxCV = uintCV(Math.floor(amountInputFloat * factor));
+
+    const satsOrUstxCV = satsOrUstxCVFromInput();
     if (satsOrUstxCV.value <= 0) {
       errors.push('positive amount required to swap');
     }
@@ -121,6 +129,12 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     }
     if (!traitRef.current.value.trim()) {
       errors.push('Missing token contract');
+    }
+    if (
+      assetSellerRef.current.value.trim() ===
+      'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles'
+    ) {
+      errors.push("Can't buy from Stacks bridge");
     }
     if (errors.length > 0) {
       setLoading(false);
@@ -138,7 +152,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     const seller = await resolveBNS(assetSellerRef.current.value.trim());
     const sellerCV = atomicSwap
       ? seller
-        ? someCV(standardPrincipalCV(seller))
+        ? someCV(principalCV(seller))
         : noneCV()
       : btcAddressToPubscriptCV(seller);
     const assetBuyer = await resolveBNS(assetBuyerRef.current.value.trim());
@@ -248,31 +262,6 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         );
         break;
       case 'stx-nft':
-        nftIdCV = uintCV(BigInt(nftIdRef.current.value.trim()));
-        if (nftIdCV.value <= 0) {
-          setLoading(false);
-          setStatus('positive numbers required to swap');
-          return;
-        }
-        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
-        if (!assetName) {
-          setLoading(false);
-          setStatus('"nft contract :: nft name" must be set');
-          return;
-        }
-        feeId = feeContractRef.current.value;
-        console.log({ feeId });
-        feeContract = nftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
-        postConditions = makeCreateSwapPostConditions(
-          feeId,
-          ownerStxAddress,
-          satsOrUstxCV,
-          fees,
-          feeContract
-        );
-        break;
       case 'banana-nft':
         nftIdCV = uintCV(formData.nftId);
         if (nftIdCV.value <= 0) {
@@ -328,7 +317,62 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     });
   };
 
+  const hasInsufficientBalance = async satsOrUstxCV => {
+    const feeId = feeContractRef.current.value;
+    console.log({ feeId });
+    const feeContract = nftFeeContracts[feeId];
+    const [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+    const balances = await fetchAccountBalances({
+      url: NETWORK.coreApiUrl,
+      principal: ownerStxAddress,
+    });
+    console.log({ balances });
+    const requiredAsset = satsOrUstxCV.value + (feeId === 'stx' || feeId === 'banana' ? fees : 0);
+    console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
+
+    switch (type) {
+      case 'stx':
+      case 'stx-nft':
+      case 'stx-ft':
+        return balances.stx.balance < requiredAsset;
+      case 'banana-nft':
+        console.log(balances.fungible_tokens[BANANA_TOKEN]);
+        return balances.fungible_tokens[BANANA_TOKEN]?.balance < requiredAsset;
+      default:
+        // unsupported type, assume balance is sufficient.
+        return false;
+    }
+  };
+
   const previewAction = async () => {
+    setLoading(true);
+    const errors = [];
+    const satsOrUstxCV = satsOrUstxCVFromInput();
+    if (satsOrUstxCV.value <= 0) {
+      errors.push('positive amount required to swap');
+    }
+    if (nftSwap(type) && isNaN(parseInt(formData.nftId))) {
+      errors.push('not a valid NFT id');
+    }
+    try {
+      if (await hasInsufficientBalance(satsOrUstxCV)) {
+        errors.push('wallet has insufficient balance');
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    if (errors.length > 0) {
+      setLoading(false);
+      setStatus(
+        errors.map((e, index) => (
+          <React.Fragment key={index}>
+            {e}
+            <br />
+          </React.Fragment>
+        ))
+      );
+      return;
+    }
     const [, , contractName, contractAddress] = splitAssetIdentifier(traitRef.current.value.trim());
     if (nftSwap(type)) {
       try {
@@ -392,6 +436,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       }
     }
     setPreviewed(true);
+    setLoading(false);
   };
   const setRecipientAction = async () => {
     setLoading(true);
@@ -1077,7 +1122,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                 >
                   {type !== 'banana-nft' && <option value="stx">1% fee in STX</option>}
                   {type === 'banana-nft' && <option value="banana">1% fee in BANANA</option>}
-                  {type !== 'stx-nft' && <option value="frie">1% fee in FRIE</option>}
+                  {type !== 'stx-nft' && type !== 'banana-nft' && (
+                    <option value="frie">1% fee in FRIE</option>
+                  )}
                 </select>
               </div>
               <div className="col" />

@@ -5,7 +5,7 @@ import { useAuth } from '@micro-stacks/react';
 import { useStxAddresses } from '../lib/hooks';
 
 export function ProfileSmall() {
-  const { mainnet: ownerStxAddress } = useStxAddresses();
+  const { ownerStxAddress } = useStxAddresses();
   const { session, isSignedIn } = useAuth();
   if (isSignedIn) {
     return (

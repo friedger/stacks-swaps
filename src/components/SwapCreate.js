@@ -127,14 +127,15 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     if (isNaN(parseInt(formData.nftId))) {
       errors.push('not a valid NFT id');
     }
-    if (!traitRef.current.value.trim()) {
+    const tokenContract = traitRef.current.value.trim();
+    if (!tokenContract) {
       errors.push('Missing token contract');
     }
-    if (
-      assetSellerRef.current.value.trim() ===
-      'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles'
-    ) {
-      errors.push("Can't buy from Stacks bridge");
+    if (tokenContract === 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles') {
+      errors.push("Can't swap from Stacks bridge");
+    }
+    if (tokenContract === 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking') {
+      errors.push("Can't swap staked monkey");
     }
     if (errors.length > 0) {
       setLoading(false);

@@ -30,7 +30,7 @@ import { fetchAccountBalances } from 'micro-stacks/api';
 import { useAuth, useContractCall, useSession, useStxAddresses } from '@micro-stacks/react';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
-import { BANANA_TOKEN, getAsset, getAssetName } from './assets';
+import { BANANA_TOKEN, getAsset, getAssetName, XBTC_TOKEN } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
@@ -338,6 +338,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       case 'banana-nft':
         console.log(balances.fungible_tokens[BANANA_TOKEN]);
         return balances.fungible_tokens[BANANA_TOKEN]?.balance < requiredAsset;
+      case 'xbtc-nft':
+        console.log(balances.fungible_tokens[BANANA_TOKEN]);
+        return balances.fungible_tokens[XBTC_TOKEN]?.balance < requiredAsset;
       default:
         // unsupported type, assume balance is sufficient.
         return false;
@@ -600,6 +603,28 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         );
         break;
       case 'banana-nft':
+        nftIdCV = uintCV(nftIdRef.current.value.trim());
+
+        [assetContractCV, assetName, assetContractName, assetContractAddress] =
+          splitAssetIdentifier(traitRef.current.value.trim());
+        if (!assetName) {
+          setLoading(false);
+          setStatus('"ft contract :: ft name" must be set');
+          return;
+        }
+        feeId = feeContractRef.current.value;
+        feeContract = ftFeeContracts[feeId];
+        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        functionArgs = [swapIdCV, assetContractCV, feesCV];
+        postConditions = makeCancelSwapPostConditions(
+          feeId,
+          contract,
+          satsOrUstxCV,
+          fees,
+          feeContract
+        );
+        break;
+      case 'xbtc-nft':
         nftIdCV = uintCV(nftIdRef.current.value.trim());
 
         [assetContractCV, assetName, assetContractName, assetContractAddress] =

@@ -223,14 +223,14 @@ function Content() {
             userSession={userSession}
           />
           <StacksSwaps
-            path="/banana-bitoinmonkeys/swap/:id"
+            path="/banana-bitcoinmonkeys/swap/:id"
             type="banana-nft"
             decentralizedID={decentralizedID}
             userSession={userSession}
             trait={BITCOIN_MONKEYS}
           />
           <StacksSwaps
-            path="/banana-bitoinmonkeys"
+            path="/banana-bitcoinmonkeys"
             type="banana-nft"
             decentralizedID={decentralizedID}
             userSession={userSession}

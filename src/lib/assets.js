@@ -1,8 +1,10 @@
-import { ClarityType, contractPrincipalCV, cvToString } from 'micro-stacks/clarity';
+import { ClarityType, contractPrincipalCV, cvToString, uintCV } from 'micro-stacks/clarity';
 import { pubscriptCVToBtcAddress } from './btcTransactions';
 import { getFTData, getNFTData } from './tokenData';
 import { optionalCVToString } from './transactions';
-import { ftFeeContracts, nftFeeContracts } from './constants';
+import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
+import { callReadOnlyFunction, fetchNamesByAddress } from 'micro-stacks/api';
+import { fetchPrivate } from 'micro-stacks/common';
 
 /**
  *
@@ -20,19 +22,15 @@ export function isAtomic(type) {
   return type.startsWith('stx-') || type.startsWith('banana-');
 }
 
-export function factorForType(type) {
-  return type.startsWith('stx-') //
-    ? 1_000_000
-    : type.startsWith('banana-')
-    ? 1_000_000
-    : 100_000_000;
-}
-
 export function buyAssetFromType(type) {
   return type.startsWith('stx-') //
     ? 'STX'
     : type.startsWith('banana-')
     ? 'BANANA'
+    : type.startsWith('usda-')
+    ? 'USDA'
+    : type.startsWith('xbtc-')
+    ? 'xBTC'
     : 'BTC';
 }
 
@@ -41,6 +39,10 @@ export function buyAssetTypeFromSwapType(type) {
     ? 'stx'
     : type.startsWith('banana-')
     ? 'banana'
+    : type.startsWith('xbtc-')
+    ? 'xbtc'
+    : type.startsWith('usda-')
+    ? 'usda'
     : 'btc';
 }
 
@@ -49,15 +51,36 @@ export function buyDecimalsFromType(type) {
     ? 6
     : type.startsWith('banana-')
     ? 6
+    : type.startsWith('usda-')
+    ? 6
+    : type.startsWith('xbtc-')
+    ? 8
     : 8;
 }
 
-export function amountFromSwapsEntry(swapsEntry, type) {
-  return type.startsWith('stx-')
-    ? swapsEntry.data.ustx.value / 1_000_000
+export function factorForType(type) {
+  return type.startsWith('stx-') //
+    ? 1_000_000
     : type.startsWith('banana-')
-    ? swapsEntry.data.ustx.value / 1_000_000
-    : swapsEntry.data.sats.value / 100_000_000;
+    ? 1_000_000
+    : type.startsWith('usda-')
+    ? 1_000_000
+    : type.startsWith('xbtc-')
+    ? 100_000_000
+    : 100_000_000;
+}
+export function amountFromSwapsEntry(swapsEntry, type) {
+  const factor = factorForType(type);
+  let amountProperty = type.startsWith('stx-')
+    ? 'ustx'
+    : type.startsWith('banana-')
+    ? 'ubanana'
+    : type.startsWith('usda-')
+    ? 'ustx'
+    : type.startsWith('xbtc-')
+    ? 'ustx'
+    : 'sats';
+  return swapsEntry.data[amountProperty] / factor;
 }
 
 export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
@@ -164,4 +187,55 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
     default:
       console.log('unsupported type ' + type);
   }
+}
+
+export async function resolveImageForNFT(contractAddress, contractName, nftId) {
+  const tokenUriCV = await callReadOnlyFunction({
+    contractAddress,
+    contractName,
+    functionName: 'get-token-uri',
+    functionArgs: [uintCV(nftId)],
+  });
+  console.log({ tokenUriCV: tokenUriCV.value.value });
+  const nftUrl =
+    tokenUriCV.type === ClarityType.ResponseOk && tokenUriCV.value.type === ClarityType.OptionalSome
+      ? tokenUriCV.value.value.data
+      : undefined;
+  console.log(nftUrl);
+  if (nftUrl) {
+    let url = nftUrl.replace('{id}', nftId);
+    console.log(url);
+    url = url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+    const metaDataResponse = await fetchPrivate(url);
+    console.log(metaDataResponse);
+    const metaData = await metaDataResponse.json();
+    console.log({ metaData });
+    let image = metaData.image || metaData.properties.image;
+    console.log(image);
+    image = image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+    console.log(image);
+    return image;
+  } else {
+    return undefined;
+  }
+}
+
+export async function resolveOwnerForNFT(contractAddress, contractName, nftId) {
+  const ownerCV = await callReadOnlyFunction({
+    contractAddress,
+    contractName,
+    functionName: 'get-owner',
+    functionArgs: [uintCV(nftId)],
+  });
+  const owner =
+    ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
+      ? cvToString(ownerCV.value.value)
+      : undefined;
+  console.log(owner);
+  const namesResponse = await fetchNamesByAddress({
+    url: NETWORK.bnsLookupUrl,
+    address: owner,
+    blockchain: 'stacks',
+  });
+  return namesResponse.names?.length ? namesResponse.names[0] : owner;
 }

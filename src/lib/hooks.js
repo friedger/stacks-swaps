@@ -15,7 +15,6 @@ export function useStxAddresses() {
 
   const authenticated = userSession && isUserSignedIn;
   const addresses = useMicroStxAddresses();
-  console.log({ addresses });
   useEffect(() => {
     if (authenticated) {
       const { address } = getStacksAccount(userSession.appPrivateKey);

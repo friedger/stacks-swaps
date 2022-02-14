@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import {
-  ClarityType,
-  contractPrincipalCV,
   cvToString,
   noneCV,
   principalCV,
@@ -23,14 +21,13 @@ import {
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
-  callReadOnlyFunction,
 } from 'micro-stacks/transactions';
 import { fetchAccountBalances } from 'micro-stacks/api';
 
-import { useAuth, useContractCall, useSession, useStxAddresses } from '@micro-stacks/react';
+import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
-import { BANANA_TOKEN, getAsset, getAssetName, XBTC_TOKEN } from './assets';
+import { BANANA_TOKEN, getAsset, getAssetName, USDA_TOKEN, XBTC_TOKEN } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
@@ -44,23 +41,32 @@ import {
   buyDecimalsFromType,
   factorForType,
   isAtomic,
+  resolveImageForNFT,
+  resolveOwnerForNFT,
   splitAssetIdentifier,
 } from '../lib/assets';
-import { makeCancelSwapPostConditions, makeCreateSwapPostConditions } from '../lib/swaps';
-import { serializeCV } from 'micro-stacks/clarity';
-import { fetchPrivate } from 'micro-stacks/common';
-import { fetchNamesByAddress } from 'micro-stacks/api';
+import {
+  assetInEscrow,
+  makeCancelSwapPostConditions,
+  makeCreateSwapPostConditions,
+  makeSubmitPostConditions,
+  nftSwap,
+} from '../lib/swaps';
 
 function readFloat(ref) {
   const result = parseFloat(ref.current.value.trim());
   return isNaN(result) ? undefined : result;
 }
 
-function nftSwap(type) {
-  return type === 'nft' || type === 'stx-nft' || type === 'banana-nft';
-}
-
-export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formData1, blockHeight }) {
+export function SwapCreate({
+  ownerStxAddress,
+  type,
+  trait,
+  id,
+  formData: formData1,
+  blockHeight,
+  feeOptions,
+}) {
   const amountSatsRef = useRef();
   const assetSellerRef = useRef();
   const nftIdRef = useRef();
@@ -116,7 +122,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     setLoading(true);
     setStatus('');
     const errors = [];
-    const seller = assetSellerRef.current.value.trim();
+    let seller = assetSellerRef.current.value.trim();
     if (!atomicSwap && seller === '') {
       errors.push('BTC address is required');
     }
@@ -151,12 +157,13 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       return;
     }
 
-    const seller = await resolveBNS(assetSellerRef.current.value.trim());
+    seller = await resolveBNS(assetSellerRef.current.value.trim());
     const sellerCV = atomicSwap
       ? seller
         ? someCV(principalCV(seller))
         : noneCV()
       : btcAddressToPubscriptCV(seller);
+
     const assetBuyer = await resolveBNS(assetBuyerRef.current.value.trim());
 
     let functionArgs, postConditions;
@@ -233,12 +240,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         ];
         break;
       case 'stx-ft':
-        const sellFactor =
-          formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
-            ? Math.pow(10, 6)
-            : ftData
-            ? Math.pow(10, ftData.decimals)
-            : 1;
+      case 'banana-ft':
+      case 'satoshible-ft':
+      case 'xbtc-ft':
+      case 'usda-ft':
+        const sellFactor = ftData ? Math.pow(10, ftData.decimals) : 1;
         ftAmountCV = uintCV(amountRef.current.value.trim() * sellFactor);
         if (ftAmountCV.value <= 0) {
           setLoading(false);
@@ -252,7 +258,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
           return;
         }
         feeId = feeContractRef.current.value;
-        feeContract = ftFeeContracts[feeId];
+        feeContract = feeOptions(feeId).contract;
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [satsOrUstxCV, ftAmountCV, sellerCV, assetContractCV, feesCV];
         postConditions = makeCreateSwapPostConditions(
@@ -265,6 +271,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         break;
       case 'stx-nft':
       case 'banana-nft':
+      case 'satoshible-nft':
+      case 'xbtc-nft':
+      case 'usda-nft':
         nftIdCV = uintCV(formData.nftId);
         if (nftIdCV.value <= 0) {
           setLoading(false);
@@ -279,7 +288,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         }
         feeId = feeContractRef.current.value;
         console.log({ feeId });
-        feeContract = nftFeeContracts[feeId];
+        feeContract = feeOptions(feeId).contract;
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
         postConditions = makeCreateSwapPostConditions(
@@ -291,7 +300,9 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         );
         break;
       default:
-        break;
+        setLoading(false);
+        setStatus('Unsupported type');
+        return;
     }
     await handleContractCall({
       functionName: 'create-swap',
@@ -329,7 +340,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       principal: ownerStxAddress,
     });
     console.log({ balances });
-    const requiredAsset = satsOrUstxCV.value + (feeId === 'stx' || feeId === 'banana' ? fees : 0);
+    const feesInSameAsset = type.startsWith(feeId + '-');
+    const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : 0);
     console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
 
     switch (type) {
@@ -338,11 +350,14 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       case 'stx-ft':
         return balances.stx.balance < requiredAsset;
       case 'banana-nft':
-        console.log(balances.fungible_tokens[BANANA_TOKEN]);
+      case 'banana-ft':
         return balances.fungible_tokens[BANANA_TOKEN]?.balance < requiredAsset;
       case 'xbtc-nft':
-        console.log(balances.fungible_tokens[BANANA_TOKEN]);
+      case 'xbtc-ft':
         return balances.fungible_tokens[XBTC_TOKEN]?.balance < requiredAsset;
+      case 'usda-nft':
+      case 'usda-ft':
+        return balances.fungible_tokens[USDA_TOKEN]?.balance < requiredAsset;
       default:
         // unsupported type, assume balance is sufficient.
         return false;
@@ -360,6 +375,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
       errors.push('not a valid NFT id');
     }
     try {
+      // TODO handle fee checks for NFT swaps
       if (await hasInsufficientBalance(satsOrUstxCV)) {
         errors.push('wallet has insufficient balance');
       }
@@ -381,31 +397,8 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     const [, , contractName, contractAddress] = splitAssetIdentifier(traitRef.current.value.trim());
     if (nftSwap(type)) {
       try {
-        const tokenUriCV = await callReadOnlyFunction({
-          contractAddress,
-          contractName,
-          functionName: 'get-token-uri',
-          functionArgs: [uintCV(formData.nftId)],
-        });
-        console.log({ tokenUriCV: tokenUriCV.value.value });
-        const nftUrl =
-          tokenUriCV.type === ClarityType.ResponseOk &&
-          tokenUriCV.value.type === ClarityType.OptionalSome
-            ? tokenUriCV.value.value.data
-            : undefined;
-        console.log(nftUrl);
-        if (nftUrl) {
-          let url = nftUrl.replace('{id}', formData.nftId);
-          console.log(url);
-          url = url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
-          const metaDataResponse = await fetchPrivate(url);
-          console.log(metaDataResponse);
-          const metaData = await metaDataResponse.json();
-          console.log({ metaData });
-          let image = metaData.image || metaData.properties.image;
-          console.log(image);
-          image = image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
-          console.log(image);
+        const image = resolveImageForNFT(contractAddress, contractName, formData.nftId);
+        if (image) {
           setAssetUrl(image);
         }
       } catch (e) {
@@ -414,23 +407,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         setStatus('NFT image not found');
       }
       try {
-        const ownerCV = await callReadOnlyFunction({
-          contractAddress,
-          contractName,
-          functionName: 'get-owner',
-          functionArgs: [uintCV(formData.nftId)],
-        });
-        const owner =
-          ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
-            ? cvToString(ownerCV.value.value)
-            : undefined;
-        console.log(owner);
-        const namesResponse = await fetchNamesByAddress({
-          url: NETWORK.bnsLookupUrl,
-          address: owner,
-          blockchain: 'stacks',
-        });
-        const account = namesResponse.names?.length ? namesResponse.names[0] : owner;
+        const account = await resolveOwnerForNFT(contractAddress, contractName, formData.nftId);
         if (isAtomic) {
           assetSellerRef.current.value = account;
         } else {
@@ -443,6 +420,7 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
     setPreviewed(true);
     setLoading(false);
   };
+
   const setRecipientAction = async () => {
     setLoading(true);
     const errors = [];
@@ -563,6 +541,10 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         ];
         break;
       case 'stx-ft':
+      case 'banana-ft':
+      case 'xbtc-ft':
+      case 'usda-ft':
+      case 'satoshible-ft':
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
           splitAssetIdentifier(traitRef.current.value.trim());
         if (!assetName) {
@@ -575,58 +557,19 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = makeCancelSwapPostConditions(
-          feeId,
+          type,
           contract,
           satsOrUstxCV,
-          fees,
-          feeContract
+          feeId,
+          feeContract,
+          fees
         );
         break;
       case 'stx-nft':
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
-
-        [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
-        if (!assetName) {
-          setLoading(false);
-          setStatus('"ft contract :: ft name" must be set');
-          return;
-        }
-        feeId = feeContractRef.current.value;
-        feeContract = ftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        functionArgs = [swapIdCV, assetContractCV, feesCV];
-        postConditions = makeCancelSwapPostConditions(
-          feeId,
-          contract,
-          satsOrUstxCV,
-          fees,
-          feeContract
-        );
-        break;
       case 'banana-nft':
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
-
-        [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
-        if (!assetName) {
-          setLoading(false);
-          setStatus('"ft contract :: ft name" must be set');
-          return;
-        }
-        feeId = feeContractRef.current.value;
-        feeContract = ftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        functionArgs = [swapIdCV, assetContractCV, feesCV];
-        postConditions = makeCancelSwapPostConditions(
-          feeId,
-          contract,
-          satsOrUstxCV,
-          fees,
-          feeContract
-        );
-        break;
       case 'xbtc-nft':
+      case 'usda-nft':
+      case 'satoshible-nft':
         nftIdCV = uintCV(nftIdRef.current.value.trim());
 
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
@@ -641,13 +584,15 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = makeCancelSwapPostConditions(
-          feeId,
+          type,
           contract,
           satsOrUstxCV,
-          fees,
-          feeContract
+          feeId,
+          feeContract,
+          fees
         );
         break;
+
       default:
         setLoading(false);
         return;
@@ -679,187 +624,106 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
   const submitAction = async () => {
     setLoading(true);
 
-    const factor = factorForType(type);
-    const satsOrUstxCV = uintCV(
-      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
-    );
-
     const swapIdCV = uintCV(id);
 
     let functionArgs;
     let postConditions;
 
-    let amountInSmallestUnit, nftIdCV;
+    let amountOrIdToSwapCV;
+    let amountInSmallestUnitOrNftIdInEscrowCV;
     let assetContractCV, assetName, assetContractName, assetContractAddress;
-    let feeId, feeContract, feesCV, fees;
+    let factor;
+    let feesCV, fees;
+
+    // asset to swap (not in escrow)
+    [assetContractCV, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
+      traitRef.current.value.trim()
+    );
+
+    const feeId = feeContractRef.current.value;
+    const feeContract = feeOptions[feeId].contract;
 
     switch (type) {
       case 'stx-ft':
-        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
+      case 'banana-ft':
+      case 'xbtc-ft':
+      case 'usda-ft':
+      case 'satoshible-ft':
+        // price for escrowed asset
+        // to be paid by user
+        amountOrIdToSwapCV = formData.amount * Math.pow(10, sellDecimals);
 
-        [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
-
-        feeId = feeContractRef.current.value;
-        feeContract = ftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        if (!fees) {
-          setLoading(false);
-          setStatus("Couldn't load fees.");
-          return;
-        }
-        functionArgs = [swapIdCV, assetContractCV, feesCV];
-        postConditions = [
-          makeContractSTXPostCondition(
-            contract.address,
-            contract.name,
-            FungibleConditionCode.Equal,
-            satsOrUstxCV.value
-          ),
-          makeStandardFungiblePostCondition(
-            ownerStxAddress,
-            FungibleConditionCode.Equal,
-            new BN(amountInSmallestUnit),
-            createAssetInfo(assetContractAddress, assetContractName, assetName)
-          ),
-        ];
-        if (feeId === 'stx') {
-          postConditions.push(
-            makeContractSTXPostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees
-            )
-          );
-        } else {
-          postConditions.push(
-            makeContractFungiblePostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees,
-              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-            )
-          );
-        }
         break;
 
       case 'stx-nft':
-        nftIdCV = uintCV(formData.nftId);
-        [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
-
-        feeId = feeContractRef.current.value;
-        feeContract = nftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        if (!fees) {
-          setLoading(false);
-          setStatus("Couldn't load fees.");
-          return;
-        }
-        functionArgs = [swapIdCV, assetContractCV, feesCV];
-        console.log(cvToString(satsOrUstxCV), {
-          ownerStxAddress,
-          assetContractAddress,
-          assetContractName,
-        });
-        postConditions = [
-          makeContractSTXPostCondition(
-            contract.address,
-            contract.name,
-            FungibleConditionCode.Equal,
-            satsOrUstxCV.value
-          ),
-          makeStandardNonFungiblePostCondition(
-            ownerStxAddress,
-            NonFungibleConditionCode.DoesNotOwn,
-            createAssetInfo(assetContractAddress, assetContractName, assetName),
-            nftIdCV
-          ),
-        ];
-        if (feeId === 'stx') {
-          postConditions.push(
-            makeContractSTXPostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees
-            )
-          );
-        } else {
-          postConditions.push(
-            makeContractFungiblePostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees,
-              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-            )
-          );
-        }
-        break;
       case 'banana-nft':
-        nftIdCV = uintCV(formData.nftId);
-        [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
+      case 'xbtc-nft':
+      case 'usda-nft':
+      case 'satoshible-nft':
+        // nft for escrowed asset
+        // to be sent by user
+        amountOrIdToSwapCV = uintCV(formData.nftId);
 
-        feeId = feeContractRef.current.value;
-        feeContract = nftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        if (!fees) {
-          setLoading(false);
-          setStatus("Couldn't load fees.");
-          return;
-        }
-        functionArgs = [swapIdCV, assetContractCV, feesCV];
-        console.log(cvToString(satsOrUstxCV), {
-          ownerStxAddress,
-          assetContractAddress,
-          assetContractName,
-        });
-        const [, bananaAssetName, bananaContractName, bananaContractAddress] =
-          splitAssetIdentifier(BANANA_TOKEN);
-        postConditions = [
-          makeContractFungiblePostCondition(
-            contract.address,
-            contract.name,
-            FungibleConditionCode.Equal,
-            satsOrUstxCV.value,
-            createAssetInfo(bananaContractAddress, bananaContractName, bananaAssetName)
-          ),
-          makeStandardNonFungiblePostCondition(
-            ownerStxAddress,
-            NonFungibleConditionCode.DoesNotOwn,
-            createAssetInfo(assetContractAddress, assetContractName, assetName),
-            nftIdCV
-          ),
-        ];
-        if (feeId === 'stx') {
-          postConditions.push(
-            makeContractSTXPostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees
-            )
-          );
-        } else {
-          postConditions.push(
-            makeContractFungiblePostCondition(
-              feeContract.address,
-              feeContract.name,
-              FungibleConditionCode.Equal,
-              fees,
-              createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-            )
-          );
-        }
         break;
+
       default:
+        setStatus('Unsupported swapping type');
         setLoading(false);
         return;
     }
+
+    switch (type) {
+      case 'stx-ft':
+      case 'banana-ft':
+      case 'xbtc-ft':
+      case 'usda-ft':
+      case 'stx-nft':
+      case 'banana-nft':
+      case 'xbtc-nft':
+      case 'usda-nft':
+        // ft asset in escrow
+        factor = factorForType(type);
+        amountInSmallestUnitOrNftIdInEscrowCV = uintCV(
+          Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+        );
+
+        break;
+
+      case 'satoshible-ft':
+      case 'satoshible-nft':
+        // nft asset in escrow
+        amountInSmallestUnitOrNftIdInEscrowCV = uintCV(
+          parseInt(amountSatsRef.current.value.trim())
+        );
+
+        break;
+      default:
+        setStatus('Unsupported swapping type');
+        setLoading(false);
+        return;
+    }
+
+    [feesCV, fees] = await contractToFees(feeContract, amountInSmallestUnitOrNftIdInEscrowCV);
+    if (!fees) {
+      setLoading(false);
+      setStatus("Couldn't load fees.");
+      return;
+    }
+    functionArgs = [swapIdCV, assetContractCV, feesCV];
+    postConditions = makeSubmitPostConditions(
+      type,
+      contract,
+      amountInSmallestUnitOrNftIdInEscrowCV,
+      ownerStxAddress,
+      assetContractAddress,
+      assetContractName,
+      assetName,
+      amountOrIdToSwapCV,
+      feeId,
+      feeContract,
+      fees
+    );
+
     try {
       // submit
       await handleContractCall({
@@ -1147,11 +1011,11 @@ export function SwapCreate({ ownerStxAddress, type, trait, id, formData: formDat
                   disabled={id}
                   aria-label="select fee model"
                 >
-                  {type !== 'banana-nft' && <option value="stx">1% fee in STX</option>}
-                  {type === 'banana-nft' && <option value="banana">1% fee in BANANA</option>}
-                  {type !== 'stx-nft' && type !== 'banana-nft' && (
-                    <option value="frie">1% fee in FRIE</option>
-                  )}
+                  {feeOptions.map((feeOption, index) => (
+                    <option value={feeOption.type} key={index}>
+                      {feeOption.title}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="col" />

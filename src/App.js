@@ -20,6 +20,11 @@ import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 import SwapCrashPunks200 from './pages/special/SwapCrashPunks200';
+import {
+  BANANA_NFT_SWAP_CONTRACT,
+  STX_FT_SWAP_CONTRACT,
+  STX_NFT_SWAP_CONTRACT,
+} from './lib/constants';
 
 const authOptions = {
   appDetails: {
@@ -86,181 +91,46 @@ function Content() {
             decentralizedID={decentralizedID}
             userSession={userSession}
           />
-          <StacksSwaps
-            path="/stx-ft/swap/:id"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-ft/:trait"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-ft"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-nft/swap/:id"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-nft/:trait/:nftId"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-nft/:trait"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-nft"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/stx-mia/swap/:id"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={MIA_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-mia"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={MIA_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-fari/swap/:id"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={FARI_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-fari"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={FARI_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-banana/swap/:id"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={BANANA_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-banana"
-            type="stx-ft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={BANANA_TOKEN}
-          />
-          <StacksSwaps
-            path="/stx-cp/swap/:id"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={CRASHPUNKS}
-          />
-          <StacksSwaps
-            path="/stx-cp"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={CRASHPUNKS}
-          />
-          <StacksSwaps
-            path="/stx-satoshibles/swap/:id"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={SATOSHIBLES}
-          />
-          <StacksSwaps
-            path="/stx-satoshibles"
-            type="stx-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={SATOSHIBLES}
-          />
-          <StacksSwaps
-            path="/banana-nft/swap/:id"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/banana-nft/:trait/:nftId"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/banana-nft/:trait"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/banana-nft"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/banana-bitcoinmonkeys/swap/:id"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={BITCOIN_MONKEYS}
-          />
-          <StacksSwaps
-            path="/banana-bitcoinmonkeys"
-            type="banana-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-            trait={BITCOIN_MONKEYS}
-          />
-          <StacksSwaps
-            path="/xbtc-nft/swap/:id"
-            type="xbtc-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/xbtc-nft/:trait/:nftId"
-            type="xbtc-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/xbtc-nft/:trait"
-            type="xbtc-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-          <StacksSwaps
-            path="/xbtc-nft"
-            type="xbtc-nft"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
-
+          {atomicSwaps.map(swap => {
+            return (
+              <>
+                <StacksSwaps
+                  path={`/${swap.path || swap.type}/swap/:id`}
+                  type={swap.type}
+                  decentralizedID={decentralizedID}
+                  userSession={userSession}
+                  trait={swap.trait}
+                />
+                {!swap.trait && (
+                  <>
+                    {swap.type.endsWith('-nft') && (
+                      <StacksSwaps
+                        path={`/${swap.path || swap.type}/:trait/:nftId`}
+                        type={swap.type}
+                        decentralizedID={decentralizedID}
+                        userSession={userSession}
+                        trait={swap.trait}
+                      />
+                    )}
+                    <StacksSwaps
+                      path={`/${swap.path || swap.type}/:trait`}
+                      type={swap.type}
+                      decentralizedID={decentralizedID}
+                      userSession={userSession}
+                      trait={swap.trait}
+                    />
+                  </>
+                )}
+                <StacksSwaps
+                  path={`/${swap.path || swap.type}`}
+                  type={swap.type}
+                  decentralizedID={decentralizedID}
+                  userSession={userSession}
+                  trait={swap.trait}
+                />
+              </>
+            );
+          })}
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}

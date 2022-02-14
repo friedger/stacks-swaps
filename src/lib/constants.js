@@ -7,6 +7,14 @@ import {
   BlocksApi,
 } from '@stacks/blockchain-api-client';
 import { StacksMainnet } from 'micro-stacks/network';
+import {
+  BANANA_TOKEN,
+  BITCOIN_MONKEYS,
+  CRASHPUNKS,
+  FARI_TOKEN,
+  MIA_TOKEN,
+  SATOSHIBLES,
+} from '../components/assets';
 
 export const mainnet = window.location.search.includes('chain=mainnet');
 
@@ -57,6 +65,16 @@ export const STX_FT_SWAP_FPWR_FEE_CONTRACT = {
   },
 };
 
+export const STX_FT_SWAP_FRIE_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'stx-ft-swap-v1-fixed-frie-fees',
+  ft: {
+    address: 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X',
+    name: 'friedger-token-v1',
+    assetName: 'friedger',
+  },
+};
+
 export const STX_NFT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
   name: 'stx-nft-swap-v1',
@@ -65,6 +83,16 @@ export const STX_NFT_SWAP_CONTRACT = {
 export const STX_NFT_SWAP_FEE_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
   name: 'stx-nft-fixed-fees',
+};
+
+export const MIA_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'cycle-2-hodl-mia-fees',
+  ft: {
+    address: 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
+    name: 'miamicoin-token',
+    assetName: 'miamicoin',
+  },
 };
 
 export const BANANA_NFT_SWAP_CONTRACT = {
@@ -82,46 +110,75 @@ export const BANANA_NFT_SWAP_FEE_CONTRACT = {
   },
 };
 
+export const BANANA_FT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'banana-ft-swap-v1',
+};
+
+export const BANANA_FT_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'banana-ft-swap-v1-fixed-fees',
+  ft: {
+    address: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
+    name: 'btc-monkeys-bananas',
+    assetName: 'BANANA',
+  },
+};
+
+export const SATOSHIBLE_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'satoshible-nft-swap-v1',
+};
+
+export const SATOSHIBLE_FT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'satoshible-ft-swap-v1',
+};
+
+export const SATOSHIBLE_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'satoshible-swap-v1-fixed-fees',
+};
+
+// fee contracts for ft swaps by type
 export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
-  frie: {
-    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-    name: 'stx-ft-swap-v1-fixed-frie-fees',
-    ft: {
-      address: 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X',
-      name: 'friedger-token-v1',
-      assetName: 'friedger',
-    },
-  },
-
-  mia: {
-    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-    name: 'cycle-2-hodl-mia-fees',
-    ft: {
-      address: 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
-      name: 'miamicoin-token',
-      assetName: 'miamicoin',
-    },
-  },
+  frie: STX_FT_SWAP_FRIE_FEE_CONTRACT,
+  mia: MIA_SWAP_FEE_CONTRACT,
   stxnft: STX_NFT_SWAP_FEE_CONTRACT,
+  fixed: SATOSHIBLE_SWAP_FEE_CONTRACT,
 };
 
+// fee contracts for nft swaps by type
 export const nftFeeContracts = {
   stx: STX_NFT_SWAP_FEE_CONTRACT,
-  mia: {
-    address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-    name: 'cycle-2-hodl-mia-fees',
-    ft: {
-      address: 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
-      name: 'miamicoin-token',
-      assetName: 'miamicoin',
-    },
-  },
-
+  mia: MIA_SWAP_FEE_CONTRACT,
   banana: BANANA_NFT_SWAP_FEE_CONTRACT,
+  fixed: SATOSHIBLE_SWAP_FEE_CONTRACT,
 };
 
+const atomicSwaps = [
+  { type: 'stx-ft' },
+  { type: 'stx-nft' },
+  { type: 'stx-ft', path: 'stx-mia', trait: MIA_TOKEN },
+  { type: 'stx-ft', path: 'stx-fari', trait: FARI_TOKEN },
+  { type: 'stx-ft', path: 'stx-banana', trait: BANANA_TOKEN },
+  { type: 'stx-nft', path: 'stx-cp', trait: CRASHPUNKS },
+  {
+    type: 'stx-nft',
+    path: 'stx-satoshibles',
+    trait: SATOSHIBLES,
+  },
+  { type: 'banana-nft' },
+  { type: 'banana-nft', path: 'banana-bitcoinmonkeys', trait: BITCOIN_MONKEYS },
+  { type: 'satoshible-ft' },
+  { type: 'satoshible-nft' },
+  { type: 'xbtc-ft' },
+  { type: 'xbtc-nft' },
+];
+
+// swap contracts
 export const contracts = {
   nft: BTC_NFT_SWAP_CONTRACT,
   ft: BTC_FT_SWAP_CONTRACT,
@@ -129,9 +186,27 @@ export const contracts = {
   'stx-ft': STX_FT_SWAP_CONTRACT,
   'stx-nft': STX_NFT_SWAP_CONTRACT,
   'banana-nft': BANANA_NFT_SWAP_CONTRACT,
+  'banana-ft': BANANA_FT_SWAP_CONTRACT,
+  'satoshible-nft': SATOSHIBLE_NFT_SWAP_CONTRACT,
+  'satoshible-ft': SATOSHIBLE_FT_SWAP_CONTRACT,
+  'xbtc-nft': XBTC_NFT_SWAP_CONTRACT,
+  'xbtc-ft': XBTC_FT_SWAP_CONTRACT,
+  'usda-nft': USDA_NFT_SWAP_CONTRACT,
+  'usda-ft': USDA_FT_SWAP_CONTRACT,
 };
 
-// TODO: add Freehold API endpoint?
+export const feeOptionsByType = {
+  'stx-ft': [
+    { type: 'stx', title: '1% in STX', contract: STX_FT_SWAP_FEE_CONTRACT },
+    { type: 'frie', title: '1% in FRIE', contract: STX_FT_SWAP_FRIE_FEE_CONTRACT },
+  ],
+  'stx-nft': [{ type: 'stx', title: '1% in STX', contract: STX_NFT_SWAP_CONTRACT }],
+  'banana-nft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_NFT_SWAP_CONTRACT }],
+  'banana-ft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_FT_SWAP_CONTRACT }],
+  'satoshible-nft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
+  'satoshible-ft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
+};
+
 export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';
 export const STACKS_API_WS_URL = 'wss://stacks-node-api.mainnet.stacks.co/';
 export const STACKS_API_ACCOUNTS_URL = `${STACK_API_URL}/v2/accounts`;

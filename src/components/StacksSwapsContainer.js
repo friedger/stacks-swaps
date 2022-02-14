@@ -4,7 +4,7 @@ import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry } from '../lib/transactions';
-import { infoApi } from '../lib/constants';
+import { feeOptionsByType, infoApi } from '../lib/constants';
 import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
@@ -144,6 +144,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
               id={id}
               formData={formData}
               blockHeight={blockHeight}
+              feeOptions={type ? feeOptionsByType[type] : []}
             />
           </div>
           <div

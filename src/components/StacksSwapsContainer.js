@@ -78,14 +78,14 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             type="button"
             role="tab"
             aria-controls="dashboard"
-            aria-selected="true"
+            aria-selected="false"
           >
             Dashboard
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className="nav-link"
+            className="nav-link active"
             id="createswap-tab"
             data-bs-toggle="tab"
             data-bs-target="#createswap"
@@ -100,13 +100,12 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         <li className={`nav-item ${hideSubmitUIClassname}`} role="presentation">
           <button
             className="nav-link"
-            id="miningclaim-tab"
+            id="submit-tab"
             data-bs-toggle="tab"
-            data-bs-target="#miningclaim"
+            data-bs-target="#submit"
             type="button"
             role="tab"
-            aria-controls="miningclaim"
-            aria-selected="true"
+            aria-controls="submit"
           >
             Confirm Bitcoin Tx
           </button>
@@ -132,7 +131,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
       ) : (
         <div className="tab-content mt-3" id="myTabContent">
           <div
-            className="tab-pane fade  show active"
+            className="tab-pane fade show active"
             id="createswap"
             role="tabpanel"
             aria-labelledby="createswap-tab"
@@ -148,10 +147,10 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             />
           </div>
           <div
-            className={`tab-pane fade show active ${hideSubmitUIClassname}`}
-            id="miningclaim"
+            className={`tab-pane fade ${hideSubmitUIClassname}`}
+            id="submit"
             role="tabpanel"
-            aria-labelledby="miningclaim-tab"
+            aria-labelledby="submit-tab"
           >
             <SwapSubmit
               ownerStxAddress={ownerStxAddress}
@@ -162,7 +161,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             />
           </div>
           <div
-            className="tab-pane fade  show active"
+            className="tab-pane fade"
             id="dashboard"
             role="tabpanel"
             aria-labelledby="dashboard-tab"

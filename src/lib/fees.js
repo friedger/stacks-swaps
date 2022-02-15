@@ -1,8 +1,9 @@
-import { ClarityType, contractPrincipalCV } from 'micro-stacks/clarity';
+import { ClarityType, contractPrincipalCV, cvToString } from 'micro-stacks/clarity';
 import { callReadOnlyFunction } from 'micro-stacks/transactions';
 
 export async function contractToFees(feeContract, satsOrUstxCV) {
   const feesCV = contractPrincipalCV(feeContract.address, feeContract.name);
+  console.log({ feesCV: cvToString(feesCV) });
   const feesResponse = await callReadOnlyFunction({
     contractAddress: feeContract.address,
     contractName: feeContract.name,

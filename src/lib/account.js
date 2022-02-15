@@ -30,7 +30,6 @@ export function getStacksAccount(appPrivateKey) {
 export async function resolveBNS(username) {
   const parts = username ? username.split('.') : [];
   if (parts.length === 2) {
-    console.log(parts);
     const result = await callReadOnlyFunction({
       contractAddress: GENESIS_CONTRACT_ADDRESS,
       contractName: BNS_CONTRACT_NAME,

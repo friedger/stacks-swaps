@@ -1,14 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
-import {
-  cvToString,
-  noneCV,
-  principalCV,
-  someCV,
-  standardPrincipalCV,
-  uintCV,
-} from 'micro-stacks/clarity';
+import { noneCV, principalCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
 import {
   AnchorMode,
   createAssetInfo,
@@ -46,7 +39,6 @@ import {
   splitAssetIdentifier,
 } from '../lib/assets';
 import {
-  assetInEscrow,
   makeCancelSwapPostConditions,
   makeCreateSwapPostConditions,
   makeSubmitPostConditions,
@@ -99,6 +91,8 @@ export function SwapCreate({
     const amountInputFloat = readFloat(amountSatsRef) || 0;
     return uintCV(Math.floor(amountInputFloat * factor));
   };
+
+  const getFeeOption = type => (feeOptions ? feeOptions.find(f => f.type === type) : undefined);
 
   useEffect(() => {
     console.log({ type, formData });
@@ -171,6 +165,7 @@ export function SwapCreate({
     let feeId, feeContract, feesCV, fees;
     let assetContractAddress, assetContractName, assetName, assetContractCV;
     switch (type) {
+      // catamaran swaps
       case 'nft':
         if (!assetBuyer) {
           setStatus('Buyer address must be set.');
@@ -239,6 +234,8 @@ export function SwapCreate({
           ),
         ];
         break;
+
+      // atomic swaps
       case 'stx-ft':
       case 'banana-ft':
       case 'satoshible-ft':
@@ -258,10 +255,11 @@ export function SwapCreate({
           return;
         }
         feeId = feeContractRef.current.value;
-        feeContract = feeOptions(feeId).contract;
+        feeContract = getFeeOption(feeId).contract;
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [satsOrUstxCV, ftAmountCV, sellerCV, assetContractCV, feesCV];
         postConditions = makeCreateSwapPostConditions(
+          type,
           feeId,
           ownerStxAddress,
           satsOrUstxCV,
@@ -288,10 +286,11 @@ export function SwapCreate({
         }
         feeId = feeContractRef.current.value;
         console.log({ feeId });
-        feeContract = feeOptions(feeId).contract;
+        feeContract = getFeeOption(feeId).contract;
         [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
         functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
         postConditions = makeCreateSwapPostConditions(
+          type,
           feeId,
           ownerStxAddress,
           satsOrUstxCV,
@@ -334,7 +333,7 @@ export function SwapCreate({
     const feeId = feeContractRef.current.value;
     console.log({ feeId });
     const feeContract = nftFeeContracts[feeId];
-    const [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+    const [, fees] = await contractToFees(feeContract, satsOrUstxCV);
     const balances = await fetchAccountBalances({
       url: NETWORK.coreApiUrl,
       principal: ownerStxAddress,
@@ -397,7 +396,7 @@ export function SwapCreate({
     const [, , contractName, contractAddress] = splitAssetIdentifier(traitRef.current.value.trim());
     if (nftSwap(type)) {
       try {
-        const image = resolveImageForNFT(contractAddress, contractName, formData.nftId);
+        const image = await resolveImageForNFT(contractAddress, contractName, formData.nftId);
         if (image) {
           setAssetUrl(image);
         }
@@ -641,7 +640,7 @@ export function SwapCreate({
     );
 
     const feeId = feeContractRef.current.value;
-    const feeContract = feeOptions[feeId].contract;
+    const feeContract = getFeeOption(feeId).contract;
 
     switch (type) {
       case 'stx-ft':
@@ -873,7 +872,7 @@ export function SwapCreate({
             </div>
             <div className="col text-center border-left">
               {previewed && nftSwap(type) && assetUrl ? (
-                <img className="m-1" src={assetUrl} width={50} height={50} alt="BTC" />
+                <img className="m-1" src={assetUrl} width={50} height={50} alt="asset in escrow" />
               ) : (
                 <AssetIcon type={sellType} trait={formData.trait} />
               )}

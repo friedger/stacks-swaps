@@ -56,6 +56,8 @@ export function AssetIcon({ type, trait }) {
       return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
     case 'xbtc':
       return <img src="/xbtc.svg" className="m-1" width="50" height="50" alt="xbtc" />;
+    case 'satoshible':
+      return <img src="/satoshibles.gif" className="m-1" width="50" height="50" alt="diko" />;
     default:
       switch (trait) {
         case BOOMBOX:

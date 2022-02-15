@@ -19,7 +19,7 @@ export function splitAssetIdentifier(assetString) {
 }
 
 export function isAtomic(type) {
-  return type.startsWith('stx-') || type.startsWith('banana-');
+  return type.indexOf('-') > 0;
 }
 
 export function buyAssetFromType(type) {
@@ -31,19 +31,13 @@ export function buyAssetFromType(type) {
     ? 'USDA'
     : type.startsWith('xbtc-')
     ? 'xBTC'
+    : type.startsWith('satoshible-')
+    ? 'SATOSHIBLE'
     : 'BTC';
 }
 
 export function buyAssetTypeFromSwapType(type) {
-  return type.startsWith('stx-') //
-    ? 'stx'
-    : type.startsWith('banana-')
-    ? 'banana'
-    : type.startsWith('xbtc-')
-    ? 'xbtc'
-    : type.startsWith('usda-')
-    ? 'usda'
-    : 'btc';
+  return isAtomic(type) ? type.split('-')[0] : 'btc';
 }
 
 export function buyDecimalsFromType(type) {

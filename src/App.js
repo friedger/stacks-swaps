@@ -8,23 +8,11 @@ import Intro from './pages/Intro';
 import Tac from './pages/Tac';
 import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import {
-  BANANA_TOKEN,
-  BITCOIN_MONKEYS,
-  CRASHPUNKS,
-  FARI_TOKEN,
-  MIA_TOKEN,
-  SATOSHIBLES,
-} from './components/assets';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 import SwapCrashPunks200 from './pages/special/SwapCrashPunks200';
-import {
-  BANANA_NFT_SWAP_CONTRACT,
-  STX_FT_SWAP_CONTRACT,
-  STX_NFT_SWAP_CONTRACT,
-} from './lib/constants';
+import { atomicSwaps } from './lib/constants';
 
 const authOptions = {
   appDetails: {
@@ -33,7 +21,7 @@ const authOptions = {
   },
 };
 
-export default function App(props) {
+export default function App() {
   return (
     <MicroStacksProvider authOptions={authOptions}>
       <header className="d-flex flex-wrap justify-content-between align-items-center mx-3 py-3 mb-4 border-bottom">
@@ -63,7 +51,7 @@ export default function App(props) {
           <Auth />
         </div>
       </header>
-      <Content path="/" />
+      <Content />
     </MicroStacksProvider>
   );
 }
@@ -73,6 +61,7 @@ function Content() {
 
   const authenticated = userSession && isSignedIn;
   const decentralizedID = authenticated && userSession.decentralizedID;
+  const swap = atomicSwaps[0];
   return (
     <>
       <Router>
@@ -80,57 +69,26 @@ function Content() {
           <Intro path="/" default />
           <Tac path="/tac" />
           <StacksSwaps
-            path="/stx/swap/:id"
-            type="stx"
+            path="/:swapPath/swap/:id"
             decentralizedID={decentralizedID}
             userSession={userSession}
           />
           <StacksSwaps
-            path="/stx"
-            type="stx"
+            path="/:swapPath/:trait/:nftId"
+            type={swap.type}
             decentralizedID={decentralizedID}
             userSession={userSession}
+            trait={swap.trait}
           />
-          {atomicSwaps.map(swap => {
-            return (
-              <>
-                <StacksSwaps
-                  path={`/${swap.path || swap.type}/swap/:id`}
-                  type={swap.type}
-                  decentralizedID={decentralizedID}
-                  userSession={userSession}
-                  trait={swap.trait}
-                />
-                {!swap.trait && (
-                  <>
-                    {swap.type.endsWith('-nft') && (
-                      <StacksSwaps
-                        path={`/${swap.path || swap.type}/:trait/:nftId`}
-                        type={swap.type}
-                        decentralizedID={decentralizedID}
-                        userSession={userSession}
-                        trait={swap.trait}
-                      />
-                    )}
-                    <StacksSwaps
-                      path={`/${swap.path || swap.type}/:trait`}
-                      type={swap.type}
-                      decentralizedID={decentralizedID}
-                      userSession={userSession}
-                      trait={swap.trait}
-                    />
-                  </>
-                )}
-                <StacksSwaps
-                  path={`/${swap.path || swap.type}`}
-                  type={swap.type}
-                  decentralizedID={decentralizedID}
-                  userSession={userSession}
-                  trait={swap.trait}
-                />
-              </>
-            );
-          })}
+          <StacksSwaps
+            path="/:swapPath/:trait/"
+            type={swap.type}
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+            trait={swap.trait}
+          />
+          <StacksSwaps path="/:swapPath" decentralizedID={decentralizedID} userSession={userSession} />
+
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}

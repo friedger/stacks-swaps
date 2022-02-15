@@ -13,7 +13,7 @@ import {
 import { AtomicIntroButton } from '../components/AtomicIntroButton';
 // Intro page with choice of swaps
 
-export default function Intro(props) {
+export function GridOfSwaps() {
   return (
     <div className="Landing">
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">
@@ -95,4 +95,7 @@ export default function Intro(props) {
       </div>
     </div>
   );
+}
+export default function Intro(props) {
+  return <GridOfSwaps />;
 }

@@ -36,48 +36,84 @@ export function nftSwap(type) {
 }
 
 export function makeCreateSwapPostConditions(
+  type,
   feeId,
   ownerStxAddress,
   satsOrUstxCV,
   fees,
   feeContract
 ) {
-  return feeId === 'stx'
-    ? [
-        makeStandardSTXPostCondition(
-          ownerStxAddress,
-          FungibleConditionCode.Equal,
-          satsOrUstxCV.value + fees
-        ),
-      ]
-    : feeId === 'banana'
-    ? [
-        makeStandardFungiblePostCondition(
-          ownerStxAddress,
-          FungibleConditionCode.Equal,
-          satsOrUstxCV.value,
-          createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-        ),
-        makeStandardFungiblePostCondition(
-          ownerStxAddress,
-          FungibleConditionCode.Equal,
-          fees,
-          createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-        ),
-      ]
-    : [
-        makeStandardSTXPostCondition(
-          ownerStxAddress,
-          FungibleConditionCode.Equal,
-          satsOrUstxCV.value
-        ),
+  const postConditions = [];
+
+  if (type.startsWith('stx-')) {
+    // move stx to escrow
+    const feesInSTX = feeId === 'stx' ? fees : 0;
+    postConditions.push(
+      makeStandardSTXPostCondition(
+        ownerStxAddress,
+        FungibleConditionCode.Equal,
+        satsOrUstxCV.value + feesInSTX
+      )
+    );
+    if (feeId !== 'stx') {
+      postConditions.push(
         makeStandardFungiblePostCondition(
           ownerStxAddress,
           FungibleConditionCode.Equal,
           fees,
           createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
-        ),
-      ];
+        )
+      );
+    }
+  } else if (ftInEscrow(type)) {
+    // move ft to escrow
+    const asset = assetInEscrow(type);
+    const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(asset);
+    const sameContract =
+      assetContractAddress === feeContract.ft.address && assetContractName === feeContract.ft.name;
+
+    const feesInFT = sameContract ? fees : 0;
+    postConditions.push(
+      makeStandardFungiblePostCondition(
+        ownerStxAddress,
+        FungibleConditionCode.Equal,
+        satsOrUstxCV.value + BigInt(feesInFT),
+        createAssetInfo(assetContractAddress, assetContractName, assetName)
+      )
+    );
+    if (!sameContract) {
+      postConditions.push(
+        makeStandardFungiblePostCondition(
+          ownerStxAddress,
+          FungibleConditionCode.Equal,
+          fees,
+          createAssetInfo(feeContract.ft.address, feeContract.ft.name, feeContract.ft.assetName)
+        )
+      );
+    }
+  } else {
+    // move nft to escrow
+    const asset = assetInEscrow(type);
+    const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(asset);
+    postConditions.push(
+      makeStandardNonFungiblePostCondition(
+        ownerStxAddress,
+        NonFungibleConditionCode.DoesNotOwn,
+        createAssetInfo(assetContractAddress, assetContractName, assetName),
+        satsOrUstxCV
+      )
+    );
+    if (feeId === 'fixed') {
+      postConditions.push(
+        makeStandardSTXPostCondition(ownerStxAddress, FungibleConditionCode.Equal, fees)
+      );
+    } else {
+      // unsupported
+      console.error('Unsupported feeId', feeId, type);
+    }
+  }
+  console.log({ postConditions });
+  return postConditions;
 }
 
 export function makeCancelSwapPostConditions(
@@ -131,7 +167,7 @@ export function makeCancelSwapPostConditions(
 
   // handle fees
 
-  if (feeId === 'stx') {
+  if (feeId === 'stx' || feeId === 'fixed') {
     // move stx from fee contract
     postConditions.push(
       makeContractSTXPostCondition(

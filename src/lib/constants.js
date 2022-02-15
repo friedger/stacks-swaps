@@ -140,6 +140,28 @@ export const SATOSHIBLE_SWAP_FEE_CONTRACT = {
   name: 'satoshible-swap-v1-fixed-fees',
 };
 
+
+export const XBTC_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'xbtc-nft-swap-xx',
+};
+
+export const XBTC_FT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'xbtc-ft-swap-xx',
+};
+
+
+export const USDA_NFT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'usda-nft-swap-xx',
+};
+
+export const USDA_FT_SWAP_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'usda-ft-swap-xx',
+};
+
 // fee contracts for ft swaps by type
 export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
@@ -158,7 +180,7 @@ export const nftFeeContracts = {
   fixed: SATOSHIBLE_SWAP_FEE_CONTRACT,
 };
 
-const atomicSwaps = [
+export const atomicSwaps = [
   { type: 'stx-ft' },
   { type: 'stx-nft' },
   { type: 'stx-ft', path: 'stx-mia', trait: MIA_TOKEN },
@@ -176,6 +198,8 @@ const atomicSwaps = [
   { type: 'satoshible-nft' },
   { type: 'xbtc-ft' },
   { type: 'xbtc-nft' },
+  { type: 'usda-ft' },
+  { type: 'usda-nft' },
 ];
 
 // swap contracts
@@ -200,9 +224,9 @@ export const feeOptionsByType = {
     { type: 'stx', title: '1% in STX', contract: STX_FT_SWAP_FEE_CONTRACT },
     { type: 'frie', title: '1% in FRIE', contract: STX_FT_SWAP_FRIE_FEE_CONTRACT },
   ],
-  'stx-nft': [{ type: 'stx', title: '1% in STX', contract: STX_NFT_SWAP_CONTRACT }],
-  'banana-nft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_NFT_SWAP_CONTRACT }],
-  'banana-ft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_FT_SWAP_CONTRACT }],
+  'stx-nft': [{ type: 'stx', title: '1% in STX', contract: STX_NFT_SWAP_FEE_CONTRACT }],
+  'banana-nft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_NFT_SWAP_FEE_CONTRACT }],
+  'banana-ft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_FT_SWAP_FEE_CONTRACT }],
   'satoshible-nft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
   'satoshible-ft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
 };

@@ -11,6 +11,7 @@ export function AtomicIntroButton({ type, trait }) {
   return (
     <Link to={to} type="button">
       <AssetIcon type={buyWith === 'stx' ? sell : buyWith} trait={trait} />
+      {buyWith !== 'stx' && <AssetIcon type={sell} trait={trait} />}
       Swap {buyWithName} for {assetName}
     </Link>
   );

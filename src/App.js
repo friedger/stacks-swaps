@@ -92,9 +92,6 @@ function Content() {
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}
-          {authenticated && (
-            <SwapCrashPunks200 path="/swap-crash-punks-200" userSession={userSession} />
-          )}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

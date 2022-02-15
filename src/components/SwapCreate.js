@@ -821,7 +821,9 @@ export function SwapCreate({
     ? type === 'stx-nft'
       ? `Price for NFT in STXs`
       : type === 'banana-nft'
-      ? 'Price of NFT in BANANAs'
+      ? 'Price of NFT in $BANANAs'
+      : type === 'banana-ft'
+      ? 'amount of $BANANA'
       : type.startsWith('satoshible-')
       ? 'ID of Satoshible'
       : type === 'usda-nft'
@@ -832,10 +834,6 @@ export function SwapCreate({
       ? 'Price of NFT in xBTC'
       : type === 'xbtc-ft'
       ? 'amount of xBTC'
-      : type === 'banana-nft'
-      ? 'Price of NFT in $BANANA'
-      : type === 'banana-ft'
-      ? 'amount of $BANANA'
       : `amount of STXs`
     : type === 'nft'
     ? `Price for NFT in Bitcoin`

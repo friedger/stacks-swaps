@@ -60,16 +60,10 @@ export function AssetIcon({ type, trait }) {
     case 'xbtc':
       return <img src="/xbtc.svg" className="m-1" width="50" height="50" alt="xbtc" />;
     case 'satoshible':
-      switch (trait) {
-        case BITCOIN_MONKEYS:
-          return (
-            <img src="/sats-monkeys.png" className="m-1" width="50" height="50" alt="satoshibles" />
-          );
-        default:
-          return (
-            <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
-          );
-      }
+      return (
+        <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
+      );
+
     case 'usda':
       return <img src="/usda.svg" className="m-1" width="50" height="50" alt="usda" />;
     default:

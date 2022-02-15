@@ -20,7 +20,14 @@ import { fetchAccountBalances } from 'micro-stacks/api';
 import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
 import { Address } from './Address';
 import { AssetIcon } from './AssetIcon';
-import { BANANA_TOKEN, getAsset, getAssetName, USDA_TOKEN, XBTC_TOKEN } from './assets';
+import {
+  BANANA_TOKEN,
+  getAsset,
+  getAssetName,
+  SATOSHIBLES,
+  USDA_TOKEN,
+  XBTC_TOKEN,
+} from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
@@ -73,6 +80,7 @@ export function SwapCreate({
   const [ftData, setFtData] = useState();
   const [previewed, setPreviewed] = useState(false);
   const [assetUrl, setAssetUrl] = useState();
+  const [assetUrlBottom, setAssetUrlBottom] = useState();
 
   const contract = contracts[type];
   const { handleContractCall } = useContractCall({
@@ -340,7 +348,7 @@ export function SwapCreate({
     });
     console.log({ balances });
     const feesInSameAsset = type.startsWith(feeId + '-');
-    const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : 0);
+    const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : BigInt(0));
     console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
 
     switch (type) {
@@ -365,6 +373,7 @@ export function SwapCreate({
 
   const previewAction = async () => {
     setLoading(true);
+    setStatus(undefined);
     const errors = [];
     const satsOrUstxCV = satsOrUstxCVFromInput();
     if (satsOrUstxCV.value <= 0) {
@@ -406,7 +415,12 @@ export function SwapCreate({
         setStatus('NFT image not found');
       }
       try {
-        const account = await resolveOwnerForNFT(contractAddress, contractName, formData.nftId);
+        const account = await resolveOwnerForNFT(
+          contractAddress,
+          contractName,
+          formData.nftId,
+          false
+        );
         if (isAtomic) {
           assetSellerRef.current.value = account;
         } else {
@@ -416,6 +430,35 @@ export function SwapCreate({
         console.log(e);
       }
     }
+
+    if (type.startsWith('satoshible-')) {
+      const [, , contractName, contractAddress] = splitAssetIdentifier(SATOSHIBLES);
+      try {
+        const image = await resolveImageForNFT(contractAddress, contractName, formData.amountSats);
+        if (image) {
+          setAssetUrlBottom(image);
+        }
+      } catch (e) {
+        // ignore
+        console.log(e);
+        setStatus('NFT image not found');
+      }
+      try {
+        const account = await resolveOwnerForNFT(
+          contractAddress,
+          contractName,
+          formData.amountSats,
+          true
+        );
+        if (account !== ownerStxAddress) {
+          console.log(account, ownerStxAddress, formData.amountSats);
+          setStatus("You don't own this Satoshible");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
     setPreviewed(true);
     setLoading(false);
   };
@@ -774,6 +817,29 @@ export function SwapCreate({
   // buy (right to left)
   const buyWithAsset = buyAssetFromType(type);
   const buyDecimals = buyDecimalsFromType(type);
+  const amountSatsLabel = atomicSwap
+    ? type === 'stx-nft'
+      ? `Price for NFT in STXs`
+      : type === 'banana-nft'
+      ? 'Price of NFT in BANANAs'
+      : type.startsWith('satoshible-')
+      ? 'ID of Satoshible'
+      : type === 'usda-nft'
+      ? 'Price of NFT in USDA'
+      : type === 'usda-ft'
+      ? 'amount of USDA'
+      : type === 'xbtc-nft'
+      ? 'Price of NFT in xBTC'
+      : type === 'xbtc-ft'
+      ? 'amount of xBTC'
+      : type === 'banana-nft'
+      ? 'Price of NFT in $BANANA'
+      : type === 'banana-ft'
+      ? 'amount of $BANANA'
+      : `amount of STXs`
+    : type === 'nft'
+    ? `Price for NFT in Bitcoin`
+    : `amount of Bitcoins`;
 
   const createSellOrder = false;
   return (
@@ -872,7 +938,7 @@ export function SwapCreate({
             </div>
             <div className="col text-center border-left">
               {previewed && nftSwap(type) && assetUrl ? (
-                <img className="m-1" src={assetUrl} width={50} height={50} alt="asset in escrow" />
+                <img className="m-1" src={assetUrl} width={50} height={50} alt="asset" />
               ) : (
                 <AssetIcon type={sellType} trait={formData.trait} />
               )}
@@ -932,34 +998,24 @@ export function SwapCreate({
                   ref={amountSatsRef}
                   value={formData.amountSats}
                   onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
-                  aria-label={
-                    atomicSwap
-                      ? type === 'stx-nft'
-                        ? `Price for NFT in STXs`
-                        : type === 'banana-nft'
-                        ? 'Price of NFT in BANANAs'
-                        : `amount of STXs`
-                      : type === 'nft'
-                      ? `Price for NFT in Bitcoin`
-                      : `amount of Bitcoins`
-                  }
-                  placeholder={
-                    atomicSwap
-                      ? type === 'stx-nft'
-                        ? `Price for NFT in STXs`
-                        : type === 'banana-nft'
-                        ? 'Price of NFT in BANANAs'
-                        : `amount of STXs`
-                      : type === 'nft'
-                      ? `Price for NFT in Bitcoin`
-                      : `amount of Bitcoins`
-                  }
+                  aria-label={amountSatsLabel}
+                  placeholder={amountSatsLabel}
                   readOnly={id}
                   required
                   minLength="1"
                 />
               </div>
-              <AssetIcon type={buyAssetTypeFromSwapType(type)} />
+              {previewed && assetUrlBottom ? (
+                <img
+                  className="m-1"
+                  src={assetUrlBottom}
+                  width={50}
+                  height={50}
+                  alt="asset in escrow"
+                />
+              ) : (
+                <AssetIcon type={buyAssetTypeFromSwapType(type)} />
+              )}
             </div>
             <div className="col text-center">
               {(!id || formData.assetSenderFromSwap === ownerStxAddress) && atomicSwap ? (

@@ -32,7 +32,7 @@ export function buyAssetFromType(type) {
     : type.startsWith('xbtc-')
     ? 'xBTC'
     : type.startsWith('satoshible-')
-    ? 'SATOSHIBLE'
+    ? 'Satoshible'
     : 'BTC';
 }
 
@@ -190,42 +190,38 @@ export async function resolveImageForNFT(contractAddress, contractName, nftId) {
     functionName: 'get-token-uri',
     functionArgs: [uintCV(nftId)],
   });
-  console.log({ tokenUriCV: tokenUriCV.value.value });
   const nftUrl =
     tokenUriCV.type === ClarityType.ResponseOk && tokenUriCV.value.type === ClarityType.OptionalSome
       ? tokenUriCV.value.value.data
       : undefined;
-  console.log(nftUrl);
   if (nftUrl) {
     let url = nftUrl.replace('{id}', nftId);
-    console.log(url);
     url = url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
     const metaDataResponse = await fetchPrivate(url);
-    console.log(metaDataResponse);
     const metaData = await metaDataResponse.json();
-    console.log({ metaData });
     let image = metaData.image || metaData.properties.image;
-    console.log(image);
     image = image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
-    console.log(image);
     return image;
   } else {
     return undefined;
   }
 }
 
-export async function resolveOwnerForNFT(contractAddress, contractName, nftId) {
+export async function resolveOwnerForNFT(contractAddress, contractName, nftId, addressOnly) {
   const ownerCV = await callReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: 'get-owner',
     functionArgs: [uintCV(nftId)],
   });
+  console.log({ownerCV})
   const owner =
     ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
       ? cvToString(ownerCV.value.value)
       : undefined;
-  console.log(owner);
+  if (addressOnly) {
+    return owner;
+  }
   const namesResponse = await fetchNamesByAddress({
     url: NETWORK.bnsLookupUrl,
     address: owner,

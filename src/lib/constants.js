@@ -140,28 +140,45 @@ export const SATOSHIBLE_SWAP_FEE_CONTRACT = {
   name: 'satoshible-swap-v1-fixed-fees',
 };
 
-
 export const XBTC_NFT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'xbtc-nft-swap-xx',
+  name: 'xbtc-nft-swap-v1',
 };
 
 export const XBTC_FT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'xbtc-ft-swap-xx',
+  name: 'xbtc-ft-swap-v1',
 };
 
+export const XBTC_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'xbtc-swap-v1-fixed-fees',
+  ft: {
+    address: 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR',
+    name: 'Wrapped-Bitcoin',
+    assetName: 'wrapped-bitcoin',
+  },
+};
 
 export const USDA_NFT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'usda-nft-swap-xx',
+  name: 'usda-nft-swap-v1',
 };
 
 export const USDA_FT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'usda-ft-swap-xx',
+  name: 'usda-ft-swap-v1',
 };
 
+export const USDA_SWAP_FEE_CONTRACT = {
+  address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+  name: 'usda-swap-v1-fixed-fees',
+  ft: {
+    address: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+    name: 'usda-token',
+    assetName: 'usda',
+  },
+};
 // fee contracts for ft swaps by type
 export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
@@ -170,14 +187,19 @@ export const ftFeeContracts = {
   mia: MIA_SWAP_FEE_CONTRACT,
   stxnft: STX_NFT_SWAP_FEE_CONTRACT,
   fixed: SATOSHIBLE_SWAP_FEE_CONTRACT,
+  banana: BANANA_FT_SWAP_FEE_CONTRACT,
+  xbtc: XBTC_SWAP_FEE_CONTRACT,
+  usda: USDA_SWAP_FEE_CONTRACT,
 };
 
 // fee contracts for nft swaps by type
 export const nftFeeContracts = {
   stx: STX_NFT_SWAP_FEE_CONTRACT,
   mia: MIA_SWAP_FEE_CONTRACT,
-  banana: BANANA_NFT_SWAP_FEE_CONTRACT,
   fixed: SATOSHIBLE_SWAP_FEE_CONTRACT,
+  banana: BANANA_NFT_SWAP_FEE_CONTRACT,
+  xbtc: XBTC_SWAP_FEE_CONTRACT,
+  usda: USDA_SWAP_FEE_CONTRACT,
 };
 
 export const atomicSwaps = [
@@ -189,13 +211,15 @@ export const atomicSwaps = [
   { type: 'stx-nft', path: 'stx-cp', trait: CRASHPUNKS },
   {
     type: 'stx-nft',
-    path: 'stx-satoshibles',
+    path: 'stx-satoshible',
     trait: SATOSHIBLES,
   },
+  { type: 'banana-ft' },
   { type: 'banana-nft' },
-  { type: 'banana-nft', path: 'banana-bitcoinmonkeys', trait: BITCOIN_MONKEYS },
+  { type: 'banana-nft', path: 'banana-bitcoinmonkey', trait: BITCOIN_MONKEYS },
   { type: 'satoshible-ft' },
   { type: 'satoshible-nft' },
+  { type: 'satoshible-nft', path: 'satoshible-bitcoinmonkey', trait: BITCOIN_MONKEYS },
   { type: 'xbtc-ft' },
   { type: 'xbtc-nft' },
   { type: 'usda-ft' },
@@ -225,10 +249,16 @@ export const feeOptionsByType = {
     { type: 'frie', title: '1% in FRIE', contract: STX_FT_SWAP_FRIE_FEE_CONTRACT },
   ],
   'stx-nft': [{ type: 'stx', title: '1% in STX', contract: STX_NFT_SWAP_FEE_CONTRACT }],
-  'banana-nft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_NFT_SWAP_FEE_CONTRACT }],
+  'banana-nft': [
+    { type: 'banana', title: '1% in $BANANA', contract: BANANA_NFT_SWAP_FEE_CONTRACT },
+  ],
   'banana-ft': [{ type: 'banana', title: '1% in $BANANA', contract: BANANA_FT_SWAP_FEE_CONTRACT }],
   'satoshible-nft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
   'satoshible-ft': [{ type: 'fixed', title: '5 STX', contract: SATOSHIBLE_SWAP_FEE_CONTRACT }],
+  'usda-nft': [{ type: 'usda', title: '1% in USDA', contract: USDA_SWAP_FEE_CONTRACT }],
+  'usda-ft': [{ type: 'usda', title: '1% in USDA', contract: USDA_SWAP_FEE_CONTRACT }],
+  'xbtc-nft': [{ type: 'xbtc', title: '1% in xBTC', contract: XBTC_SWAP_FEE_CONTRACT }],
+  'xbtc-ft': [{ type: 'xbtc', title: '1% in xBTC', contract: XBTC_SWAP_FEE_CONTRACT }],
 };
 
 export const STACK_API_URL = 'https://stacks-node-api.mainnet.stacks.co';

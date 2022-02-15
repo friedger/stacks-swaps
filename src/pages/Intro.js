@@ -2,6 +2,7 @@ import React from 'react';
 import { CatamaranIntroButton } from '../components/CatamaranIntroButton';
 import {
   BANANA_TOKEN,
+  BITCOIN_MONKEYS,
   CRASHPUNKS,
   DIKO_TOKEN,
   FARI_TOKEN,
@@ -34,7 +35,7 @@ export function GridOfSwaps() {
           <p className="h5">
             Use atomic swaps to exchange digital assets only on the Stacks chain.
           </p>
-          <h2>STX tokens</h2>
+          <h2>Swap STX tokens for NFTs and FTs</h2>
           <div className="container">
             <div className="row">
               <div className="col">
@@ -79,7 +80,7 @@ export function GridOfSwaps() {
               <div className="col"></div>
             </div>
           </div>
-          <h2>Swap NFTs for other tokens</h2>
+          <h2>Assets with special support</h2>
           <div className="container">
             <div className="row">
               <div className="col">
@@ -88,7 +89,31 @@ export function GridOfSwaps() {
               <div className="col">
                 <AtomicIntroButton type="xbtc-nft" />
               </div>
-              <div className="col"></div>
+              <div className="col">
+                <AtomicIntroButton type="usda-nft" />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <AtomicIntroButton type="banana-ft" />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="xbtc-ft" />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="usda-ft" />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <AtomicIntroButton type="satoshible-nft" />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="satoshible-ft" />
+              </div>
+              <div className="col">
+                <AtomicIntroButton type="satoshible-nft" trait={BITCOIN_MONKEYS} />
+              </div>
             </div>
           </div>
         </div>

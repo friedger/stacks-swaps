@@ -20,18 +20,22 @@ export function getAsset(type, trait) {
     ? 'Boombox [5th Edition]'
     : trait === FARI_TOKEN
     ? 'FARI'
-    : trait === BANANA_TOKEN
+    : trait === BANANA_TOKEN || type === 'banana'
     ? 'BANANA'
-    : trait === SATOSHIBLES
-    ? 'SATOSHIBLE'
-    : trait === USDA_TOKEN
+    : trait === SATOSHIBLES || type === 'satoshible'
+    ? 'Satoshible'
+    : trait === BITCOIN_MONKEYS || type === 'bitcoinmonkey'
+    ? 'Bitcoin Monkeys'
+    : trait === XBTC_TOKEN || type === 'xbtc'
+    ? 'xBTC'
+    : trait === USDA_TOKEN || type === 'usda'
     ? 'USDA'
     : trait === DIKO_TOKEN
     ? 'DIKO'
     : trait === THIS_IS_NUMBER_ONE
     ? '#1'
     : trait === CRASHPUNKS
-    ? 'Crash Punks'
+    ? 'Crash Punk'
     : type.toUpperCase();
 }
 
@@ -53,9 +57,19 @@ export function getDeepLink(type, trait) {
       ? '/stx-banana'
       : '/banana'
     : trait === SATOSHIBLES
-    ? type === 'stx-ft'
-      ? '/stx-satoshibles'
-      : '/satoshibles'
+    ? type === 'stx-nft'
+      ? '/stx-satoshible'
+      : '/satoshible'
+    : trait === BITCOIN_MONKEYS
+    ? type === 'satoshible-nft'
+      ? '/satoshible-bitcoinmonkey'
+      : type === 'stx-nft'
+      ? '/stx-bitcoinmonkey'
+      : '/satoshible-nft'
+    : trait === CRASHPUNKS
+    ? type === 'stx-nft'
+      ? '/stx-cp'
+      : '/cp'
     : trait
     ? `/${type}/${trait}`
     : `/${type}`;

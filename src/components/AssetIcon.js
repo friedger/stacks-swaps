@@ -9,8 +9,11 @@ import {
   USDA_TOKEN,
   DIKO_TOKEN,
   SATOSHIBLES,
+  BITCOIN_MONKEYS,
 } from './assets';
 export function AssetIcon({ type, trait }) {
+  console.log(type, trait);
+
   switch (type) {
     case 'btc':
       return <img className="m-1" src="/bitcoin.webp" width="50" height="50" alt="BTC" />;
@@ -57,7 +60,18 @@ export function AssetIcon({ type, trait }) {
     case 'xbtc':
       return <img src="/xbtc.svg" className="m-1" width="50" height="50" alt="xbtc" />;
     case 'satoshible':
-      return <img src="/satoshibles.gif" className="m-1" width="50" height="50" alt="diko" />;
+      switch (trait) {
+        case BITCOIN_MONKEYS:
+          return (
+            <img src="/sats-monkeys.png" className="m-1" width="50" height="50" alt="satoshibles" />
+          );
+        default:
+          return (
+            <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
+          );
+      }
+    case 'usda':
+      return <img src="/usda.svg" className="m-1" width="50" height="50" alt="usda" />;
     default:
       switch (trait) {
         case BOOMBOX:
@@ -70,7 +84,19 @@ export function AssetIcon({ type, trait }) {
         case CRASHPUNKS:
           return <img src="/crashpunks.gif" className="m-1" width="50" height="50" alt="token" />;
         case SATOSHIBLES:
-          return <img src="/satoshibles.gif" className="m-1" width="50" height="50" alt="diko" />;
+          return (
+            <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
+          );
+        case BITCOIN_MONKEYS:
+          return (
+            <img
+              src="/bitcoinmonkeys.png"
+              className="m-1"
+              width="50"
+              height="50"
+              alt="bitcoin monkeys"
+            />
+          );
         default:
           return (
             <svg

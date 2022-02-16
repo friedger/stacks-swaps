@@ -123,29 +123,10 @@ export function SwapCreate({
   const createAction = async () => {
     setLoading(true);
     setStatus('');
-    const errors = [];
     let seller = assetSellerRef.current.value.trim();
     const satsOrUstxCV = satsOrUstxCVFromInput();
-    const tokenContract = traitRef.current.value.trim();
 
-    if (!atomicSwap && seller === '') {
-      errors.push('BTC address is required');
-    }
-    if (satsOrUstxCV.value <= 0) {
-      errors.push('positive amount required to swap');
-    }
-    if (isNaN(parseInt(formData.nftId))) {
-      errors.push('not a valid NFT id');
-    }
-    if (!tokenContract) {
-      errors.push('Missing token contract');
-    }
-    if (seller === 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles') {
-      errors.push("Can't swap from Stacks bridge");
-    }
-    if (seller === 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking') {
-      errors.push("Can't swap staked monkey");
-    }
+    const errors = await verifyCreateForm();
     if (errors.length > 0) {
       setLoading(false);
       setStatus(
@@ -338,52 +319,70 @@ export function SwapCreate({
   };
 
   const hasInsufficientBalance = async satsOrUstxCV => {
-    const feeId = feeContractRef.current.value;
-    console.log({ feeId });
-    const feeContract = nftFeeContracts[feeId];
-    const [, fees] = await contractToFees(feeContract, satsOrUstxCV);
     const balances = await fetchAccountBalances({
       url: NETWORK.coreApiUrl,
       principal: ownerStxAddress,
     });
-    console.log({ balances });
-    const feesInSameAsset = type.startsWith(feeId + '-');
-    const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : BigInt(0));
-    console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
 
-    switch (type) {
-      case 'stx':
-      case 'stx-nft':
-      case 'stx-ft':
-        return balances.stx.balance < requiredAsset;
-      case 'banana-nft':
-      case 'banana-ft':
-        return balances.fungible_tokens[BANANA_TOKEN]?.balance < requiredAsset;
-      case 'xbtc-nft':
-      case 'xbtc-ft':
-        return balances.fungible_tokens[XBTC_TOKEN]?.balance < requiredAsset;
-      case 'usda-nft':
-      case 'usda-ft':
-        return balances.fungible_tokens[USDA_TOKEN]?.balance < requiredAsset;
-      default:
-        // unsupported type, assume balance is sufficient.
-        return false;
+    if (isAtomic(type)) {
+      const feeId = feeContractRef.current.value;
+      console.log({ feeId });
+      const feeContract = nftFeeContracts[feeId];
+      const [, fees] = await contractToFees(feeContract, satsOrUstxCV);
+      const feesInSameAsset = type.startsWith(feeId + '-');
+      const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : BigInt(0));
+      console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
+
+      switch (type) {
+        case 'stx-nft':
+        case 'stx-ft':
+          return balances.stx.balance < requiredAsset;
+        case 'banana-nft':
+        case 'banana-ft':
+          return balances.fungible_tokens[BANANA_TOKEN]?.balance < requiredAsset;
+        case 'xbtc-nft':
+        case 'xbtc-ft':
+          return balances.fungible_tokens[XBTC_TOKEN]?.balance < requiredAsset;
+        case 'usda-nft':
+        case 'usda-ft':
+          return balances.fungible_tokens[USDA_TOKEN]?.balance < requiredAsset;
+        default:
+          // unsupported type, assume balance is sufficient.
+          return false;
+      }
+    } else {
+      switch (type) {
+        case 'stx':
+          return balances.stx.balance < satsOrUstxCV.value;
+        default:
+          return false;
+      }
     }
   };
 
-  const previewAction = async () => {
-    setLoading(true);
-    setStatus(undefined);
-    const errors = [];
+  const verifyCreateForm = async () => {
+    let seller = assetSellerRef.current.value.trim();
     const satsOrUstxCV = satsOrUstxCVFromInput();
     const tokenContract = traitRef.current.value.trim();
+
+    const errors = [];
+    if (!atomicSwap && seller === '') {
+      errors.push('BTC address is required');
+    }
+    if (!atomicSwap) {
+      try {
+        btcAddressToPubscriptCV(seller);
+      } catch (e) {
+        errors.push('Invalid BTC address');
+      }
+    }
     if (satsOrUstxCV.value <= 0) {
       errors.push('positive amount required to swap');
     }
     if (nftSwap(type) && isNaN(parseInt(formData.nftId))) {
       errors.push('not a valid NFT id');
     }
-    if (!tokenContract) {
+    if (isAtomic(type) && !tokenContract) {
       errors.push('Missing token contract');
     }
     try {
@@ -394,6 +393,21 @@ export function SwapCreate({
     } catch (e) {
       console.log(e);
     }
+
+    if (seller === 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles') {
+      errors.push("Can't swap from Stacks bridge");
+    }
+    if (seller === 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking') {
+      errors.push("Can't swap staked monkey");
+    }
+
+    return errors;
+  };
+
+  const previewAction = async () => {
+    setLoading(true);
+    setStatus('');
+    const errors = await verifyCreateForm();
     if (errors.length > 0) {
       setLoading(false);
       setStatus(
@@ -406,60 +420,68 @@ export function SwapCreate({
       );
       return;
     }
-    const [, , contractName, contractAddress] = splitAssetIdentifier(traitRef.current.value.trim());
-    if (nftSwap(type)) {
-      try {
-        const image = await resolveImageForNFT(contractAddress, contractName, formData.nftId);
-        if (image) {
-          setAssetUrl(image);
+    if (isAtomic(type)) {
+      const [, , contractName, contractAddress] = splitAssetIdentifier(
+        traitRef.current.value.trim()
+      );
+      if (nftSwap(type)) {
+        try {
+          const image = await resolveImageForNFT(contractAddress, contractName, formData.nftId);
+          if (image) {
+            setAssetUrl(image);
+          }
+        } catch (e) {
+          // ignore
+          console.log(e);
+          setStatus('NFT image not found');
         }
-      } catch (e) {
-        // ignore
-        console.log(e);
-        setStatus('NFT image not found');
-      }
-      try {
-        const account = await resolveOwnerForNFT(
-          contractAddress,
-          contractName,
-          formData.nftId,
-          false
-        );
-        if (isAtomic) {
-          assetSellerRef.current.value = account;
-        } else {
-          assetBuyerRef.current.value = account;
+        try {
+          const account = await resolveOwnerForNFT(
+            contractAddress,
+            contractName,
+            formData.nftId,
+            false
+          );
+          if (isAtomic) {
+            assetSellerRef.current.value = account;
+          } else {
+            assetBuyerRef.current.value = account;
+          }
+        } catch (e) {
+          console.log(e);
         }
-      } catch (e) {
-        console.log(e);
       }
-    }
 
-    if (type.startsWith('satoshible-')) {
-      const [, , contractName, contractAddress] = splitAssetIdentifier(SATOSHIBLES);
-      try {
-        const image = await resolveImageForNFT(contractAddress, contractName, formData.amountSats);
-        if (image) {
-          setAssetUrlBottom(image);
+      if (type.startsWith('satoshible-')) {
+        const [, , contractName, contractAddress] = splitAssetIdentifier(SATOSHIBLES);
+        try {
+          const image = await resolveImageForNFT(
+            contractAddress,
+            contractName,
+            formData.amountSats
+          );
+          if (image) {
+            setAssetUrlBottom(image);
+          }
+        } catch (e) {
+          // ignore
+          console.log(e);
+          setStatus('NFT image not found');
         }
-      } catch (e) {
-        // ignore
-        console.log(e);
-        setStatus('NFT image not found');
-      }
-      try {
-        const account = await resolveOwnerForNFT(
-          contractAddress,
-          contractName,
-          formData.amountSats,
-          true
-        );
-        if (account !== ownerStxAddress) {
-          console.log(account, ownerStxAddress, formData.amountSats);
-          setStatus("You don't own this Satoshible");
+        try {
+          const account = await resolveOwnerForNFT(
+            contractAddress,
+            contractName,
+            formData.amountSats,
+            true
+          );
+          if (account !== ownerStxAddress) {
+            console.log(account, ownerStxAddress, formData.amountSats);
+            setStatus("You don't own this Satoshible");
+          }
+        } catch (e) {
+          console.log(e);
         }
-      } catch (e) {
-        console.log(e);
       }
     }
 

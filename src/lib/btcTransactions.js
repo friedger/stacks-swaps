@@ -415,5 +415,5 @@ export function btcAddressToPubscriptCV(btcAddress) {
 }
 
 export function pubscriptCVToBtcAddress(pubscriptCV) {
-  return address.fromOutputScript(pubscriptCV.buffer);
+  return address.fromOutputScript(Buffer.from(pubscriptCV.buffer));
 }

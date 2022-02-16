@@ -77,7 +77,7 @@ export function amountFromSwapsEntry(swapsEntry, type) {
     : type.startsWith('xbtc-')
     ? 'xbtc'
     : 'sats';
-  return swapsEntry.data[amountProperty].value / BigInt(factor);
+  return Number(swapsEntry.data[amountProperty].value) / factor;
 }
 
 // from swaps map
@@ -121,9 +121,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
 
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx.toString(10),
+        amountSats: amountBtcOrStx,
         trait: trait + '::' + ftData.assetName,
-        amount: (swapsEntry.data.amount.value / BigInt(10) ** ftData.decimals).toString(10),
+        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, ftData.decimals),
         assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
         assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
         assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -134,8 +134,8 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
     case 'stx':
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx.toString(10),
-        amount: (swapsEntry.data.ustx.value / BigInt(10) ** BigInt(6)).toString(10),
+        amountSats: amountBtcOrStx,
+        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, 6),
         assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
         assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
         assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
@@ -149,9 +149,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
 
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx.toString(10),
+        amountSats: amountBtcOrStx,
         trait: trait + '::' + nftData.assetName,
-        nftId: swapsEntry.data['nft-id'].value,
+        nftId: Number(swapsEntry.data['nft-id'].value),
         assetRecipient,
         assetRecipientFromSwap: assetRecipient,
         assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
@@ -173,9 +173,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       ftData = await getFTData(contractAddress, contractName);
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx.toString(10),
+        amountSats: amountBtcOrStx,
         trait: trait + '::' + ftData.assetName,
-        amount: (swapsEntry.data.amount.value / BigInt(10) ** ftData.decimals).toString(10),
+        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, ftData.decimals),
         assetRecipient,
         assetRecipientFromSwap: assetRecipient,
         assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -198,9 +198,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       nftData = await getNFTData(contractAddress, contractName);
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx.toString(10),
+        amountSats: amountBtcOrStx,
         trait: trait + '::' + nftData.assetName,
-        nftId: swapsEntry.data['nft-id'].value.toString(10),
+        nftId: Number(swapsEntry.data['nft-id'].value),
         assetRecipient,
         assetRecipientFromSwap: assetRecipient,
         assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),

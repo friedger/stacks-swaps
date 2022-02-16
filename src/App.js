@@ -11,8 +11,8 @@ import { ProfileSmall } from './components/ProfileSmall';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
-import SwapCrashPunks200 from './pages/special/SwapCrashPunks200';
 import { atomicSwaps } from './lib/constants';
+import BitcoinMonkeys from './pages/BitcoinMonkeys';
 
 const authOptions = {
   appDetails: {
@@ -68,6 +68,7 @@ function Content() {
         <>
           <Intro path="/" default />
           <Tac path="/tac" />
+          <BitcoinMonkeys path="/bitcoin-monkeys" />
           <StacksSwaps
             path="/:swapPath/swap/:id"
             decentralizedID={decentralizedID}
@@ -87,7 +88,11 @@ function Content() {
             userSession={userSession}
             trait={swap.trait}
           />
-          <StacksSwaps path="/:swapPath" decentralizedID={decentralizedID} userSession={userSession} />
+          <StacksSwaps
+            path="/:swapPath"
+            decentralizedID={decentralizedID}
+            userSession={userSession}
+          />
 
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />

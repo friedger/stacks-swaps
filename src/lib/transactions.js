@@ -4,6 +4,7 @@ import {
   uintCV,
   ClarityType,
   cvToString,
+  cvToHex,
 } from 'micro-stacks/clarity';
 import { getFile, putFile } from 'micro-stacks/storage';
 import {
@@ -63,10 +64,6 @@ export function txIdToStatus(txId) {
   );
 }
 
-export function cvToHex(value) {
-  return `0x${serializeCV(value).toString('hex')}`;
-}
-
 export function hexToCV(hexString) {
   return stacksHexToCV(hexString);
 }
@@ -124,9 +121,9 @@ export async function getTxsAsCSV(userSession, filter) {
               eventResult +
               `${e.asset.recipient}, ${e.asset.amount / 1000000}, ${
                 tx.apiData.burn_block_time_iso
-              }, https://explorer.stacks.co/txid/${
+              }, https://explorer.stacks.co/txid/${tx.apiData.tx_id}, https://sendstx.com/txid/${
                 tx.apiData.tx_id
-              }, https://sendstx.com/txid/${tx.apiData.tx_id}\n`
+              }\n`
             );
           }, '')
       );
@@ -201,7 +198,11 @@ async function createTxWithApiData(txId, tx) {
   let apiData = undefined;
   while (!apiData || events.length < apiData.event_count) {
     eventOffset = events.length;
-    apiData = await transactionsApi.getTransactionById({ txId: `0x${txId}`, eventOffset, offsetLimit });
+    apiData = await transactionsApi.getTransactionById({
+      txId: `0x${txId}`,
+      eventOffset,
+      offsetLimit,
+    });
     console.log(txId, apiData, eventOffset, apiData.events, apiData.event_count);
     events = events.concat(apiData.events);
     console.log(apiData.event_count);

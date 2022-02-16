@@ -70,11 +70,11 @@ export function amountFromSwapsEntry(swapsEntry, type) {
     : type.startsWith('banana-')
     ? 'ubanana'
     : type.startsWith('usda-')
-    ? 'ustx'
+    ? 'usda'
     : type.startsWith('xbtc-')
-    ? 'ustx'
+    ? 'xbtc'
     : 'sats';
-  return swapsEntry.data[amountProperty] / factor;
+  return swapsEntry.data[amountProperty].value / BigInt(factor);
 }
 
 export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
@@ -82,12 +82,13 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
   const doneFromSwap = swapsEntry.data['done']
     ? swapsEntry.data['done'].value
     : swapsEntry.data['open'].type === ClarityType.BoolTrue
-    ? 0
-    : 1;
+    ? BigInt(0)
+    : BigInt(1);
   const btcRecipient = isAtomic(type)
     ? undefined
     : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
   const amountBtcOrStx = amountFromSwapsEntry(swapsEntry, type);
+  console.log(amountBtcOrStx);
   let trait, ftData, nftData, contractAddress, contractName;
   let feeAddress, feeName, feeId;
   switch (type) {
@@ -98,9 +99,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
 
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx,
+        amountSats: amountBtcOrStx.toString(10),
         trait: trait + '::' + ftData.assetName,
-        amount: swapsEntry.data.amount.value / Math.pow(10, ftData.decimals),
+        amount: (swapsEntry.data.amount.value / BigInt(10) ** ftData.decimals).toString(10),
         assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
         assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
         assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -111,8 +112,8 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
     case 'stx':
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx,
-        amount: swapsEntry.data.ustx.value / Math.pow(10, 6),
+        amountSats: amountBtcOrStx.toString(10),
+        amount: (swapsEntry.data.ustx.value / BigInt(10) ** BigInt(6)).toString(10),
         assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
         assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
         assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
@@ -126,7 +127,7 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
 
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx,
+        amountSats: amountBtcOrStx.toString(10),
         trait: trait + '::' + nftData.assetName,
         nftId: swapsEntry.data['nft-id'].value,
         assetRecipient: cvToString(swapsEntry.data['nft-receiver']),
@@ -137,6 +138,10 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       });
       break;
     case 'stx-ft':
+    case 'banana-ft':
+    case 'xbtc-ft':
+    case 'usda-ft':
+    case 'satoshible-ft':
       trait = cvToString(swapsEntry.data['ft']);
       [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
       feeId = Object.entries(ftFeeContracts).find(
@@ -144,11 +149,12 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       );
       [contractAddress, contractName] = trait.split('.');
       ftData = await getFTData(contractAddress, contractName);
+      console.log(swapsEntry.data.amount.value / BigInt(10) ** ftData.decimals, amountBtcOrStx);
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx,
+        amountSats: amountBtcOrStx.toString(10),
         trait: trait + '::' + ftData.assetName,
-        amount: swapsEntry.data.amount.value / Math.pow(10, ftData.decimals),
+        amount: (swapsEntry.data.amount.value / BigInt(10) ** ftData.decimals).toString(10),
         assetRecipient: cvToString(swapsEntry.data['stx-sender']),
         assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
         assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
@@ -158,6 +164,10 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       });
       break;
     case 'stx-nft':
+    case 'banana-nft':
+    case 'xbtc-nft':
+    case 'usda-nft':
+    case 'satoshible-nft':
       trait = cvToString(swapsEntry.data['nft']);
       [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
       feeId = Object.entries(nftFeeContracts).find(
@@ -167,9 +177,9 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
       nftData = await getNFTData(contractAddress, contractName);
       setFormData({
         btcRecipient,
-        amountSats: amountBtcOrStx,
+        amountSats: amountBtcOrStx.toString(10),
         trait: trait + '::' + nftData.assetName,
-        nftId: swapsEntry.data['nft-id'].value,
+        nftId: swapsEntry.data['nft-id'].value.toString(10),
         assetRecipient: cvToString(swapsEntry.data['stx-sender']),
         assetRecipientFromSwap: cvToString(swapsEntry.data['stx-sender']),
         assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
@@ -214,7 +224,7 @@ export async function resolveOwnerForNFT(contractAddress, contractName, nftId, a
     functionName: 'get-owner',
     functionArgs: [uintCV(nftId)],
   });
-  console.log({ownerCV})
+  console.log({ ownerCV });
   const owner =
     ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
       ? cvToString(ownerCV.value.value)

@@ -125,18 +125,18 @@ export function SwapCreate({
     setStatus('');
     const errors = [];
     let seller = assetSellerRef.current.value.trim();
+    const satsOrUstxCV = satsOrUstxCVFromInput();
+    const tokenContract = traitRef.current.value.trim();
+
     if (!atomicSwap && seller === '') {
       errors.push('BTC address is required');
     }
-
-    const satsOrUstxCV = satsOrUstxCVFromInput();
     if (satsOrUstxCV.value <= 0) {
       errors.push('positive amount required to swap');
     }
     if (isNaN(parseInt(formData.nftId))) {
       errors.push('not a valid NFT id');
     }
-    const tokenContract = traitRef.current.value.trim();
     if (!tokenContract) {
       errors.push('Missing token contract');
     }
@@ -376,11 +376,15 @@ export function SwapCreate({
     setStatus(undefined);
     const errors = [];
     const satsOrUstxCV = satsOrUstxCVFromInput();
+    const tokenContract = traitRef.current.value.trim();
     if (satsOrUstxCV.value <= 0) {
       errors.push('positive amount required to swap');
     }
     if (nftSwap(type) && isNaN(parseInt(formData.nftId))) {
       errors.push('not a valid NFT id');
+    }
+    if (!tokenContract) {
+      errors.push('Missing token contract');
     }
     try {
       // TODO handle fee checks for NFT swaps

@@ -209,6 +209,7 @@ export const atomicSwaps = [
   { type: 'stx-ft', path: 'stx-fari', trait: FARI_TOKEN },
   { type: 'stx-ft', path: 'stx-banana', trait: BANANA_TOKEN },
   { type: 'stx-nft', path: 'stx-cp', trait: CRASHPUNKS },
+  { type: 'stx-nft', path: 'stx-bitcoinmonkey', trait: BITCOIN_MONKEYS },
   {
     type: 'stx-nft',
     path: 'stx-satoshible',

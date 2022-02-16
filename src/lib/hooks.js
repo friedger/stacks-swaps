@@ -19,9 +19,11 @@ export function useStxAddresses() {
     if (authenticated) {
       const { address } = getStacksAccount(userSession.appPrivateKey);
       setAppStxAddress(addressToString(address));
-      setOwnerStxAddress(addresses.mainnet);
+      if (addresses) {
+        setOwnerStxAddress(addresses.mainnet);
+      }
     }
-  }, [addresses.mainnet, userSession, authenticated]);
+  }, [addresses, userSession, authenticated]);
 
   return { ownerStxAddress, appStxAddress };
 }

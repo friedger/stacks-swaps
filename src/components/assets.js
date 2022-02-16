@@ -65,7 +65,9 @@ export function getDeepLink(type, trait) {
       ? '/satoshible-bitcoinmonkey'
       : type === 'stx-nft'
       ? '/stx-bitcoinmonkey'
-      : '/satoshible-nft'
+      : type === 'banana-nft'
+      ? '/banana-bitcoinmonkey'
+      : '/bitcoinmonkey'
     : trait === CRASHPUNKS
     ? type === 'stx-nft'
       ? '/stx-cp'

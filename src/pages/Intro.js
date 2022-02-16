@@ -111,9 +111,16 @@ export function GridOfSwaps() {
               <div className="col">
                 <AtomicIntroButton type="satoshible-ft" />
               </div>
+              <div className="col"></div>
+            </div>
+            <div className="row">
               <div className="col">
                 <AtomicIntroButton type="satoshible-nft" trait={BITCOIN_MONKEYS} />
               </div>
+              <div className="col">
+                <AtomicIntroButton type="banana-nft" trait={BITCOIN_MONKEYS} />
+              </div>
+              <div className="col"></div>
             </div>
           </div>
         </div>

@@ -230,7 +230,7 @@ export function SwapCreate({
       case 'satoshible-ft':
       case 'xbtc-ft':
       case 'usda-ft':
-        const sellFactor = ftData ? Math.pow(10, ftData.decimals) : 1;
+        const sellFactor = ftData ? Math.pow(10, Number(ftData.decimals)) : 1;
         ftAmountCV = uintCV(amountRef.current.value.trim() * sellFactor);
         if (ftAmountCV.value <= 0) {
           setLoading(false);

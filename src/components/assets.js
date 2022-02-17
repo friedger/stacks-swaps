@@ -40,7 +40,13 @@ export function getAsset(type, trait) {
 }
 
 export function getAssetName(type, trait) {
-  return type === 'nft' || type === 'stx-nft' ? 'NFT' : type === 'ft' ? 'tokens' : 'stacks';
+  return type === 'nft' || type === 'stx-nft'
+    ? 'NFT'
+    : type === 'ft'
+    ? 'tokens'
+    : type === 'btc'
+    ? 'Bitcoins'
+    : 'Stacks';
 }
 
 export function getDeepLink(type, trait) {

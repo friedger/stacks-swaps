@@ -40,6 +40,62 @@ export function buyAssetTypeFromSwapType(type) {
   return isAtomic(type) ? type.split('-')[0] : 'btc';
 }
 
+export function buyAssetTypeFromSwapType2(type) {
+  return isAtomic(type) ? type.split('-')[0] : type;
+}
+
+export function getBuyLabelFromType(type) {
+  return isAtomic(type)
+    ? type === 'stx-nft'
+      ? `Price for NFT in STXs`
+      : type === 'banana-nft'
+      ? 'Price of NFT in $BANANAs'
+      : type === 'banana-ft'
+      ? 'amount of $BANANA'
+      : type.startsWith('satoshible-')
+      ? 'ID of Satoshible'
+      : type === 'usda-nft'
+      ? 'Price of NFT in USDA'
+      : type === 'usda-ft'
+      ? 'amount of USDA'
+      : type === 'xbtc-nft'
+      ? 'Price of NFT in xBTC'
+      : type === 'xbtc-ft'
+      ? 'amount of xBTC'
+      : `amount of STXs` // default for atomic swaps
+    : type === 'nft'
+    ? `Price for NFT in Bitcoin`
+    : `amount of Bitcoins`; // type === stx or ft
+}
+
+export function getBuyLabelFromType2(type) {
+  return isAtomic(type)
+    ? type === 'stx-nft'
+      ? `Price for NFT in STXs`
+      : type === 'banana-nft'
+      ? 'Price of NFT in $BANANAs'
+      : type === 'banana-ft'
+      ? 'amount of $BANANA'
+      : type.startsWith('satoshible-')
+      ? 'ID of Satoshible'
+      : type === 'usda-nft'
+      ? 'Price of NFT in USDA'
+      : type === 'usda-ft'
+      ? 'amount of USDA'
+      : type === 'xbtc-nft'
+      ? 'Price of NFT in xBTC'
+      : type === 'xbtc-ft'
+      ? 'amount of xBTC'
+      : `amount of STXs` // default for atomic swaps
+    : type === 'stx'
+    ? 'amount of STXs'
+    : type === 'usda'
+    ? 'amount of USDA'
+    : type === 'xbtc'
+    ? 'amount of XBTC'
+    : 'amount';
+}
+
 export function buyDecimalsFromType(type) {
   return type.startsWith('stx-') //
     ? 6
@@ -80,7 +136,7 @@ export function amountFromSwapsEntry(swapsEntry, type) {
   return Number(swapsEntry.data[amountProperty].value) / factor;
 }
 
-// from swaps map
+// from swaps map entry
 function senderToEscrow(type) {
   if (type === 'nft') {
     return 'nft-receiver';
@@ -98,7 +154,7 @@ function senderToEscrow(type) {
   }
 }
 export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
-  const whenFromSwap = swapsEntry.data['when'].value;
+  const whenFromSwap = Number(swapsEntry.data['when'].value);
   const doneFromSwap = swapsEntry.data['done']
     ? swapsEntry.data['done'].value
     : swapsEntry.data['open'].type === ClarityType.BoolTrue
@@ -175,7 +231,7 @@ export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
         btcRecipient,
         amountSats: amountBtcOrStx,
         trait: trait + '::' + ftData.assetName,
-        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, ftData.decimals),
+        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, Number(ftData.decimals)),
         assetRecipient,
         assetRecipientFromSwap: assetRecipient,
         assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),

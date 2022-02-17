@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '@micro-stacks/react';
-import { GetStartedButton } from '../components/GetStartedButton';
+import GetStartedButton from './../components/GetStartedButton';
 
 // Landing page with Stacks Connect for authentication
 

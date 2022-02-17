@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '@micro-stacks/react';
-import { GetStartedButton } from './GetStartedButton';
+import GetStartedButton from './GetStartedButton';
 
 // Authentication button adapting to status
 
@@ -20,8 +20,6 @@ export default function Auth() {
       </button>
     );
   } else {
-    return (
-      <GetStartedButton handleSignIn={handleSignIn} type="small"/>
-    );
+    return <GetStartedButton handleSignIn={handleSignIn} type="small" />;
   }
 }

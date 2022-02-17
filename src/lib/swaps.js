@@ -12,7 +12,7 @@ import {
 import { BANANA_TOKEN, SATOSHIBLES, USDA_TOKEN, XBTC_TOKEN } from '../components/assets';
 import { splitAssetIdentifier } from './assets';
 
-export function assetInEscrow(type) {
+export function getAssetInEscrow(type) {
   if (type.startsWith('stx-')) {
     return undefined;
   } else if (type.startsWith('banana-')) {
@@ -26,13 +26,20 @@ export function assetInEscrow(type) {
   }
 }
 
-function ftInEscrow(type) {
-  return type.startsWith('banana-') || type.startsWith('usda-') || type.startsWith('xbtc-');
+export function isAssetInEscrowAFungibleToken(type) {
+  return (
+    type === 'stx' ||
+    type === 'xbtc' ||
+    type === 'usda' ||
+    type.startsWith('banana-') ||
+    type.startsWith('usda-') ||
+    type.startsWith('xbtc-')
+  );
 }
 
-// return true for nft and anyasset-nft
-export function nftSwap(type) {
-  return type.endsWith('nft');
+// return true for "nft" and "anyasset-nft"
+export function isAssetForSaleANonFungibleToken(type) {
+  return type.endsWith('-nft');
 }
 
 export function makeCreateSwapPostConditions(
@@ -65,9 +72,9 @@ export function makeCreateSwapPostConditions(
         )
       );
     }
-  } else if (ftInEscrow(type)) {
+  } else if (isAssetInEscrowAFungibleToken(type)) {
     // move ft to escrow
-    const asset = assetInEscrow(type);
+    const asset = getAssetInEscrow(type);
     const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(asset);
     const sameContract =
       assetContractAddress === feeContract.ft.address && assetContractName === feeContract.ft.name;
@@ -93,7 +100,7 @@ export function makeCreateSwapPostConditions(
     }
   } else {
     // move nft to escrow
-    const asset = assetInEscrow(type);
+    const asset = getAssetInEscrow(type);
     const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(asset);
     postConditions.push(
       makeStandardNonFungiblePostCondition(
@@ -135,10 +142,10 @@ export function makeCancelSwapPostConditions(
         amountOrIdCV.value
       )
     );
-  } else if (ftInEscrow(type)) {
+  } else if (isAssetInEscrowAFungibleToken(type)) {
     // move ft from escrow
     const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
-      assetInEscrow(type)
+      getAssetInEscrow(type)
     );
     postConditions.push(
       makeContractFungiblePostCondition(
@@ -152,7 +159,7 @@ export function makeCancelSwapPostConditions(
   } else {
     // move nft from escrow
     const [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
-      assetInEscrow(type)
+      getAssetInEscrow(type)
     );
     postConditions.push(
       makeContractNonFungiblePostCondition(
@@ -208,7 +215,7 @@ export function makeSubmitPostConditions(
 
   // handle asset to swap against asset in escrow
 
-  if (nftSwap(type)) {
+  if (isAssetForSaleANonFungibleToken(type)) {
     postConditions.push(
       makeStandardNonFungiblePostCondition(
         ownerStxAddress,

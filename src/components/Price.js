@@ -1,4 +1,4 @@
-export function Price({ sell, buy, editablePrice, onChange }) {
+export default function Price({ sell, buy, editablePrice, onChange }) {
   const buyAsset = buy.asset === 'BTC' ? 'SATS' : buy.asset;
   const buyFactor = buy.asset === 'BTC' ? Math.pow(10, 8) : 1;
   const sellFactor = 1;

@@ -1,4 +1,4 @@
-export function GetStartedButton({ handleSignIn, type }) {
+export default function GetStartedButton({ handleSignIn, type }) {
   return (
     <button
       className={`btn btn-outline-primary ${type === 'small' ? '' : 'btn-lg mt-4'}`}

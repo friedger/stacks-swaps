@@ -1,5 +1,4 @@
 import {
-  serializeCV,
   hexToCV as stacksHexToCV,
   uintCV,
   ClarityType,

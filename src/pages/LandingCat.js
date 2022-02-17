@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '@micro-stacks/react';
+import { GetStartedButton } from '../components/GetStartedButton';
 
 // Landing page with Stacks Connect for authentication
 
@@ -35,13 +36,7 @@ export default function LandingCat(props) {
             In addition to Catamaran swaps, the UI also provides support for swaps of digital assets
             just on the Stacks chain.
           </p>
-          <button
-            className="btn btn-lg btn-outline-primary mt-4"
-            type="button"
-            onClick={handleSignIn}
-          >
-            Get Started
-          </button>
+          <GetStartedButton handleSignIn={handleSignIn} />
         </div>
       </div>
     </div>

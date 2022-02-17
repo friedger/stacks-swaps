@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '@micro-stacks/react';
+import { GetStartedButton } from '../components/GetStartedButton';
 
 // Landing page with Stacks Connect for authentication
 
@@ -28,13 +29,7 @@ export default function LandingAtomic(props) {
             The seller executes the atomic swap and receives the STX, the buyer receives the
             fungible tokens from escrow.
           </p>
-          <button
-            className="btn btn-lg btn-outline-primary mt-4"
-            type="button"
-            onClick={handleSignIn}
-          >
-            Get Started
-          </button>
+          <GetStartedButton handleSignIn={handleSignIn} />
         </div>
       </div>
     </div>

@@ -61,7 +61,13 @@ export function AssetIcon({ type, trait }) {
       return <img src="/xbtc.svg" className="m-1" width="50" height="50" alt="xbtc" />;
     case 'satoshible':
       return (
-        <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
+        <img
+          src="/satoshibles.png"
+          className="m-1 rounded-circle"
+          width="50"
+          height="50"
+          alt="satoshibles"
+        />
       );
 
     case 'usda':
@@ -76,16 +82,30 @@ export function AssetIcon({ type, trait }) {
             <img src="/thisisnumberone.png" className="m-1" width="50" height="50" alt="token" />
           );
         case CRASHPUNKS:
-          return <img src="/crashpunks.gif" className="m-1" width="50" height="50" alt="token" />;
+          return (
+            <img
+              src="/crashpunks.gif"
+              className="m-1 rounded-circle"
+              width="50"
+              height="50"
+              alt="token"
+            />
+          );
         case SATOSHIBLES:
           return (
-            <img src="/satoshibles.png" className="m-1" width="50" height="50" alt="satoshibles" />
+            <img
+              src="/satoshibles.png"
+              className="m-1 rounded-circle"
+              width="50"
+              height="50"
+              alt="satoshibles"
+            />
           );
         case BITCOIN_MONKEYS:
           return (
             <img
               src="/bitcoinmonkeys.png"
-              className="m-1"
+              className="m-1 rounded-circle"
               width="50"
               height="50"
               alt="bitcoin monkeys"

@@ -8,10 +8,15 @@ function GridOfSwaps() {
     <div className="Landing">
       <div className="jumbotron jumbotron-fluid pt-3 mb-0">
         <div className="container pt-3">
-          <h1>Bitcoin Monkeys Swaps</h1>
-          <img src="/bitcoinmonkeys.png" width="25%" alt="Bitcoin Monkeys" />
-          <p className="h5">
-            Use atomic swaps to exchange digital assets for $BANANA and Bitcoin Monkeys.
+          <img
+            src="/bitcoinmonkeys-logo.png"
+            width="25%"
+            alt="Bitcoin Monkeys"
+            className="mx-auto d-block"
+          />
+          <p className="h5 text-center mb-5">
+            Use atomic swaps to exchange digital assets <br />
+            for $BANANA and Bitcoin Monkeys.
           </p>
           <div className="row">
             <div className="col">

@@ -5,67 +5,80 @@ import { SwapCreate } from './SwapCreate';
 import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry } from '../lib/transactions';
 import { feeOptionsByType, infoApi } from '../lib/constants';
-import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
-import { SwapCreate2 } from './SwapCreate2';
+import {
+  assetInEscrowFromType,
+  buyDecimalsFromType2,
+  getFtDataFromSwapsEntry,
+  getNftDataFromSwapsEntry,
+  isAtomic,
+  setFormDataFromSwapsEntry,
+} from '../lib/assets';
+import { c32ToB58 } from 'micro-stacks/crypto';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const { ownerStxAddress } = useStxAddresses();
-
   const atomicSwap = isAtomic(type);
 
   const [loadingSwapEntry, setLoadingSwapEntry] = useState();
   const [invalidSwapId, setInvalidSwapId] = useState(false);
   const [blockHeight, setBlockHeight] = useState(0);
   const [formData, setFormData] = useState({
-    trait: trait,
-    btcRecipient: '',
-    amountSats: '',
-    nftId: nftId,
-    assetRecipient: '',
-    amount: '',
-    assetSenderFromSwap: '',
+    amountOrIdInEscrow: '',
+    traitInEscrow: assetInEscrowFromType(type),
+    amountOrIdForSale: '',
+    traitForSale: trait,
+    buyerAddress: ownerStxAddress || '',
+    buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
+    sellerAddress: '',
+    feeId: '',
+    whenFromSwap: '',
+    doneFromSwap: '',
   });
 
   useEffect(() => {
-    if (atomicSwap) {
+    const asyncFn = async () => {
       setFormData({
-        trait: trait,
-        btcRecipient: '',
-        amountSats: '',
-        nftId: nftId,
-        assetRecipient: ownerStxAddress,
-        amount: '',
-        assetSenderFromSwap: '',
+        amountOrIdInEscrow: '',
+        decimalsInEscrow: buyDecimalsFromType2(type),
+        traitInEscrow: assetInEscrowFromType(type),
+        amountOrIdForSale: '',
+        decimalsForSale: 0,
+        traitForSale: trait,
+        buyerAddress: ownerStxAddress || '',
+        buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
+        sellerAddress: '',
+        feeId: '',
+        whenFromSwap: '',
+        doneFromSwap: '',
       });
-    }
-  }, [atomicSwap, ownerStxAddress, trait, nftId]);
 
-  useEffect(() => {
-    infoApi.getCoreApiInfo().then(info => {
-      setBlockHeight(info.stacks_tip_height);
-    });
+      infoApi.getCoreApiInfo().then(info => {
+        setBlockHeight(info.stacks_tip_height);
+      });
 
-    if (type && id) {
-      setLoadingSwapEntry(true);
-      try {
-        console.log('fetch swap entry');
-        const asyncFetchSwapEntry = async () => {
-          const swapsEntry = await fetchSwapsEntry(type, id);
-          console.log(swapsEntry);
-          if (swapsEntry) {
-            await setFromDataFromSwapsEntry(swapsEntry, type, setFormData);
-          } else {
-            setInvalidSwapId(true);
-          }
+      if (type && id) {
+        setLoadingSwapEntry(true);
+        try {
+          console.log('fetch swap entry');
+          const asyncFetchSwapEntry = async () => {
+            const swapsEntry = await fetchSwapsEntry(type, id);
+            console.log(swapsEntry);
+            if (swapsEntry) {
+              await setFormDataFromSwapsEntry(swapsEntry, type, setFormData);
+            } else {
+              setInvalidSwapId(true);
+            }
+            setLoadingSwapEntry(false);
+          };
+          asyncFetchSwapEntry();
+        } catch (e) {
+          console.log({ e });
           setLoadingSwapEntry(false);
-        };
-        asyncFetchSwapEntry();
-      } catch (e) {
-        console.log({ e });
-        setLoadingSwapEntry(false);
+        }
       }
-    }
-  }, [atomicSwap, type, id]);
+    };
+    asyncFn();
+  }, [atomicSwap, type, id, ownerStxAddress, trait]);
   const hideSubmitUIClassname = id && !atomicSwap ? '' : 'd-none';
   return (
     <div>
@@ -137,15 +150,6 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             role="tabpanel"
             aria-labelledby="createswap-tab"
           >
-            <SwapCreate2
-              ownerStxAddress={ownerStxAddress}
-              type={type}
-              trait={formData.trait}
-              id={id}
-              formData={formData}
-              blockHeight={blockHeight}
-              feeOptions={type ? feeOptionsByType[type] : []}
-            />
             <SwapCreate
               ownerStxAddress={ownerStxAddress}
               type={type}

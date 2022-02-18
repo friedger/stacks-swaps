@@ -34,7 +34,7 @@ import {
 import { getAsset, getAssetName } from './assets';
 import { saveTxData } from '../lib/transactions';
 
-export function SwapSubmit({ ownerStxAddress, type, trait, id, fromData }) {
+export function SwapSubmit({ ownerStxAddress, type, trait, id, formData }) {
   const swapIdRef = useRef();
   const nftIdRef = useRef();
   const traitRef = useRef();

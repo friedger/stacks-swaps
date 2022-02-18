@@ -1,4 +1,3 @@
-import { c32ToB58 } from 'micro-stacks/crypto';
 import { Address } from '../Address';
 import { AssetIcon } from '../AssetIcon';
 
@@ -25,19 +24,20 @@ export default function User({
       {disabled ? (
         <>
           <Address addr={user.address} />
+          {user.address && user.btcAddress && <br />}
           {user.btcAddress && <Address addr={user.btcAddress} />}
         </>
       ) : (
         <>
           {inputOfBtcAddress && <Address addr={user.address} />}
           <div className="input-group">
-            <span class="input-group-text">
-              <AssetIcon type={inputOfBtcAddress ? 'btc' : 'stx'} small bw/>
+            <span className="input-group-text">
+              <AssetIcon type={inputOfBtcAddress ? 'btc' : 'stx'} small bw />
             </span>
             <input
               type="text"
               className="form-control"
-              defaultValue={inputOfBtcAddress && user.address ? c32ToB58(user.address) : user.address}
+              defaultValue={inputOfBtcAddress ? user.btcAddress : user.address}
               onChange={e => onFormUpdate({ property: addressProperty, value: e.target.value })}
               aria-label={label}
               placeholder={label}

@@ -2,10 +2,20 @@ import { ClarityType, contractPrincipalCV, cvToString, uintCV } from 'micro-stac
 import { pubscriptCVToBtcAddress } from './btcTransactions';
 import { getFTData, getNFTData } from './tokenData';
 import { optionalCVToString } from './transactions';
-import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
+import { ftFeeContracts, NETWORK } from './constants';
 import { callReadOnlyFunction, fetchNamesByAddress } from 'micro-stacks/api';
 import { fetchPrivate } from 'micro-stacks/common';
-import { getAsset } from '../components/assets';
+import { BANANA_TOKEN, getAsset, XBTC_TOKEN } from '../components/assets';
+import {
+  amountOrIdPropertyForSaleFromSwapsType,
+  amountOrIdPropertyInEscrowFromSwapsEntry,
+  buyerPropertyFromSwapType,
+  ftPropertyFromSwapsType,
+  nftPropertyFromSwapsType,
+  sellerPropertyFromSwapType,
+} from './swapMapEntries';
+import { getAssetInEscrow, traitForSaleFromSwapsEntry } from './swaps';
+import { c32ToB58 } from 'micro-stacks/crypto';
 
 /**
  *
@@ -115,7 +125,7 @@ export function buyDecimalsFromType(type) {
 }
 
 export function buyDecimalsFromType2(type) {
-  const [escrow] = type.split("-");
+  const [escrow] = type.split('-');
 
   return escrow === 'stx' //
     ? 6
@@ -128,166 +138,133 @@ export function buyDecimalsFromType2(type) {
     : 0;
 }
 
-export function factorForType(type) {
-  return type.startsWith('stx-') //
-    ? 1_000_000
-    : type.startsWith('banana-')
-    ? 1_000_000
-    : type.startsWith('usda-')
-    ? 1_000_000
-    : type.startsWith('xbtc-')
-    ? 100_000_000
-    : 100_000_000;
-}
-export function amountFromSwapsEntry(swapsEntry, type) {
-  if (type.startsWith('satoshible-')) {
-    return swapsEntry.data['satoshible-id'].value;
+export async function getFtDataFromSwapsEntry(swapsEntry, type) {
+  const property = ftPropertyFromSwapsType(type);
+  if (property) {
+    const ctr = cvToString(swapsEntry.data[property]);
+    const [contractAddress, contractName] = ctr.split('.');
+    const ftData = await getFTData(contractAddress, contractName);
+    return [ctr + '::' + ftData.assetName, ftData];
+  } else {
+    return [];
   }
-  const factor = factorForType(type);
-  let amountProperty = type.startsWith('stx-')
-    ? 'ustx'
-    : type.startsWith('banana-')
-    ? 'ubanana'
-    : type.startsWith('usda-')
-    ? 'usda'
-    : type.startsWith('xbtc-')
-    ? 'xbtc'
-    : 'sats';
-  return Number(swapsEntry.data[amountProperty].value) / factor;
 }
 
-// from swaps map entry
-function senderToEscrow(type) {
-  if (type === 'nft') {
-    return 'nft-receiver';
-  }
-  if (type.startsWith('banana-')) {
-    return 'banana-sender';
-  } else if (type.startsWith('usda-')) {
-    return 'usda-sender';
-  } else if (type.startsWith('xbtc-')) {
-    return 'xbtc-sender';
-  } else if (type.startsWith('satoshible-')) {
-    return 'satoshible-sender';
+export async function getNftDataFromSwapsEntry(swapsEntry, type) {
+  const property = nftPropertyFromSwapsType(type);
+  if (property) {
+    const ctr = cvToString(swapsEntry.data[property]);
+    const [contractAddress, contractName] = ctr.split('.');
+    const nftData = await getNFTData(contractAddress, contractName);
+    return [ctr + '::' + nftData.assetName, nftData];
   } else {
-    return 'stx-sender';
+    return [];
   }
 }
-export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
+
+export function factorAssetInEscrowFromSwapType(type) {
+  return type.startsWith('stx') //
+    ? 1_000_000
+    : type.startsWith('banana-')
+    ? 1_000_000
+    : type.startsWith('usda')
+    ? 1_000_000
+    : type.startsWith('xbtc')
+    ? 100_000_000
+    : type.startsWith('satoshible')
+    ? 1
+    : 100_000_000;
+}
+
+export function factorAssetForSaleFromSwapType(type, trait) {
+  return type === 'stx' || type === 'ft' || type === 'nft'
+    ? 100_000_000
+    : type.endsWith('-nft')
+    ? 1
+    : trait === XBTC_TOKEN
+    ? 100_000_000
+    : 1_000_000;
+}
+
+// returns number with decimals or nft id
+function amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData) {
+  const numberProperty = amountOrIdPropertyForSaleFromSwapsType(type);
+  if (ftData?.decimals) {
+    const factor = Math.pow(10, ftData.decimals);
+    return Number(swapsEntry.data[numberProperty].value) / factor;
+  } else {
+    return Number(swapsEntry.data[numberProperty].value);
+  }
+}
+
+// returns number with decimals or nft id
+function amountOrIdInEscrowFromSwapsEntry(swapsEntry, type, ftData) {
+  const numberProperty = amountOrIdPropertyInEscrowFromSwapsEntry(type);
+  if (type.startsWith('satoshible')) {
+    return Number(swapsEntry.data[numberProperty].value);
+  } else {
+    const factor =
+      type === 'ft' ? Math.pow(10, ftData.decimals) : factorAssetInEscrowFromSwapType(type);
+    return Number(swapsEntry.data[numberProperty].value) / factor;
+  }
+}
+
+function getFeeIdFromSwapsEntry(swapsEntry) {
+  if (swapsEntry.data['fees']) {
+    const [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
+    const feeIds = Object.entries(ftFeeContracts).find(
+      e => e[1].address === feeAddress && e[1].name === feeName
+    );
+    if (feeIds.length > 0) {
+      return feeIds[0];
+    }
+  }
+  return undefined;
+}
+
+export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, ownerStxAddress) {
+  const [ftTrait, ftData] = await getFtDataFromSwapsEntry(swapsEntry, type);
+  const [nftTrait] = await getNftDataFromSwapsEntry(swapsEntry, type);
+
+  const amountOrIdInEscrow = amountOrIdInEscrowFromSwapsEntry(swapsEntry, type);
+  const decimalsInEscrow = buyDecimalsFromType2(type);
+  const traitInEscrow = getAssetInEscrow(type, ftTrait);
+
+  const amountOrIdForSale = amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData);
+  const decimalsForSale = ftData?.decimals ? ftData.decimals : 1;
+  const traitForSale = traitForSaleFromSwapsEntry(type, ftTrait, nftTrait);
+
+  const buyerAddress = isAtomic(type)
+    ? cvToString(swapsEntry.data[buyerPropertyFromSwapType(type)])
+    : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+  const buyerBtcAddress = isAtomic(type)
+    ? c32ToB58(buyerAddress)
+    : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+  const sellerAddress = optionalCVToString(swapsEntry.data[sellerPropertyFromSwapType(type)]);
+
+  const feeId = getFeeIdFromSwapsEntry(swapsEntry, type);
+
   const whenFromSwap = Number(swapsEntry.data['when'].value);
   const doneFromSwap = swapsEntry.data['done']
     ? Number(swapsEntry.data['done'].value)
     : swapsEntry.data['open'].type === ClarityType.BoolTrue
     ? 0
     : 1;
-  const btcRecipient = isAtomic(type)
-    ? undefined
-    : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
-  const amountBtcOrStx = amountFromSwapsEntry(swapsEntry, type);
-  const assetRecipient = cvToString(swapsEntry.data[senderToEscrow(type)]);
 
-  console.log(amountBtcOrStx);
-  let trait, ftData, nftData, contractAddress, contractName;
-  let feeAddress, feeName, feeId;
-  switch (type) {
-    case 'ft':
-      trait = cvToString(swapsEntry.data['ft']);
-      [contractAddress, contractName] = trait.split('.');
-      ftData = await getFTData(contractAddress, contractName);
-
-      setFormData({
-        btcRecipient,
-        amountSats: amountBtcOrStx,
-        trait: trait + '::' + ftData.assetName,
-        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, ftData.decimals),
-        assetRecipient: optionalCVToString(swapsEntry.data['ft-receiver']),
-        assetRecipientFromSwap: optionalCVToString(swapsEntry.data['ft-receiver']),
-        assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-        whenFromSwap,
-        doneFromSwap,
-      });
-      break;
-    case 'stx':
-      setFormData({
-        btcRecipient,
-        amountSats: amountBtcOrStx,
-        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, 6),
-        assetRecipient: optionalCVToString(swapsEntry.data['stx-receiver']),
-        assetRecipientFromSwap: optionalCVToString(swapsEntry.data['stx-receiver']),
-        assetSenderFromSwap: cvToString(swapsEntry.data['stx-sender']),
-        whenFromSwap,
-        doneFromSwap,
-      });
-      break;
-    case 'nft':
-      trait = cvToString(swapsEntry.data['nft']);
-      nftData = await getNFTData(trait);
-
-      setFormData({
-        btcRecipient,
-        amountSats: amountBtcOrStx,
-        trait: trait + '::' + nftData.assetName,
-        nftId: Number(swapsEntry.data['nft-id'].value),
-        assetRecipient,
-        assetRecipientFromSwap: assetRecipient,
-        assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-        whenFromSwap,
-        doneFromSwap,
-      });
-      break;
-    case 'stx-ft': // (define-map swaps uint {ustx: uint, stx-sender: principal, amount: uint, ft-sender: (optional principal), when: uint, open: bool, ft: principal, fees: principal})
-    case 'banana-ft':
-    case 'xbtc-ft':
-    case 'usda-ft':
-    case 'satoshible-ft': // (define-map swaps uint {satoshible-id: uint, satoshible-sender: principal, ft-amount: uint, ft-sender: (optional principal), when: uint, open: bool, ft: principal, fees: principal})
-      trait = cvToString(swapsEntry.data['ft']);
-      [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-      feeId = Object.entries(ftFeeContracts).find(
-        e => e[1].address === feeAddress && e[1].name === feeName
-      );
-      [contractAddress, contractName] = trait.split('.');
-      ftData = await getFTData(contractAddress, contractName);
-      setFormData({
-        btcRecipient,
-        amountSats: amountBtcOrStx,
-        trait: trait + '::' + ftData.assetName,
-        amount: Number(swapsEntry.data.ustx.value) / Math.pow(10, Number(ftData.decimals)),
-        assetRecipient,
-        assetRecipientFromSwap: assetRecipient,
-        assetSenderFromSwap: cvToString(swapsEntry.data['ft-sender']),
-        whenFromSwap,
-        doneFromSwap,
-        feeId: feeId ? feeId[0] : 'stx', // TODO better fall back
-      });
-      break;
-    case 'stx-nft': //  (define-map swaps uint {ustx: uint, stx-sender: principal, nft-id: uint, nft-sender: (optional principal), when: uint, open: bool, nft: principal, fees: principal})
-    case 'banana-nft': //(define-map swaps uint {ubanana: uint, banana-sender: principal, nft-id: uint, nft-sender: (optional principal), when: uint, open: bool, nft: principal, fees: principal})
-    case 'xbtc-nft':
-    case 'usda-nft':
-    case 'satoshible-nft': // (define-map swaps uint {satoshible-id: uint, satoshible-sender: principal, nft-id: uint, nft-sender: (optional principal), when: uint, open: bool, nft: principal, fees: principal})
-      trait = cvToString(swapsEntry.data['nft']);
-      [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-      feeId = Object.entries(nftFeeContracts).find(
-        e => e[1].address === feeAddress && e[1].name === feeName
-      );
-      [contractAddress, contractName] = trait.split('.');
-      nftData = await getNFTData(contractAddress, contractName);
-      setFormData({
-        btcRecipient,
-        amountSats: amountBtcOrStx,
-        trait: trait + '::' + nftData.assetName,
-        nftId: Number(swapsEntry.data['nft-id'].value),
-        assetRecipient,
-        assetRecipientFromSwap: assetRecipient,
-        assetSenderFromSwap: cvToString(swapsEntry.data['nft-sender']),
-        whenFromSwap,
-        doneFromSwap,
-        feeId: feeId ? feeId[0] : 'stx', // TODO better fall back
-      });
-      break;
-    default:
-      console.log('unsupported type ' + type);
-  }
+  setFormData({
+    amountOrIdInEscrow,
+    decimalsInEscrow,
+    traitInEscrow,
+    amountOrIdForSale,
+    decimalsForSale,
+    traitForSale,
+    buyerAddress,
+    buyerBtcAddress,
+    sellerAddress,
+    feeId,
+    whenFromSwap,
+    doneFromSwap,
+  });
 }
 
 export async function resolveImageForNFT(contractAddress, contractName, nftId) {
@@ -321,7 +298,6 @@ export async function resolveOwnerForNFT(contractAddress, contractName, nftId, a
     functionName: 'get-owner',
     functionArgs: [uintCV(nftId)],
   });
-  console.log({ ownerCV });
   const owner =
     ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
       ? cvToString(ownerCV.value.value)

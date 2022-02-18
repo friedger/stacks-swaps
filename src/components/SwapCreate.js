@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import { noneCV, principalCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
@@ -18,8 +18,6 @@ import {
 import { fetchAccountBalances } from 'micro-stacks/api';
 
 import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
-import { Address } from './Address';
-import { AssetIcon } from './AssetIcon';
 import {
   BANANA_TOKEN,
   getAsset,
@@ -29,7 +27,6 @@ import {
   XBTC_TOKEN,
 } from './assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
-import { BN } from 'bn.js';
 import { saveTxData } from '../lib/transactions';
 import { resolveBNS } from '../lib/account';
 import { getFTData, getNFTData } from '../lib/tokenData';
@@ -38,11 +35,9 @@ import {
   assetInEscrowFromType,
   assetTypeInEscrowFromSwapType,
   buyAssetFromType,
-  buyAssetTypeFromSwapType,
-  buyDecimalsFromType,
   buyDecimalsFromType2,
-  factorForType,
-  getBuyLabelFromType,
+  factorAssetForSaleFromSwapType,
+  factorAssetInEscrowFromSwapType,
   getBuyLabelFromType2,
   isAtomic,
   resolveImageForNFT,
@@ -58,13 +53,8 @@ import {
   isAssetInEscrowANonFungibleToken,
 } from '../lib/swaps';
 import SwapForm from './SwapCreateForm';
-import Price from './Price';
 import GetStartedButton from './GetStartedButton';
-
-function readFloat(ref) {
-  const result = parseFloat(ref.current.value.trim());
-  return isNaN(result) ? undefined : result;
-}
+import { c32ToB58 } from 'micro-stacks/crypto';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -75,13 +65,6 @@ export function SwapCreate({
   blockHeight,
   feeOptions,
 }) {
-  const amountSatsRef = useRef();
-  const assetSellerRef = useRef();
-  const nftIdRef = useRef();
-  const amountRef = useRef();
-  const assetBuyerRef = useRef();
-  const traitRef = useRef();
-  const feeContractRef = useRef();
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
@@ -90,6 +73,11 @@ export function SwapCreate({
   const [previewed, setPreviewed] = useState(false);
   const [assetUrl, setAssetUrl] = useState();
   const [assetUrlBottom, setAssetUrlBottom] = useState();
+  console.log({ formData1, formData });
+
+  useEffect(() => {
+    setFormData(formData1);
+  }, [formData1]);
 
   const contract = contracts[type];
   const { handleContractCall } = useContractCall({
@@ -102,12 +90,6 @@ export function SwapCreate({
   const [userSession] = useSession();
 
   const atomicSwap = isAtomic(type);
-
-  const satsOrUstxCVFromInput = () => {
-    const factor = factorForType(type);
-    const amountInputFloat = readFloat(amountSatsRef) || 0;
-    return uintCV(Math.floor(amountInputFloat * factor));
-  };
 
   const getFeeOption = type => (feeOptions ? feeOptions.find(f => f.type === type) : undefined);
 
@@ -132,9 +114,16 @@ export function SwapCreate({
   const createAction = async () => {
     setLoading(true);
     setStatus('');
-    let seller = assetSellerRef.current.value.trim();
-    const satsOrUstxCV = satsOrUstxCVFromInput();
+    let seller = formData.sellerAddress;
+    const factorForEscrow = factorAssetInEscrowFromSwapType(type);
+    const amountISUOrIdInEscrowCV = uintCV(
+      Math.floor(parseFloat(formData.amountOrIdInEscrow) * factorForEscrow)
+    );
 
+    const factorForSale = factorAssetForSaleFromSwapType(type, trait);
+    const amountISUOrIdForSaleCV = uintCV(
+      Math.floor(parseFloat(formData.amountOrIdForSale) * factorForSale)
+    );
     const errors = await verifyCreateForm();
     if (errors.length > 0) {
       setLoading(false);
@@ -149,15 +138,9 @@ export function SwapCreate({
       return;
     }
 
-    seller = await resolveBNS(assetSellerRef.current.value.trim());
-    const sellerCV = atomicSwap
-      ? seller
-        ? someCV(principalCV(seller))
-        : noneCV()
-      : btcAddressToPubscriptCV(seller);
-
-    const assetBuyer = await resolveBNS(assetBuyerRef.current.value.trim());
-
+    seller = await resolveBNS(formData.sellerAddress);
+    const sellerCV = seller ? someCV(principalCV(seller)) : noneCV();
+    const buyerAddressCV = btcAddressToPubscriptCV(formData.buyerBtcAddress);
     let functionArgs, postConditions;
     let ftAmountCV, nftIdCV;
     let feeId, feeContract, feesCV, fees;
@@ -165,21 +148,21 @@ export function SwapCreate({
     switch (type) {
       // catamaran swaps
       case 'nft':
-        if (!assetBuyer) {
+        if (!buyerAddressCV) {
           setStatus('Buyer address must be set.');
           setLoading(false);
           return;
         }
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
-        const nftReceiverCV = standardPrincipalCV(assetBuyer);
+        nftIdCV = uintCV(formData.amountOrIdInEscrow);
+        const nftReceiverCV = principalCV(seller);
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
+          splitAssetIdentifier(formData.traitInEscrow);
         if (!assetName) {
           setLoading(false);
           setStatus('"nft contract :: nft name" must be set');
           return;
         }
-        functionArgs = [satsOrUstxCV, sellerCV, nftIdCV, nftReceiverCV, assetContractCV];
+        functionArgs = [amountISUOrIdForSaleCV, sellerCV, nftIdCV, nftReceiverCV, assetContractCV];
         postConditions = [
           makeStandardNonFungiblePostCondition(
             ownerStxAddress,
@@ -190,45 +173,59 @@ export function SwapCreate({
         ];
         break;
       case 'ft':
-        ftAmountCV = uintCV(amountRef.current.value.trim());
+        ftAmountCV = uintCV(formData.amountOrIdInEscrow);
         if (ftAmountCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
         }
-        const ftReceiverCV = assetBuyer ? someCV(standardPrincipalCV(assetBuyer)) : noneCV();
+        const ftReceiverCV = formData.seller
+          ? someCV(standardPrincipalCV(formData.seller))
+          : noneCV();
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
+          splitAssetIdentifier(formData.traitInEscrow);
         if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
 
-        functionArgs = [satsOrUstxCV, sellerCV, ftAmountCV, ftReceiverCV, assetContractCV];
+        functionArgs = [
+          amountISUOrIdForSaleCV,
+          buyerAddressCV,
+          amountISUOrIdInEscrowCV,
+          ftReceiverCV,
+          assetContractCV,
+        ];
         postConditions = [
           makeStandardFungiblePostCondition(
             ownerStxAddress,
             FungibleConditionCode.Equal,
-            ftAmountCV.value,
+            amountISUOrIdInEscrowCV.value,
             createAssetInfo(assetContractAddress, assetContractName, assetName)
           ),
         ];
         break;
       case 'stx':
-        const stxAmountCV = uintCV(amountRef.current.value.trim() * 1_000_000);
-        if (stxAmountCV.value <= 0) {
+        if (amountISUOrIdInEscrowCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
           return;
         }
-        const stxReceiverCV = assetBuyer ? someCV(standardPrincipalCV(assetBuyer)) : noneCV();
-        functionArgs = [satsOrUstxCV, sellerCV, stxAmountCV, stxReceiverCV];
+        const stxReceiverCV = formData.sellerAddress
+          ? someCV(principalCV(formData.sellerAddress))
+          : noneCV();
+        functionArgs = [
+          amountISUOrIdForSaleCV,
+          buyerAddressCV,
+          amountISUOrIdInEscrowCV,
+          stxReceiverCV,
+        ];
         postConditions = [
           makeStandardSTXPostCondition(
             ownerStxAddress,
             FungibleConditionCode.Equal,
-            stxAmountCV.value
+            amountISUOrIdInEscrowCV.value
           ),
         ];
         break;
@@ -239,28 +236,27 @@ export function SwapCreate({
       case 'satoshible-ft':
       case 'xbtc-ft':
       case 'usda-ft':
-        const sellFactor = ftData ? Math.pow(10, Number(ftData.decimals)) : 1;
-        ftAmountCV = uintCV(amountRef.current.value.trim() * sellFactor);
-        if (ftAmountCV.value <= 0) {
-          setLoading(false);
-          setStatus('positive numbers required to swap');
-          return;
-        }
-        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
+        [assetContractCV, assetName] = splitAssetIdentifier(formData.traitForSale);
         if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        feeId = feeContractRef.current.value;
+        feeId = formData.feeId;
         feeContract = getFeeOption(feeId).contract;
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        functionArgs = [satsOrUstxCV, ftAmountCV, sellerCV, assetContractCV, feesCV];
+        [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
+        functionArgs = [
+          amountISUOrIdInEscrowCV,
+          amountISUOrIdForSaleCV,
+          sellerCV,
+          assetContractCV,
+          feesCV,
+        ];
         postConditions = makeCreateSwapPostConditions(
           type,
           feeId,
           ownerStxAddress,
-          satsOrUstxCV,
+          amountISUOrIdInEscrowCV,
           fees,
           feeContract
         );
@@ -276,22 +272,22 @@ export function SwapCreate({
           setStatus('positive numbers required to swap');
           return;
         }
-        [assetContractCV, assetName] = splitAssetIdentifier(traitRef.current.value.trim());
+        [assetContractCV, assetName] = splitAssetIdentifier(formData.traitForSale);
         if (!assetName) {
           setLoading(false);
           setStatus('"nft contract :: nft name" must be set');
           return;
         }
-        feeId = feeContractRef.current.value;
+        feeId = formData.feeId;
         console.log({ feeId });
         feeContract = getFeeOption(feeId).contract;
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
-        functionArgs = [satsOrUstxCV, nftIdCV, sellerCV, assetContractCV, feesCV];
+        [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
+        functionArgs = [amountISUOrIdInEscrowCV, nftIdCV, sellerCV, assetContractCV, feesCV];
         postConditions = makeCreateSwapPostConditions(
           type,
           feeId,
           ownerStxAddress,
-          satsOrUstxCV,
+          amountISUOrIdInEscrowCV,
           fees,
           feeContract
         );
@@ -327,19 +323,19 @@ export function SwapCreate({
     });
   };
 
-  const hasInsufficientBalance = async satsOrUstxCV => {
+  const hasInsufficientBalance = async amountInEscrowCV => {
     const balances = await fetchAccountBalances({
       url: NETWORK.coreApiUrl,
       principal: ownerStxAddress,
     });
 
     if (isAtomic(type)) {
-      const feeId = feeContractRef.current.value;
+      const feeId = formData.feeId;
       console.log({ feeId });
       const feeContract = nftFeeContracts[feeId];
-      const [, fees] = await contractToFees(feeContract, satsOrUstxCV);
+      const [, fees] = await contractToFees(feeContract, amountInEscrowCV);
       const feesInSameAsset = type.startsWith(feeId + '-');
-      const requiredAsset = satsOrUstxCV.value + (feesInSameAsset ? fees : BigInt(0));
+      const requiredAsset = amountInEscrowCV.value + (feesInSameAsset ? fees : BigInt(0));
       console.log(balances.stx.balance, requiredAsset, balances.stx.balance < requiredAsset);
 
       switch (type) {
@@ -362,7 +358,7 @@ export function SwapCreate({
     } else {
       switch (type) {
         case 'stx':
-          return balances.stx.balance < satsOrUstxCV.value;
+          return balances.stx.balance < amountInEscrowCV.value;
         default:
           return false;
       }
@@ -370,43 +366,49 @@ export function SwapCreate({
   };
 
   const verifyCreateForm = async () => {
-    let seller = assetSellerRef.current.value.trim();
-    const satsOrUstxCV = satsOrUstxCVFromInput();
-    const tokenContract = traitRef.current.value.trim();
-
     const errors = [];
-    if (!atomicSwap && seller === '') {
+    const factorForEscrow = factorAssetInEscrowFromSwapType(type);
+    const amountISUOrIdInEscrowCV = uintCV(
+      Math.floor(parseFloat(formData.amountOrIdInEscrow) * factorForEscrow)
+    );
+
+    if (!atomicSwap && !formData.buyerBtcAddress) {
       errors.push('BTC address is required');
     }
     if (!atomicSwap) {
       try {
-        btcAddressToPubscriptCV(seller);
+        btcAddressToPubscriptCV(formData.buyerBtcAddress);
       } catch (e) {
+        console.log({ seller, e });
         errors.push('Invalid BTC address');
       }
     }
-    if (satsOrUstxCV.value <= 0) {
+    if (formData.amountOrIdInEscrow <= 0) {
       errors.push('positive amount required to swap');
     }
-    if (isAssetForSaleANonFungibleToken(type) && isNaN(parseInt(formData.nftId))) {
+    if (isAssetForSaleANonFungibleToken(type) && isNaN(parseInt(formData.amountOrIdForSale))) {
       errors.push('not a valid NFT id');
     }
-    if (isAtomic(type) && !tokenContract) {
+    if (isAtomic(type) && !formData.traitForSale) {
       errors.push('Missing token contract');
     }
     try {
       // TODO handle fee checks for NFT swaps
-      if (await hasInsufficientBalance(satsOrUstxCV)) {
+      if (await hasInsufficientBalance(amountISUOrIdInEscrowCV)) {
         errors.push('wallet has insufficient balance');
       }
     } catch (e) {
       console.log(e);
     }
 
-    if (seller === 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles') {
+    if (
+      formData.sellerAddress === 'SP6P4EJF0VG8V0RB3TQQKJBHDQKEF6NVRD1KZE3C.stacksbridge-satoshibles'
+    ) {
       errors.push("Can't swap from Stacks bridge");
     }
-    if (seller === 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking') {
+    if (
+      formData.sellerAddress === 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking'
+    ) {
       errors.push("Can't swap staked monkey");
     }
 
@@ -430,9 +432,7 @@ export function SwapCreate({
       return;
     }
     if (isAtomic(type)) {
-      const [, , contractName, contractAddress] = splitAssetIdentifier(
-        traitRef.current.value.trim()
-      );
+      const [, , contractName, contractAddress] = splitAssetIdentifier(formData.traitForSale);
       if (isAssetForSaleANonFungibleToken(type)) {
         try {
           const image = await resolveImageForNFT(contractAddress, contractName, formData.nftId);
@@ -448,14 +448,10 @@ export function SwapCreate({
           const account = await resolveOwnerForNFT(
             contractAddress,
             contractName,
-            formData.nftId,
+            formData.amountOrIdForSale,
             false
           );
-          if (isAtomic) {
-            assetSellerRef.current.value = account;
-          } else {
-            assetBuyerRef.current.value = account;
-          }
+          setFormData({ ...formData, sellerAddress: account });
         } catch (e) {
           console.log(e);
         }
@@ -500,22 +496,6 @@ export function SwapCreate({
 
   const setRecipientAction = async () => {
     setLoading(true);
-    const errors = [];
-    if (assetBuyerRef.current.value.trim() === '') {
-      errors.push('Receiver is required');
-    }
-    if (errors.length > 0) {
-      setLoading(false);
-      setStatus(
-        errors.map((e, index) => (
-          <React.Fragment key={index}>
-            {e}
-            <br />
-          </React.Fragment>
-        ))
-      );
-      return;
-    }
     let functionArgs;
     let postConditions;
     let functionName;
@@ -562,19 +542,17 @@ export function SwapCreate({
 
     let functionArgs;
     let postConditions;
-    let amountInSmallestUnit, nftIdCV;
     let assetContractCV, assetName, assetContractName, assetContractAddress;
     let feeId, feeContract, feesCV, fees;
-    const factor = factorForType(type);
-    const satsOrUstxCV = uintCV(
-      Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+    const factor = factorAssetInEscrowFromSwapType(type);
+    const amountISUOrIdInEscrowCV = uintCV(
+      Math.floor(parseFloat(formData.amountOrIdInEscrow) * factor)
     );
 
     switch (type) {
       case 'nft':
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
         [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
-          traitRef.current.value.trim()
+          formData.traitInEscrow
         );
         functionArgs = [swapIdCV];
         postConditions = [
@@ -583,37 +561,34 @@ export function SwapCreate({
             contract.name,
             NonFungibleConditionCode.DoesNotOwn,
             createAssetInfo(assetContractAddress, assetContractName, assetName),
-            nftIdCV
+            amountISUOrIdInEscrowCV
           ),
         ];
 
         break;
       case 'ft':
         [, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
-          traitRef.current.value.trim()
+          formData.traitInEscrow
         );
-        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
         functionArgs = [swapIdCV];
         postConditions = [
           makeContractFungiblePostCondition(
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
-            new BN(amountInSmallestUnit),
+            amountISUOrIdInEscrowCV,
             createAssetInfo(assetContractAddress, assetContractName, assetName)
           ),
         ];
         break;
       case 'stx':
-        amountInSmallestUnit = formData.amount * Math.pow(10, sellDecimals);
-
         functionArgs = [swapIdCV];
         postConditions = [
           makeContractSTXPostCondition(
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
-            new BN(amountInSmallestUnit)
+            amountISUOrIdInEscrowCV
           ),
         ];
         break;
@@ -623,20 +598,20 @@ export function SwapCreate({
       case 'usda-ft':
       case 'satoshible-ft':
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
+          splitAssetIdentifier(formData.traitForSale);
         if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        feeId = feeContractRef.current.value;
+        feeId = formData.feeId;
         feeContract = ftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
         functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = makeCancelSwapPostConditions(
           type,
           contract,
-          satsOrUstxCV,
+          amountISUOrIdInEscrowCV,
           feeId,
           feeContract,
           fees
@@ -647,23 +622,21 @@ export function SwapCreate({
       case 'xbtc-nft':
       case 'usda-nft':
       case 'satoshible-nft':
-        nftIdCV = uintCV(nftIdRef.current.value.trim());
-
         [assetContractCV, assetName, assetContractName, assetContractAddress] =
-          splitAssetIdentifier(traitRef.current.value.trim());
+          splitAssetIdentifier(formData.traitForSale);
         if (!assetName) {
           setLoading(false);
           setStatus('"ft contract :: ft name" must be set');
           return;
         }
-        feeId = feeContractRef.current.value;
+        feeId = formData.feeId;
         feeContract = ftFeeContracts[feeId];
-        [feesCV, fees] = await contractToFees(feeContract, satsOrUstxCV);
+        [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
         functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = makeCancelSwapPostConditions(
           type,
           contract,
-          satsOrUstxCV,
+          amountISUOrIdInEscrowCV,
           feeId,
           feeContract,
           fees
@@ -706,18 +679,18 @@ export function SwapCreate({
     let functionArgs;
     let postConditions;
 
-    let amountOrIdToSwapCV;
-    let amountInSmallestUnitOrNftIdInEscrowCV;
+    let amountOrIdForSaleCV;
+    let amountISUOrIdInEscrowCV;
     let assetContractCV, assetName, assetContractName, assetContractAddress;
     let factor;
     let feesCV, fees;
 
     // asset to swap (not in escrow)
     [assetContractCV, assetName, assetContractName, assetContractAddress] = splitAssetIdentifier(
-      traitRef.current.value.trim()
+      formData.traitForSale
     );
 
-    const feeId = feeContractRef.current.value;
+    const feeId = formData.feeId;
     const feeContract = getFeeOption(feeId).contract;
 
     switch (type) {
@@ -728,7 +701,7 @@ export function SwapCreate({
       case 'satoshible-ft':
         // price for escrowed asset
         // to be paid by user
-        amountOrIdToSwapCV = formData.amount * Math.pow(10, sellDecimals);
+        amountOrIdForSaleCV = formData.amount * Math.pow(10, sellDecimals);
 
         break;
 
@@ -739,7 +712,7 @@ export function SwapCreate({
       case 'satoshible-nft':
         // nft for escrowed asset
         // to be sent by user
-        amountOrIdToSwapCV = uintCV(formData.nftId);
+        amountOrIdForSaleCV = uintCV(formData.nftId);
 
         break;
 
@@ -759,9 +732,9 @@ export function SwapCreate({
       case 'xbtc-nft':
       case 'usda-nft':
         // ft asset in escrow
-        factor = factorForType(type);
-        amountInSmallestUnitOrNftIdInEscrowCV = uintCV(
-          Math.floor(parseFloat(amountSatsRef.current.value.trim()) * factor)
+        factor = factorAssetInEscrowFromSwapType(type);
+        amountISUOrIdInEscrowCV = uintCV(
+          Math.floor(parseFloat(formData.amountOrIdInEscrow) * factor)
         );
 
         break;
@@ -769,9 +742,7 @@ export function SwapCreate({
       case 'satoshible-ft':
       case 'satoshible-nft':
         // nft asset in escrow
-        amountInSmallestUnitOrNftIdInEscrowCV = uintCV(
-          parseInt(amountSatsRef.current.value.trim())
-        );
+        amountISUOrIdInEscrowCV = uintCV(parseInt(formData.amountOrIdInEscrow));
 
         break;
       default:
@@ -780,7 +751,7 @@ export function SwapCreate({
         return;
     }
 
-    [feesCV, fees] = await contractToFees(feeContract, amountInSmallestUnitOrNftIdInEscrowCV);
+    [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
     if (!fees) {
       setLoading(false);
       setStatus("Couldn't load fees.");
@@ -790,12 +761,12 @@ export function SwapCreate({
     postConditions = makeSubmitPostConditions(
       type,
       contract,
-      amountInSmallestUnitOrNftIdInEscrowCV,
+      amountISUOrIdInEscrowCV,
       ownerStxAddress,
       assetContractAddress,
       assetContractName,
       assetName,
-      amountOrIdToSwapCV,
+      amountOrIdForSaleCV,
       feeId,
       feeContract,
       fees
@@ -838,7 +809,7 @@ export function SwapCreate({
 
   const onFormUpdate = ({ property, value }) => {
     const newValue = {};
-    newValue[property] = value;
+    newValue[property] = value.trim();
     console.log('Updating', property, value);
     setFormData({ ...formData, ...newValue });
   };
@@ -869,14 +840,69 @@ export function SwapCreate({
   const assetName = getAssetName(sellType, formData.trait);
   // buy (right to left)
   const buyWithAsset = buyAssetFromType(type);
-  const buyDecimals = buyDecimalsFromType(type);
-  const amountSatsLabel = getBuyLabelFromType(type);
+
+  //
+  // buyer
+  //
+  const buyer = {
+    address: formData.buyerAddress,
+    btcAddress: formData.buyerBtcAddress,
+    isOwner: formData.buyerAddress === ownerStxAddress,
+    inputOfBtcAddress: sellType2 === 'btc',
+  };
+  console.log(buyer, formData);
+  // sent by buyer
+  const assetInEscrowIsNFT = isAssetInEscrowANonFungibleToken(type);
+  const assetInEscrow = {
+    isNFT: assetInEscrowIsNFT,
+    type: assetTypeInEscrowFromSwapType(type),
+    trait: getAssetInEscrow(type),
+    label: getBuyLabelFromType2(type),
+    amountOrId: formData.amountOrIdInEscrow,
+    asset: assetInEscrowFromType(type),
+    decimals: buyDecimalsFromType2(type),
+  };
+
+  //
+  // seller
+  //
+  const sellerAddress =
+    (atomicSwap
+      ? formData.sellerAddress !== 'none'
+        ? formData.sellerAddress.substr(6, formData.sellerAddress.length - 7)
+        : undefined
+      : formData.sellerAddress) ||
+    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '');
+  let sellerBtcAddress;
+  try {
+    sellerBtcAddress = sellerAddress ? c32ToB58(sellerAddress) : '';
+  } catch (e) {}
+  const seller = {
+    address: sellerAddress,
+    btcAddress: sellerBtcAddress,
+    isOwner: sellerAddress === ownerStxAddress,
+  };
+
+  // sent by seller
+  const assetForSaleIsNFT = isAssetForSaleANonFungibleToken(type);
+  const assetForSaleType = sellType2;
+  const assetForSale = {
+    isNFT: assetForSaleIsNFT,
+    type: assetForSaleType,
+    trait: formData.trait,
+    label: assetForSaleIsNFT
+      ? 'ID of NFT'
+      : `amount of ${getAssetName(assetForSaleType, formData.trait)}`,
+    amountOrId: formData.amountOrIdForSale,
+    nftId: formData.nftId,
+    asset: getAsset(assetForSaleType, formData.trait),
+    decimals: sellDecimals2,
+  };
 
   const getActionFromSwap = () => {
     if (
       id &&
-      (formData.assetSenderFromSwap === ownerStxAddress ||
-        (atomicSwap && formData.assetRecipientFromSwap === ownerStxAddress)) &&
+      formData.buyerAddress === ownerStxAddress &&
       formData.whenFromSwap + 100 < blockHeight &&
       formData.doneFromSwap === 0
     ) {
@@ -907,7 +933,6 @@ export function SwapCreate({
     }
   };
   const [action, onAction] = getActionFromSwap();
-  const createSellOrder = false;
   console.log({ done: formData.doneFromSwap });
   return (
     <>
@@ -930,327 +955,31 @@ export function SwapCreate({
           expired after 100 Stacks blocks and you called "cancel").
         </p>
       )}
-      {!ownerStxAddress && <GetStartedButton handleSignIn={handleSignIn} />}
-
-      <form>
-        <div className={`input-group ${type === 'stx' ? 'd-none' : ''}`}>
-          <input
-            type="text"
-            className="form-control"
-            ref={traitRef}
-            value={formData.trait}
-            onChange={e => setFormData({ ...formData, trait: e.current.value })}
-            aria-label={`fully qualified contract of the ${assetName} and its asset class`}
-            placeholder={`fully qualified contract of the ${assetName} and its asset class`}
-            readOnly={trait}
-            required
-            minLength="1"
-          />
-        </div>
-        <div className="container">
-          <div className="row align-items-center m-5">
-            <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !atomicSwap ? (
-                <>
-                  Seller (You)
-                  <br />
-                  <Address addr={ownerStxAddress} />
-                </>
-              ) : (
-                <>
-                  <br />
-                  Seller
-                  {formData.assetSenderFromSwap === ownerStxAddress ||
-                  (!atomicSwap && !id) ||
-                  (atomicSwap &&
-                    id &&
-                    ((formData.doneFromSwap === 0 && formData.assetSenderFromSwap === 'none') ||
-                      formData.assetSenderFromSwap === `(some ${ownerStxAddress})`))
-                    ? ' (You)'
-                    : null}
-                </>
-              )}
-              <br />
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  ref={assetSellerRef}
-                  defaultValue={
-                    (formData.btcRecipient
-                      ? formData.btcRecipient
-                      : formData.assetSenderFromSwap !== 'none'
-                      ? formData.assetSenderFromSwap.substr(
-                          6,
-                          formData.assetSenderFromSwap.length - 7
-                        )
-                      : undefined) ||
-                    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
-                  }
-                  onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
-                  aria-label={
-                    atomicSwap
-                      ? 'Stacks address or name (optional)'
-                      : 'Bitcoin recipient address (must start with 1)'
-                  }
-                  placeholder={
-                    atomicSwap
-                      ? 'Stacks address or name (optional)'
-                      : 'Bitcoin recipient address (must start with 1)'
-                  }
-                  readOnly={id}
-                  required
-                  max="40"
-                  minLength="1"
-                />
-              </div>
-            </div>
-            <div className="col text-center border-left">
-              {previewed && isAssetForSaleANonFungibleToken(type) && assetUrl ? (
-                <img className="m-1" src={assetUrl} width={50} height={50} alt="asset" />
-              ) : (
-                <AssetIcon type={sellType} trait={formData.trait} />
-              )}
-              <br />
-              <div
-                className={`input-group ${isAssetForSaleANonFungibleToken(type) ? '' : 'd-none'}`}
-              >
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={nftIdRef}
-                  value={formData.nftId}
-                  onChange={e => setFormData({ ...formData, nftId: e.target.value })}
-                  aria-label="ID of NFT"
-                  placeholder="ID of NFT"
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              <div
-                className={`input-group ${isAssetForSaleANonFungibleToken(type) ? 'd-none' : ''}`}
-              >
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={amountRef}
-                  value={formData.amount}
-                  onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                  aria-label={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
-                  placeholder={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              <i className="bi bi-arrow-right"></i>
-              <br />
-              {!isAssetForSaleANonFungibleToken(type) && (
-                <>
-                  <br />
-                  <Price
-                    sell={{ amount: formData.amount, asset: asset, decimals: sellDecimals }}
-                    buy={{
-                      amount: formData.amountSats,
-                      asset: buyWithAsset,
-                      decimals: buyDecimals,
-                    }}
-                    editablePrice={createSellOrder}
-                  />
-                  <br />
-                  <br />
-                </>
-              )}
-              <i className="bi bi-arrow-left"></i>
-              <br />
-              <div className="input-group">
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={amountSatsRef}
-                  value={formData.amountSats}
-                  onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
-                  aria-label={amountSatsLabel}
-                  placeholder={amountSatsLabel}
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              {previewed && assetUrlBottom ? (
-                <img
-                  className="m-1"
-                  src={assetUrlBottom}
-                  width={50}
-                  height={50}
-                  alt="asset in escrow"
-                />
-              ) : (
-                <AssetIcon type={buyAssetTypeFromSwapType(type)} />
-              )}
-            </div>
-            <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && atomicSwap ? (
-                <>
-                  Buyer (You)
-                  <br />
-                  <Address addr={ownerStxAddress} />
-                </>
-              ) : (
-                <>
-                  <br />
-                  Buyer
-                </>
-              )}
-
-              <br />
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  ref={assetBuyerRef}
-                  value={formData.assetRecipient}
-                  onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
-                  aria-label={`${assetName} receiver's Stacks address`}
-                  placeholder={`${assetName} receiver's Stacks address`}
-                  readOnly={(id && formData.assetRecipientFromSwap) || atomicSwap}
-                  required
-                  minLength="1"
-                />
-              </div>
-            </div>
-          </div>
-          {status && (
-            <div className="row align-items-center">
-              <div className="col text-center alert">{status}</div>
-            </div>
-          )}
-          {atomicSwap && (
-            // fees
-            <div className="row m-2">
-              <div className="col" />
-              <div className="col text-center">
-                <select
-                  className="form-select form-select-sm"
-                  ref={feeContractRef}
-                  value={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
-                  onChange={e => setFormData({ ...formData, feeId: e.target.value })}
-                  disabled={id}
-                  aria-label="select fee model"
-                >
-                  {feeOptions.map((feeOption, index) => (
-                    <option value={feeOption.type} key={index}>
-                      {feeOption.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col" />
-            </div>
-          )}
-          <div className="row m-2">
-            <div className="col-12 text-center">
-              {!ownerStxAddress ? (
-                <>
-                  <button
-                    className="btn btn-lg btn-outline-primary mt-4"
-                    type="button"
-                    onClick={handleSignIn}
-                  >
-                    Get Started
-                  </button>
-                </>
-              ) : (
-                <>
-                  {id &&
-                    (formData.assetSenderFromSwap === ownerStxAddress ||
-                      (atomicSwap && formData.assetRecipientFromSwap === ownerStxAddress)) &&
-                    formData.whenFromSwap + 100 < blockHeight &&
-                    formData.doneFromSwap === 0 && (
-                      <button
-                        className="btn btn-block btn-primary"
-                        type="button"
-                        onClick={cancelAction}
-                      >
-                        <div
-                          role="status"
-                          className={`${
-                            loading ? '' : 'd-none'
-                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                        />
-                        Cancel swap
-                      </button>
-                    )}
-                  {id ? (
-                    // show existing swap
-                    atomicSwap ? (
-                      formData.doneFromSwap === 1 ? (
-                        <>
-                          <button className="btn btn-block btn-success" type="button" disabled>
-                            Completed
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="btn btn-block btn-primary"
-                          type="button"
-                          onClick={submitAction}
-                        >
-                          <div
-                            role="status"
-                            className={`${
-                              loading ? '' : 'd-none'
-                            } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                          />
-                          Sell {asset}
-                        </button>
-                      ) // handle buy with btc
-                    ) : formData.assetRecipientFromSwap ? (
-                      <></>
-                    ) : (
-                      <button
-                        className="btn btn-block btn-primary"
-                        type="button"
-                        onClick={setRecipientAction}
-                      >
-                        <div
-                          role="status"
-                          className={`${
-                            loading ? '' : 'd-none'
-                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                        />
-                        Buy {asset}
-                      </button>
-                    )
-                  ) : (
-                    // create new swap
-                    <button
-                      className="btn btn-block btn-primary"
-                      type="button"
-                      onClick={previewed ? createAction : previewAction}
-                    >
-                      <div
-                        role="status"
-                        className={`${
-                          loading ? '' : 'd-none'
-                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                      />
-                      {previewed ? (
-                        <>
-                          {atomicSwap ? 'Buy' : 'Sell'} {asset}
-                        </>
-                      ) : (
-                        <>Preview {asset} swap</>
-                      )}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </form>
+      {!ownerStxAddress ? (
+        <GetStartedButton handleSignIn={handleSignIn} />
+      ) : (
+        <SwapForm
+          atomicSwap={atomicSwap}
+          swapId={id}
+          done={formData.doneFromSwap === 1}
+          buyer={buyer}
+          assetInEscrow={assetInEscrow}
+          seller={seller}
+          assetForSale={assetForSale}
+          when={formData.whenFromSwap}
+          blockHeight={blockHeight}
+          showFees={!assetForSale.isNFT || !assetInEscrow.isNFT}
+          feeOptions={feeOptions}
+          feeId={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
+          feeReceiver="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9"
+          onFormUpdate={onFormUpdate}
+          action={action}
+          onAction={onAction}
+          loading={loading}
+          status={status}
+          ownerStxAddress={ownerStxAddress}
+        />
+      )}
       {txId && <TxStatus txId={txId} />}
     </>
   );

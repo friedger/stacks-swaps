@@ -39,7 +39,7 @@ export default function SwapForm({
               user={buyer}
               title="Buyer"
               isOwner={buyer.address === ownerStxAddress}
-              addressProperty="btcRecipient"
+              addressProperty={atomicSwap ? 'buyerAddress' : 'buyerBtcAddress'}
               disabled={done || swapId || atomicSwap}
               onFormUpdate={onFormUpdate}
               inputOfBtcAddress={!atomicSwap}
@@ -50,7 +50,7 @@ export default function SwapForm({
               <Asset
                 asset={assetForSale}
                 assetUrl={assetForSaleUrl}
-                numberProperty={assetForSale.isNFT ? 'nftId' : 'amount'}
+                numberProperty="amountOrIdForSale"
                 onFormUpdate={onFormUpdate}
                 readOnly={swapId}
               />
@@ -64,7 +64,7 @@ export default function SwapForm({
               user={seller}
               title="Seller"
               isOwner={seller.address === ownerStxAddress}
-              addressProperty="assetSender"
+              addressProperty="sellerAddress"
               disabled={done || swapId}
               onFormUpdate={onFormUpdate}
               inputOfBtcAddress={false}
@@ -89,7 +89,7 @@ export default function SwapForm({
             <Asset
               assetUrl={assetInEscrowUrl}
               asset={assetInEscrow}
-              numberProperty="amountSats"
+              numberProperty="amountOrIdInEscrow"
               onFormUpdate={onFormUpdate}
               readOnly={swapId}
             />

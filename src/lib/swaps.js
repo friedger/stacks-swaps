@@ -12,7 +12,7 @@ import {
 import { BANANA_TOKEN, SATOSHIBLES, USDA_TOKEN, XBTC_TOKEN } from '../components/assets';
 import { splitAssetIdentifier } from './assets';
 
-export function getAssetInEscrow(type) {
+export function getAssetInEscrow(type, ftTrait) {
   if (type.startsWith('stx-')) {
     return undefined;
   } else if (type.startsWith('banana-')) {
@@ -23,6 +23,8 @@ export function getAssetInEscrow(type) {
     return XBTC_TOKEN;
   } else if (type.startsWith('satoshible-')) {
     return SATOSHIBLES;
+  } else {
+    return ftTrait;
   }
 }
 
@@ -30,7 +32,10 @@ export function isAssetInEscrowANonFungibleToken(type) {
   return type === 'nft' || type.startsWith('satoshible-');
 }
 
-// return true for "nft" and "anyasset-nft"
+export function traitForSaleFromSwapsEntry(type, ftTrait, nftTrait) {
+  return isAssetForSaleANonFungibleToken(type) ? nftTrait : ftTrait;
+}
+// return true for "anyasset-nft"
 export function isAssetForSaleANonFungibleToken(type) {
   return type.endsWith('-nft');
 }
@@ -39,7 +44,7 @@ export function makeCreateSwapPostConditions(
   type,
   feeId,
   ownerStxAddress,
-  satsOrUstxCV,
+  amountInEscrowCV,
   fees,
   feeContract
 ) {
@@ -52,7 +57,7 @@ export function makeCreateSwapPostConditions(
       makeStandardSTXPostCondition(
         ownerStxAddress,
         FungibleConditionCode.Equal,
-        satsOrUstxCV.value + feesInSTX
+        amountInEscrowCV.value + feesInSTX
       )
     );
     if (feeId !== 'stx') {
@@ -74,7 +79,7 @@ export function makeCreateSwapPostConditions(
         ownerStxAddress,
         NonFungibleConditionCode.DoesNotOwn,
         createAssetInfo(assetContractAddress, assetContractName, assetName),
-        satsOrUstxCV
+        amountInEscrowCV
       )
     );
     if (feeId === 'fixed') {
@@ -97,7 +102,7 @@ export function makeCreateSwapPostConditions(
       makeStandardFungiblePostCondition(
         ownerStxAddress,
         FungibleConditionCode.Equal,
-        satsOrUstxCV.value + BigInt(feesInFT),
+        amountInEscrowCV.value + BigInt(feesInFT),
         createAssetInfo(assetContractAddress, assetContractName, assetName)
       )
     );

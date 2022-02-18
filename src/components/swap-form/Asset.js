@@ -14,7 +14,7 @@ export default function Asset({ assetUrl, asset, readOnly, numberProperty, onFor
         <input
           type="number"
           className="form-control"
-          defaultValue={asset.isNFT ? asset.nftId : asset.amount || ''}
+          defaultValue={asset.amountOrId || ''}
           onChange={e => onFormUpdate({ property: numberProperty, value: e.target.value })}
           aria-label={asset.label}
           placeholder={asset.label}
@@ -22,7 +22,7 @@ export default function Asset({ assetUrl, asset, readOnly, numberProperty, onFor
           required
           minLength="1"
         />
-        <span class="input-group-text">
+        <span className="input-group-text">
           {assetUrl ? (
             <img className="m-1" src={assetUrl} width={50} height={50} alt="asset" />
           ) : (
@@ -30,24 +30,26 @@ export default function Asset({ assetUrl, asset, readOnly, numberProperty, onFor
           )}
         </span>
       </div>
-      {ctr && (
+      {ctr ? (
         <small>
           <Contract ctr={ctr} />
         </small>
-      )}
-      {asset.type !== 'stx' && asset.type !== 'btc' && (
-        <div className="input-group mt-2">
-          <input
-            type="text"
-            className="form-control"
-            value=""
-            onChange={e => onFormUpdate({ property: 'trait', value: e.current.value })}
-            aria-label={`fully qualified contract of the ${asset.asset} and its asset class`}
-            placeholder={`fully qualified contract of the ${asset.asset} and its asset class`}
-            required
-            minLength="1"
-          />
-        </div>
+      ) : (
+        asset.type !== 'stx' &&
+        asset.type !== 'btc' && (
+          <div className="input-group mt-2">
+            <input
+              type="text"
+              className="form-control"
+              value=""
+              onChange={e => onFormUpdate({ property: 'traitForSale', value: e.current.value })}
+              aria-label={`fully qualified contract of the ${asset.asset} and its asset class`}
+              placeholder={`fully qualified contract of the ${asset.asset} and its asset class`}
+              required
+              minLength="1"
+            />
+          </div>
+        )
       )}
     </>
   );

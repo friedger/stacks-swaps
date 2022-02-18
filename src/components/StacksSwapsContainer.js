@@ -6,6 +6,7 @@ import { SwapSubmit } from './SwapSubmit';
 import { fetchSwapsEntry } from '../lib/transactions';
 import { feeOptionsByType, infoApi } from '../lib/constants';
 import { isAtomic, setFromDataFromSwapsEntry } from '../lib/assets';
+import { SwapCreate2 } from './SwapCreate2';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const { ownerStxAddress } = useStxAddresses();
@@ -136,6 +137,15 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             role="tabpanel"
             aria-labelledby="createswap-tab"
           >
+            <SwapCreate2
+              ownerStxAddress={ownerStxAddress}
+              type={type}
+              trait={formData.trait}
+              id={id}
+              formData={formData}
+              blockHeight={blockHeight}
+              feeOptions={type ? feeOptionsByType[type] : []}
+            />
             <SwapCreate
               ownerStxAddress={ownerStxAddress}
               type={type}

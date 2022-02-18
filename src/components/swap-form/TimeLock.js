@@ -16,7 +16,7 @@ export default function TimeLock({ startHeight, blockHeight }) {
           aria-valuemax={endHeight}
         ></div>
       </div>
-      <small>swap time: 100 blocks</small>
+      <small>swap cancelable after 100 blocks</small>
     </div>
   );
 }

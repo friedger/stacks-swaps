@@ -67,6 +67,9 @@ function Content() {
       <Router>
         <>
           <Intro path="/" default />
+          {authenticated && <Intro path="/atomic" hideCatamaran />}
+          {authenticated && <Intro path="/catamaran" hideAtomic />}
+
           <Tac path="/tac" />
           <BitcoinMonkeys path="/bitcoin-monkeys" />
           <StacksSwaps

@@ -1,10 +1,12 @@
+import { c32ToB58 } from 'micro-stacks/crypto';
 import { Address } from '../Address';
+import { AssetIcon } from '../AssetIcon';
 
 export default function User({
   user,
   isOwner,
   title,
-  readOnly,
+  disabled,
   inputOfBtcAddress,
   onFormUpdate,
   addressProperty,
@@ -12,27 +14,30 @@ export default function User({
   const label = inputOfBtcAddress
     ? 'Bitcoin recipient address (must start with 1)'
     : 'Stacks address or name (optional)';
-
+  console.log(title, { user });
   return (
     <>
       <i className="bi bi-person" style={{ fontSize: '4rem' }}></i>
-      {readOnly ? (
+      <br />
+      {title}
+      {isOwner ? ' (You)' : null}
+      <br />
+      {disabled ? (
         <>
-          {title}
-          {isOwner ? ' (You)' : null}
-          <br />
           <Address addr={user.address} />
+          {user.btcAddress && <Address addr={user.btcAddress} />}
         </>
       ) : (
         <>
-          <br />
-          {title} {isOwner ? ' (You)' : ''}
-          <br />
+          {inputOfBtcAddress && <Address addr={user.address} />}
           <div className="input-group">
+            <span class="input-group-text">
+              <AssetIcon type={inputOfBtcAddress ? 'btc' : 'stx'} small bw/>
+            </span>
             <input
               type="text"
               className="form-control"
-              defaultValue={user.address}
+              defaultValue={inputOfBtcAddress && user.address ? c32ToB58(user.address) : user.address}
               onChange={e => onFormUpdate({ property: addressProperty, value: e.target.value })}
               aria-label={label}
               placeholder={label}

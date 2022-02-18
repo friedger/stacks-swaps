@@ -1,10 +1,9 @@
 import Price from './Price';
-import AssetFT from './swap-form/AssetFT';
-import AssetNFT from './swap-form/AssetNFT';
 import Fees from './swap-form/Fees';
 import FormButton from './swap-form/FormButton';
 import TimeLock from './swap-form/TimeLock';
 import User from './swap-form/User';
+import Asset from './swap-form/Asset';
 
 export default function SwapForm({
   atomicSwap,
@@ -30,6 +29,7 @@ export default function SwapForm({
   status,
   ownerStxAddress,
 }) {
+  console.log({ assetForSale, assetInEscrow });
   return (
     <form>
       <div className="container">
@@ -38,24 +38,22 @@ export default function SwapForm({
             <User
               user={buyer}
               title="Buyer"
+              isOwner={buyer.address === ownerStxAddress}
               addressProperty="btcRecipient"
-              disabled={done || swapId}
-              onChange={onFormUpdate}
+              disabled={done || swapId || atomicSwap}
+              onFormUpdate={onFormUpdate}
               inputOfBtcAddress={!atomicSwap}
             />
           </div>
           <div className="col text-center border-left">
-            <div className="border border-5 p-2 m-2 rounded">
-              {assetForSale.isNFT ? (
-                <AssetNFT
-                  asset={assetForSale}
-                  assetUrl={assetForSaleUrl}
-                  nftIdProperty="nftId"
-                  onFormUpdate={onFormUpdate}
-                />
-              ) : (
-                <AssetFT asset={assetForSale} amountProperty="amount" onFormUpdate={onFormUpdate} />
-              )}
+            <div className="p-2 m-2">
+              <Asset
+                asset={assetForSale}
+                assetUrl={assetForSaleUrl}
+                numberProperty={assetForSale.isNFT ? 'nftId' : 'amount'}
+                onFormUpdate={onFormUpdate}
+                readOnly={swapId}
+              />
             </div>
             <div className="mb-5">
               <i className="bi bi-arrow-left"></i>
@@ -64,11 +62,12 @@ export default function SwapForm({
           <div className="col text-center border-left">
             <User
               user={seller}
-              inputOfBtcAddress={false}
               title="Seller"
-              addressProperty="btcRecipient"
+              isOwner={seller.address === ownerStxAddress}
+              addressProperty="assetSender"
               disabled={done || swapId}
-              onChange={onFormUpdate}
+              onFormUpdate={onFormUpdate}
+              inputOfBtcAddress={false}
             />
           </div>
         </div>
@@ -78,30 +77,25 @@ export default function SwapForm({
           <i className="bi bi-arrow-down-right"></i>
         </div>
         <div className="col text-center border-left">
-          {showPrice && (
+          {!assetForSale.isNFT && !assetInEscrow.isNFT && (
             <>
-              <br />
-              <Price sell={{ assetForSale }} buy={{ assetInEscrow }} editablePrice={false} />
-              <br />
+              <Price sell={assetForSale} buy={assetInEscrow} editablePrice={false} />
+              <hr />
+              <Price sell={assetInEscrow} buy={assetForSale} editablePrice={false} />
               <br />
             </>
           )}
-          <div className="border border-5 p-2 m-2 rounded">
-            {assetInEscrow.isNFT ? (
-              <AssetNFT
-                assetUrl={assetInEscrowUrl}
-                asset={assetInEscrow}
-                nftIdProperty="amountSats"
-                onFormUpdate={onFormUpdate}
-              />
-            ) : (
-              <AssetFT
-                asset={assetInEscrow}
-                amountProperty="amountSats"
-                onFormUpdate={onFormUpdate}
-              />
+          <div className="p-2 m-2">
+            <Asset
+              assetUrl={assetInEscrowUrl}
+              asset={assetInEscrow}
+              numberProperty="amountSats"
+              onFormUpdate={onFormUpdate}
+              readOnly={swapId}
+            />
+            {when && blockHeight && !done && (
+              <TimeLock startHeight={when} blockHeight={blockHeight} />
             )}
-            {when && blockHeight && <TimeLock startHeight={when} blockHeight={blockHeight} />}
           </div>
         </div>
         <div className="col text-left border-left">
@@ -119,7 +113,7 @@ export default function SwapForm({
         <div className="row m-2">
           <div className="col" />
           <div className="col text-center">
-            <Fees feeOptions={feeOptions} feeId={feeId} disabled={done} />
+            <Fees feeOptions={feeOptions} feeId={feeId} disabled={swapId} />
           </div>
           <div className="col" />
         </div>

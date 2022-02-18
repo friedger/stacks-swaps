@@ -5,6 +5,7 @@ import { optionalCVToString } from './transactions';
 import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
 import { callReadOnlyFunction, fetchNamesByAddress } from 'micro-stacks/api';
 import { fetchPrivate } from 'micro-stacks/common';
+import { getAsset } from '../components/assets';
 
 /**
  *
@@ -36,11 +37,16 @@ export function buyAssetFromType(type) {
     : 'BTC';
 }
 
+export function assetInEscrowFromType(type) {
+  const [escrow] = type.split('-');
+  return getAsset(escrow);
+}
+
 export function buyAssetTypeFromSwapType(type) {
   return isAtomic(type) ? type.split('-')[0] : 'btc';
 }
 
-export function buyAssetTypeFromSwapType2(type) {
+export function assetTypeInEscrowFromSwapType(type) {
   return isAtomic(type) ? type.split('-')[0] : type;
 }
 
@@ -108,6 +114,20 @@ export function buyDecimalsFromType(type) {
     : 8;
 }
 
+export function buyDecimalsFromType2(type) {
+  const [escrow] = type.split("-");
+
+  return escrow === 'stx' //
+    ? 6
+    : escrow === 'banana'
+    ? 6
+    : escrow === 'usda'
+    ? 6
+    : escrow === 'xbtc'
+    ? 8
+    : 0;
+}
+
 export function factorForType(type) {
   return type.startsWith('stx-') //
     ? 1_000_000
@@ -156,10 +176,10 @@ function senderToEscrow(type) {
 export async function setFromDataFromSwapsEntry(swapsEntry, type, setFormData) {
   const whenFromSwap = Number(swapsEntry.data['when'].value);
   const doneFromSwap = swapsEntry.data['done']
-    ? swapsEntry.data['done'].value
+    ? Number(swapsEntry.data['done'].value)
     : swapsEntry.data['open'].type === ClarityType.BoolTrue
-    ? BigInt(0)
-    : BigInt(1);
+    ? 0
+    : 1;
   const btcRecipient = isAtomic(type)
     ? undefined
     : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);

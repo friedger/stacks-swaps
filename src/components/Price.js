@@ -12,7 +12,7 @@ export default function Price({ sell, buy, editablePrice, onChange }) {
   const priceLabel = `${buyAsset} / ${sell.asset}`;
 
   return (
-    <>
+    <p className="m-1 fw-lighter">
       {editablePrice ? (
         <input
           type="number"
@@ -31,6 +31,6 @@ export default function Price({ sell, buy, editablePrice, onChange }) {
         </>
       )}
       {priceLabel}
-    </>
+    </p>
   );
 }

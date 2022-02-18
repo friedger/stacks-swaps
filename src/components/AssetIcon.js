@@ -11,30 +11,37 @@ import {
   SATOSHIBLES,
   BITCOIN_MONKEYS,
 } from './assets';
-export function AssetIcon({ type, trait }) {
-  console.log(type, trait);
-
+export function AssetIcon({ type, trait, small, bw }) {
+  const size = small ? 20 : 50;
   switch (type) {
     case 'btc':
-      return <img className="m-1" src="/bitcoin.webp" width="50" height="50" alt="BTC" />;
+      return (
+        <img
+          className="m-1"
+          src={bw ? '/bitcoin-bw.svg' : '/bitcoin.webp'}
+          width={size}
+          height={size}
+          alt="BTC"
+        />
+      );
     case 'ft':
       switch (trait) {
         case MIA_TOKEN:
-          return <img src="/mia.png" className="m-1" width="50" height="50" alt="mia" />;
+          return <img src="/mia.png" className="m-1" width={size} height={size} alt="mia" />;
         case FARI_TOKEN:
-          return <img src="/fari.png" className="m-1" width="50" height="50" alt="fari" />;
+          return <img src="/fari.png" className="m-1" width={size} height={size} alt="fari" />;
         case BANANA_TOKEN:
-          return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
+          return <img src="/banana.png" className="m-1" width={size} height={size} alt="banana" />;
         case USDA_TOKEN:
-          return <img src="/usda.svg" className="m-1" width="50" height="50" alt="usda" />;
+          return <img src="/usda.svg" className="m-1" width={size} height={size} alt="usda" />;
         case DIKO_TOKEN:
-          return <img src="/diko.svg" className="m-1" width="50" height="50" alt="diko" />;
+          return <img src="/diko.svg" className="m-1" width={size} height={size} alt="diko" />;
         default:
           return (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="50"
-              height="50"
+              width={size}
+              height={size}
               fill="currentColor"
               className="bi bi-coin m-1"
               viewBox="0 0 16 16"
@@ -53,41 +60,53 @@ export function AssetIcon({ type, trait }) {
       }
     case 'stx':
       return (
-        <img src="/Stacks_logo_full.webp" className="m-1" width="50" height="50" alt="token" />
+        <img
+          src={bw ? '/stacks-bw.png' : '/stacks.webp'}
+          className="m-1"
+          width={size}
+          height={size}
+          alt="token"
+        />
       );
     case 'banana':
-      return <img src="/banana.png" className="m-1" width="50" height="50" alt="banana" />;
+      return <img src="/banana.png" className="m-1" width={size} height={size} alt="banana" />;
     case 'xbtc':
-      return <img src="/xbtc.svg" className="m-1" width="50" height="50" alt="xbtc" />;
+      return <img src="/xbtc.svg" className="m-1" width={size} height={size} alt="xbtc" />;
     case 'satoshible':
       return (
         <img
           src="/satoshibles.png"
           className="m-1 rounded-circle"
-          width="50"
-          height="50"
+          width={size}
+          height={size}
           alt="satoshibles"
         />
       );
 
     case 'usda':
-      return <img src="/usda.svg" className="m-1" width="50" height="50" alt="usda" />;
+      return <img src="/usda.svg" className="m-1" width={size} height={size} alt="usda" />;
     default:
       switch (trait) {
         case BOOMBOX:
-          return <img src="/boom.png" className="m-1" width="50" height="50" alt="token" />;
+          return <img src="/boom.png" className="m-1" width={size} height={size} alt="token" />;
 
         case THIS_IS_NUMBER_ONE:
           return (
-            <img src="/thisisnumberone.png" className="m-1" width="50" height="50" alt="token" />
+            <img
+              src="/thisisnumberone.png"
+              className="m-1"
+              width={size}
+              height={size}
+              alt="token"
+            />
           );
         case CRASHPUNKS:
           return (
             <img
               src="/crashpunks.gif"
               className="m-1 rounded-circle"
-              width="50"
-              height="50"
+              width={size}
+              height={size}
               alt="token"
             />
           );
@@ -96,8 +115,8 @@ export function AssetIcon({ type, trait }) {
             <img
               src="/satoshibles.png"
               className="m-1 rounded-circle"
-              width="50"
-              height="50"
+              width={size}
+              height={size}
               alt="satoshibles"
             />
           );
@@ -106,8 +125,8 @@ export function AssetIcon({ type, trait }) {
             <img
               src="/bitcoinmonkeys.png"
               className="m-1 rounded-circle"
-              width="50"
-              height="50"
+              width={size}
+              height={size}
               alt="bitcoin monkeys"
             />
           );
@@ -115,8 +134,8 @@ export function AssetIcon({ type, trait }) {
           return (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="50"
-              height="50"
+              width={size}
+              height={size}
               fill="currentColor"
               className="bi bi-easel m-1"
               viewBox="0 0 16 16"

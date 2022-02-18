@@ -66,7 +66,7 @@ function readFloat(ref) {
   return isNaN(result) ? undefined : result;
 }
 
-export function SwapCreate({
+export function SwapCreate2({
   ownerStxAddress,
   type,
   trait,
@@ -872,6 +872,61 @@ export function SwapCreate({
   const buyDecimals = buyDecimalsFromType(type);
   const amountSatsLabel = getBuyLabelFromType(type);
 
+  //
+  // buyer
+  //
+  const buyerAddress =
+    (formData.btcRecipient ? formData.btcRecipient : formData.assetRecipientFromSwap) ||
+    (!id ? ownerStxAddress : '');
+  const buyer = {
+    address: buyerAddress,
+    isOwner: buyerAddress === ownerStxAddress,
+    inputOfBtcAddress: sellType2 === 'btc',
+  };
+  console.log(formData);
+  // sent by buyer
+  const assetInEscrowIsNFT = isAssetInEscrowANonFungibleToken(type);
+  const assetInEscrow = {
+    isNFT: assetInEscrowIsNFT,
+    type: assetTypeInEscrowFromSwapType(type),
+    trait: getAssetInEscrow(type),
+    label: getBuyLabelFromType2(type),
+    amount: atomicSwap ? formData.amountSats : formData.amount,
+    asset: assetInEscrowFromType(type),
+    decimals: buyDecimalsFromType2(type),
+  };
+
+  //
+  // seller
+  //
+  const sellerAddress =
+    (atomicSwap
+      ? formData.assetSenderFromSwap !== 'none'
+        ? formData.assetSenderFromSwap.substr(6, formData.assetSenderFromSwap.length - 7)
+        : undefined
+      : formData.assetSenderFromSwap) ||
+    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '');
+  const seller = {
+    address: sellerAddress,
+    isOwner: sellerAddress === ownerStxAddress,
+  };
+
+  // sent by seller
+  const assetForSaleIsNFT = isAssetForSaleANonFungibleToken(type);
+  const assetForSaleType = sellType2;
+  const assetForSale = {
+    isNFT: assetForSaleIsNFT,
+    type: assetForSaleType,
+    trait: formData.trait,
+    label: assetForSaleIsNFT
+      ? 'ID of NFT'
+      : `amount of ${getAssetName(assetForSaleType, formData.trait)}`,
+    amount: atomicSwap ? formData.amount : formData.amountSats,
+    nftId: formData.nftId,
+    asset: getAsset(assetForSaleType, formData.trait),
+    decimals: sellDecimals2,
+  };
+
   const getActionFromSwap = () => {
     if (
       id &&
@@ -932,325 +987,27 @@ export function SwapCreate({
       )}
       {!ownerStxAddress && <GetStartedButton handleSignIn={handleSignIn} />}
 
-      <form>
-        <div className={`input-group ${type === 'stx' ? 'd-none' : ''}`}>
-          <input
-            type="text"
-            className="form-control"
-            ref={traitRef}
-            value={formData.trait}
-            onChange={e => setFormData({ ...formData, trait: e.current.value })}
-            aria-label={`fully qualified contract of the ${assetName} and its asset class`}
-            placeholder={`fully qualified contract of the ${assetName} and its asset class`}
-            readOnly={trait}
-            required
-            minLength="1"
-          />
-        </div>
-        <div className="container">
-          <div className="row align-items-center m-5">
-            <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && !atomicSwap ? (
-                <>
-                  Seller (You)
-                  <br />
-                  <Address addr={ownerStxAddress} />
-                </>
-              ) : (
-                <>
-                  <br />
-                  Seller
-                  {formData.assetSenderFromSwap === ownerStxAddress ||
-                  (!atomicSwap && !id) ||
-                  (atomicSwap &&
-                    id &&
-                    ((formData.doneFromSwap === 0 && formData.assetSenderFromSwap === 'none') ||
-                      formData.assetSenderFromSwap === `(some ${ownerStxAddress})`))
-                    ? ' (You)'
-                    : null}
-                </>
-              )}
-              <br />
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  ref={assetSellerRef}
-                  defaultValue={
-                    (formData.btcRecipient
-                      ? formData.btcRecipient
-                      : formData.assetSenderFromSwap !== 'none'
-                      ? formData.assetSenderFromSwap.substr(
-                          6,
-                          formData.assetSenderFromSwap.length - 7
-                        )
-                      : undefined) ||
-                    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
-                  }
-                  onChange={e => setFormData({ ...formData, btcRecipient: e.target.value })}
-                  aria-label={
-                    atomicSwap
-                      ? 'Stacks address or name (optional)'
-                      : 'Bitcoin recipient address (must start with 1)'
-                  }
-                  placeholder={
-                    atomicSwap
-                      ? 'Stacks address or name (optional)'
-                      : 'Bitcoin recipient address (must start with 1)'
-                  }
-                  readOnly={id}
-                  required
-                  max="40"
-                  minLength="1"
-                />
-              </div>
-            </div>
-            <div className="col text-center border-left">
-              {previewed && isAssetForSaleANonFungibleToken(type) && assetUrl ? (
-                <img className="m-1" src={assetUrl} width={50} height={50} alt="asset" />
-              ) : (
-                <AssetIcon type={sellType} trait={formData.trait} />
-              )}
-              <br />
-              <div
-                className={`input-group ${isAssetForSaleANonFungibleToken(type) ? '' : 'd-none'}`}
-              >
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={nftIdRef}
-                  value={formData.nftId}
-                  onChange={e => setFormData({ ...formData, nftId: e.target.value })}
-                  aria-label="ID of NFT"
-                  placeholder="ID of NFT"
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              <div
-                className={`input-group ${isAssetForSaleANonFungibleToken(type) ? 'd-none' : ''}`}
-              >
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={amountRef}
-                  value={formData.amount}
-                  onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                  aria-label={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
-                  placeholder={`amount of ${assetName}${type === 'stx' ? '' : ' in smallest unit'}`}
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              <i className="bi bi-arrow-right"></i>
-              <br />
-              {!isAssetForSaleANonFungibleToken(type) && (
-                <>
-                  <br />
-                  <Price
-                    sell={{ amount: formData.amount, asset: asset, decimals: sellDecimals }}
-                    buy={{
-                      amount: formData.amountSats,
-                      asset: buyWithAsset,
-                      decimals: buyDecimals,
-                    }}
-                    editablePrice={createSellOrder}
-                  />
-                  <br />
-                  <br />
-                </>
-              )}
-              <i className="bi bi-arrow-left"></i>
-              <br />
-              <div className="input-group">
-                <input
-                  type="number"
-                  className="form-control"
-                  ref={amountSatsRef}
-                  value={formData.amountSats}
-                  onChange={e => setFormData({ ...formData, amountSats: e.target.value })}
-                  aria-label={amountSatsLabel}
-                  placeholder={amountSatsLabel}
-                  readOnly={id}
-                  required
-                  minLength="1"
-                />
-              </div>
-              {previewed && assetUrlBottom ? (
-                <img
-                  className="m-1"
-                  src={assetUrlBottom}
-                  width={50}
-                  height={50}
-                  alt="asset in escrow"
-                />
-              ) : (
-                <AssetIcon type={buyAssetTypeFromSwapType(type)} />
-              )}
-            </div>
-            <div className="col text-center">
-              {(!id || formData.assetSenderFromSwap === ownerStxAddress) && atomicSwap ? (
-                <>
-                  Buyer (You)
-                  <br />
-                  <Address addr={ownerStxAddress} />
-                </>
-              ) : (
-                <>
-                  <br />
-                  Buyer
-                </>
-              )}
-
-              <br />
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  ref={assetBuyerRef}
-                  value={formData.assetRecipient}
-                  onChange={e => setFormData({ ...formData, assetRecipient: e.target.value })}
-                  aria-label={`${assetName} receiver's Stacks address`}
-                  placeholder={`${assetName} receiver's Stacks address`}
-                  readOnly={(id && formData.assetRecipientFromSwap) || atomicSwap}
-                  required
-                  minLength="1"
-                />
-              </div>
-            </div>
-          </div>
-          {status && (
-            <div className="row align-items-center">
-              <div className="col text-center alert">{status}</div>
-            </div>
-          )}
-          {atomicSwap && (
-            // fees
-            <div className="row m-2">
-              <div className="col" />
-              <div className="col text-center">
-                <select
-                  className="form-select form-select-sm"
-                  ref={feeContractRef}
-                  value={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
-                  onChange={e => setFormData({ ...formData, feeId: e.target.value })}
-                  disabled={id}
-                  aria-label="select fee model"
-                >
-                  {feeOptions.map((feeOption, index) => (
-                    <option value={feeOption.type} key={index}>
-                      {feeOption.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col" />
-            </div>
-          )}
-          <div className="row m-2">
-            <div className="col-12 text-center">
-              {!ownerStxAddress ? (
-                <>
-                  <button
-                    className="btn btn-lg btn-outline-primary mt-4"
-                    type="button"
-                    onClick={handleSignIn}
-                  >
-                    Get Started
-                  </button>
-                </>
-              ) : (
-                <>
-                  {id &&
-                    (formData.assetSenderFromSwap === ownerStxAddress ||
-                      (atomicSwap && formData.assetRecipientFromSwap === ownerStxAddress)) &&
-                    formData.whenFromSwap + 100 < blockHeight &&
-                    formData.doneFromSwap === 0 && (
-                      <button
-                        className="btn btn-block btn-primary"
-                        type="button"
-                        onClick={cancelAction}
-                      >
-                        <div
-                          role="status"
-                          className={`${
-                            loading ? '' : 'd-none'
-                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                        />
-                        Cancel swap
-                      </button>
-                    )}
-                  {id ? (
-                    // show existing swap
-                    atomicSwap ? (
-                      formData.doneFromSwap === 1 ? (
-                        <>
-                          <button className="btn btn-block btn-success" type="button" disabled>
-                            Completed
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="btn btn-block btn-primary"
-                          type="button"
-                          onClick={submitAction}
-                        >
-                          <div
-                            role="status"
-                            className={`${
-                              loading ? '' : 'd-none'
-                            } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                          />
-                          Sell {asset}
-                        </button>
-                      ) // handle buy with btc
-                    ) : formData.assetRecipientFromSwap ? (
-                      <></>
-                    ) : (
-                      <button
-                        className="btn btn-block btn-primary"
-                        type="button"
-                        onClick={setRecipientAction}
-                      >
-                        <div
-                          role="status"
-                          className={`${
-                            loading ? '' : 'd-none'
-                          } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                        />
-                        Buy {asset}
-                      </button>
-                    )
-                  ) : (
-                    // create new swap
-                    <button
-                      className="btn btn-block btn-primary"
-                      type="button"
-                      onClick={previewed ? createAction : previewAction}
-                    >
-                      <div
-                        role="status"
-                        className={`${
-                          loading ? '' : 'd-none'
-                        } spinner-border spinner-border-sm text-info align-text-top mr-2`}
-                      />
-                      {previewed ? (
-                        <>
-                          {atomicSwap ? 'Buy' : 'Sell'} {asset}
-                        </>
-                      ) : (
-                        <>Preview {asset} swap</>
-                      )}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </form>
+      <SwapForm
+        atomicSwap={atomicSwap}
+        swapId={id}
+        done={formData.doneFromSwap === 1}
+        buyer={buyer}
+        assetInEscrow={assetInEscrow}
+        seller={seller}
+        assetForSale={assetForSale}
+        when={formData.whenFromSwap}
+        blockHeight={blockHeight}
+        showFees={!assetForSale.isNFT || !assetInEscrow.isNFT}
+        feeOptions={feeOptions}
+        feeId={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
+        feeReceiver="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9"
+        onFormUpdate={onFormUpdate}
+        action={action}
+        onAction={onAction}
+        loading={loading}
+        status={status}
+        ownerStxAddress={ownerStxAddress}
+      />
       {txId && <TxStatus txId={txId} />}
     </>
   );

@@ -22,10 +22,12 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const [loadingSwapEntry, setLoadingSwapEntry] = useState();
   const [invalidSwapId, setInvalidSwapId] = useState(false);
   const [blockHeight, setBlockHeight] = useState(0);
-  const [formData, setFormData] = useState({
+  const [formDataInitial, setFormDataInitial] = useState({
     amountOrIdInEscrow: '',
+    decimalsInEscrow: buyDecimalsFromType2(type),
     traitInEscrow: assetInEscrowFromType(type),
     amountOrIdForSale: '',
+    decimalsForSale: 0,
     traitForSale: trait,
     buyerAddress: ownerStxAddress || '',
     buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
@@ -37,7 +39,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
 
   useEffect(() => {
     const asyncFn = async () => {
-      setFormData({
+      setFormDataInitial({
         amountOrIdInEscrow: '',
         decimalsInEscrow: buyDecimalsFromType2(type),
         traitInEscrow: assetInEscrowFromType(type),
@@ -64,7 +66,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             const swapsEntry = await fetchSwapsEntry(type, id);
             console.log(swapsEntry);
             if (swapsEntry) {
-              await setFormDataFromSwapsEntry(swapsEntry, type, setFormData);
+              await setFormDataFromSwapsEntry(swapsEntry, type, setFormDataInitial);
             } else {
               setInvalidSwapId(true);
             }
@@ -108,7 +110,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             aria-controls="createswap"
             aria-selected="true"
           >
-            {formData.doneFromSwap === 1 || id ? 'Swap Details' : 'Create Swap'}
+            {formDataInitial.doneFromSwap === 1 || id ? 'Swap Details' : 'Create Swap'}
           </button>
         </li>
         <li className={`nav-item ${hideSubmitUIClassname}`} role="presentation">
@@ -153,9 +155,9 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             <SwapCreate
               ownerStxAddress={ownerStxAddress}
               type={type}
-              trait={formData.trait}
+              trait={formDataInitial.trait}
               id={id}
-              formData={formData}
+              formDataInitial={formDataInitial}
               blockHeight={blockHeight}
               feeOptions={type ? feeOptionsByType[type] : []}
             />
@@ -169,9 +171,9 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             <SwapSubmit
               ownerStxAddress={ownerStxAddress}
               type={type}
-              trait={id ? formData.trait : trait}
+              trait={id ? formDataInitial.trait : trait}
               id={id}
-              formData={formData}
+              formData={formDataInitial}
             />
           </div>
           <div

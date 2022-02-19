@@ -61,23 +61,23 @@ export function SwapCreate({
   type,
   trait,
   id,
-  formData: formData1,
+  formDataInitial,
   blockHeight,
   feeOptions,
 }) {
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [status, setStatus] = useState();
-  const [formData, setFormData] = useState(formData1);
+  const [formData, setFormData] = useState(formDataInitial);
   const [ftData, setFtData] = useState();
   const [previewed, setPreviewed] = useState(false);
   const [assetUrl, setAssetUrl] = useState();
   const [assetUrlBottom, setAssetUrlBottom] = useState();
-  console.log({ formData1, formData });
+  console.log({ formDataInitial, formData });
 
   useEffect(() => {
-    setFormData(formData1);
-  }, [formData1]);
+    setFormData(formDataInitial);
+  }, [formDataInitial]);
 
   const contract = contracts[type];
   const { handleContractCall } = useContractCall({

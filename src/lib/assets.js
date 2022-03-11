@@ -190,7 +190,7 @@ export function factorAssetForSaleFromSwapType(type, trait) {
 function amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData) {
   const numberProperty = amountOrIdPropertyForSaleFromSwapsType(type);
   if (ftData?.decimals) {
-    const factor = Math.pow(10, ftData.decimals);
+    const factor = Math.pow(10, Number(ftData.decimals));
     return Number(swapsEntry.data[numberProperty].value) / factor;
   } else {
     return Number(swapsEntry.data[numberProperty].value);

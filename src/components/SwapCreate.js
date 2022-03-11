@@ -488,7 +488,7 @@ export function SwapCreate({
             console.log(account, ownerStxAddress, formData.amountOrIdInEscrow);
             setStatus("You don't own this Satoshible");
             setLoading(false);
-            return
+            return;
           }
         } catch (e) {
           console.log(e);
@@ -815,7 +815,7 @@ export function SwapCreate({
   };
 
   const onFormUpdate = ({ property, value }) => {
-    setPreviewed(false)
+    setPreviewed(false);
     const newValue = {};
     newValue[property] = value.trim();
     console.log('Updating', property, value);
@@ -864,17 +864,14 @@ export function SwapCreate({
   //
   // seller
   //
-  const sellerAddress =
-    (atomicSwap
-      ? formData.sellerAddress !== 'none'
-        ? formData.sellerAddress.substr(6, formData.sellerAddress.length - 7)
-        : undefined
-      : formData.sellerAddress) ||
-    (atomicSwap && id && formData.doneFromSwap === 0 ? ownerStxAddress : '');
+  const sellerAddress = atomicSwap
+    ? formData.sellerAddress || (id && formData.doneFromSwap === 0 ? ownerStxAddress : '')
+    : formData.sellerAddress;
   let sellerBtcAddress;
   try {
     sellerBtcAddress = sellerAddress ? c32ToB58(sellerAddress) : '';
   } catch (e) {}
+  console.log(sellerAddress, formData.sellerAddress);
   const seller = {
     address: sellerAddress,
     btcAddress: sellerBtcAddress,

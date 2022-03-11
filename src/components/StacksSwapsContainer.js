@@ -32,7 +32,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
     buyerAddress: ownerStxAddress || '',
     buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
     sellerAddress: '',
-    feeId: '',
+    feeId: type === 'banana-nft' ? 'banana' : 'stx',
     whenFromSwap: '',
     doneFromSwap: '',
   });
@@ -49,7 +49,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         buyerAddress: ownerStxAddress || '',
         buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
         sellerAddress: '',
-        feeId: '',
+        feeId: type === 'banana-nft' ? 'banana' : 'stx',
         whenFromSwap: '',
         doneFromSwap: '',
       });

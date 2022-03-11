@@ -71,8 +71,8 @@ export function SwapCreate({
   const [formData, setFormData] = useState(formDataInitial);
   const [ftData, setFtData] = useState();
   const [previewed, setPreviewed] = useState(false);
-  const [assetUrl, setAssetUrl] = useState();
-  const [assetUrlBottom, setAssetUrlBottom] = useState();
+  const [assetForSaleUrl, setAssetForSaleUrl] = useState();
+  const [assetInEscrowUrl, setAssetInEscrowUrl] = useState();
   console.log({ formDataInitial, formData });
 
   useEffect(() => {
@@ -266,7 +266,7 @@ export function SwapCreate({
       case 'satoshible-nft':
       case 'xbtc-nft':
       case 'usda-nft':
-        nftIdCV = uintCV(formData.nftId);
+        nftIdCV = uintCV(formData.amountOrIdForSale);
         if (nftIdCV.value <= 0) {
           setLoading(false);
           setStatus('positive numbers required to swap');
@@ -435,9 +435,14 @@ export function SwapCreate({
       const [, , contractName, contractAddress] = splitAssetIdentifier(formData.traitForSale);
       if (isAssetForSaleANonFungibleToken(type)) {
         try {
-          const image = await resolveImageForNFT(contractAddress, contractName, formData.nftId);
+          const image = await resolveImageForNFT(
+            contractAddress,
+            contractName,
+            formData.amountOrIdForSale
+          );
+          console.log({ image });
           if (image) {
-            setAssetUrl(image);
+            setAssetForSaleUrl(image);
           }
         } catch (e) {
           // ignore
@@ -466,7 +471,7 @@ export function SwapCreate({
             formData.amountSats
           );
           if (image) {
-            setAssetUrlBottom(image);
+            setAssetInEscrowUrl(image);
           }
         } catch (e) {
           // ignore
@@ -713,7 +718,7 @@ export function SwapCreate({
       case 'satoshible-nft':
         // nft for escrowed asset
         // to be sent by user
-        amountOrIdForSaleCV = uintCV(formData.nftId);
+        amountOrIdForSaleCV = uintCV(formData.amountOrIdForSale);
 
         break;
 
@@ -826,7 +831,7 @@ export function SwapCreate({
       : sellType2 === 'ft' && ftData
       ? Number(ftData.decimals)
       : 8;
-  console.log({sellDecimals2}, ftData?.decimals)
+  console.log({ sellDecimals2 }, ftData?.decimals);
   const asset = getAsset(sellType2, formData.traitForSale);
   const assetName = getAssetName(sellType2, formData.traitForSale);
   // buy (left to right)
@@ -885,7 +890,6 @@ export function SwapCreate({
       ? 'ID of NFT'
       : `amount of ${getAssetName(assetForSaleType, formData.traitForSale)}`,
     amountOrId: formData.amountOrIdForSale,
-    nftId: formData.nftId,
     asset: getAsset(assetForSaleType, formData.traitForSale),
     decimals: sellDecimals2,
   };
@@ -955,13 +959,15 @@ export function SwapCreate({
           done={formData.doneFromSwap === 1}
           buyer={buyer}
           assetInEscrow={assetInEscrow}
+          assetInEscrowUrl={assetInEscrowUrl}
           seller={seller}
           assetForSale={assetForSale}
+          assetForSaleUrl={assetForSaleUrl}
           when={formData.whenFromSwap}
           blockHeight={blockHeight}
           showFees={!assetForSale.isNFT || !assetInEscrow.isNFT}
           feeOptions={feeOptions}
-          feeId={formData.feeId || (type === 'banana-nft' ? 'banana' : 'stx')}
+          feeId={formData.feeId}
           feeReceiver="SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9"
           onFormUpdate={onFormUpdate}
           action={action}

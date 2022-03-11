@@ -467,7 +467,7 @@ export function SwapCreate({
           const image = await resolveImageForNFT(
             contractAddress,
             contractName,
-            formData.amountSats
+            formData.amountOrIdInEscrow
           );
           if (image) {
             setAssetInEscrowUrl(image);
@@ -481,12 +481,14 @@ export function SwapCreate({
           const account = await resolveOwnerForNFT(
             contractAddress,
             contractName,
-            formData.amountSats,
+            formData.amountOrIdInEscrow,
             true
           );
           if (account !== ownerStxAddress) {
-            console.log(account, ownerStxAddress, formData.amountSats);
+            console.log(account, ownerStxAddress, formData.amountOrIdInEscrow);
             setStatus("You don't own this Satoshible");
+            setLoading(false);
+            return
           }
         } catch (e) {
           console.log(e);

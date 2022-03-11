@@ -73,5 +73,5 @@ export function ftPropertyFromSwapsType(type) {
 }
 
 export function nftPropertyFromSwapsType(type) {
-  return type === 'stx' || type === 'ft' || type.endsWith('ft') ? undefined : 'ft';
+  return type === 'stx' || type === 'ft' || type.endsWith('-ft') ? undefined : 'nft';
 }

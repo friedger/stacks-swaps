@@ -2,7 +2,7 @@ import { ClarityType, contractPrincipalCV, cvToString, uintCV } from 'micro-stac
 import { pubscriptCVToBtcAddress } from './btcTransactions';
 import { getFTData, getNFTData } from './tokenData';
 import { optionalCVToString } from './transactions';
-import { ftFeeContracts, NETWORK } from './constants';
+import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
 import { callReadOnlyFunction, fetchNamesByAddress } from 'micro-stacks/api';
 import { fetchPrivate } from 'micro-stacks/common';
 import { BANANA_TOKEN, getAsset, XBTC_TOKEN } from '../components/assets';
@@ -212,10 +212,10 @@ function amountOrIdInEscrowFromSwapsEntry(swapsEntry, type, ftData) {
 function getFeeIdFromSwapsEntry(swapsEntry) {
   if (swapsEntry.data['fees']) {
     const [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-    const feeIds = Object.entries(ftFeeContracts).find(
+    const feeIds = Object.entries(nftFeeContracts).concat(Object.entries(ftFeeContracts)).find(
       e => e[1].address === feeAddress && e[1].name === feeName
     );
-    if (feeIds.length > 0) {
+    if (feeIds && feeIds.length > 0) {
       return feeIds[0];
     }
   }

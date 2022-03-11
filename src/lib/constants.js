@@ -117,7 +117,7 @@ export const BANANA_FT_SWAP_CONTRACT = {
 
 export const BANANA_FT_SWAP_FEE_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'banana-ft-swap-v1-fixed-fees',
+  name: 'banana-ft-swap-v2-fixed-fees',
   ft: {
     address: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
     name: 'btc-monkeys-bananas',
@@ -179,7 +179,7 @@ export const USDA_SWAP_FEE_CONTRACT = {
     assetName: 'usda',
   },
 };
-// fee contracts for ft swaps by type
+// fee contracts for atomic swaps with fts for sale by type
 export const ftFeeContracts = {
   stx: STX_FT_SWAP_FEE_CONTRACT,
   fpwr: STX_FT_SWAP_FPWR_FEE_CONTRACT,
@@ -192,7 +192,7 @@ export const ftFeeContracts = {
   usda: USDA_SWAP_FEE_CONTRACT,
 };
 
-// fee contracts for nft swaps by type
+// fee contracts for atomic swaps with nfts for sale by type
 export const nftFeeContracts = {
   stx: STX_NFT_SWAP_FEE_CONTRACT,
   mia: MIA_SWAP_FEE_CONTRACT,

@@ -635,7 +635,7 @@ export function SwapCreate({
           return;
         }
         feeId = formData.feeId;
-        feeContract = ftFeeContracts[feeId];
+        feeContract = nftFeeContracts[feeId];
         [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
         functionArgs = [swapIdCV, assetContractCV, feesCV];
         postConditions = makeCancelSwapPostConditions(

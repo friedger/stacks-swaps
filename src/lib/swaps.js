@@ -151,7 +151,7 @@ export function makeCancelSwapPostConditions(
         contract.name,
         NonFungibleConditionCode.DoesNotOwn,
         createAssetInfo(assetContractAddress, assetContractName, assetName),
-        amountOrIdCV.value
+        amountOrIdCV
       )
     );
   } else {
@@ -164,8 +164,8 @@ export function makeCancelSwapPostConditions(
         contract.address,
         contract.name,
         FungibleConditionCode.Equal,
-        createAssetInfo(assetContractAddress, assetContractName, assetName),
-        amountOrIdCV.value
+        amountOrIdCV.value,
+        createAssetInfo(assetContractAddress, assetContractName, assetName)
       )
     );
   }
@@ -219,7 +219,7 @@ export function makeSubmitPostConditions(
         ownerStxAddress,
         NonFungibleConditionCode.DoesNotOwn,
         createAssetInfo(assetContractAddress, assetContractName, assetName),
-        amountOrIdToSwapCV.value
+        amountOrIdToSwapCV
       )
     );
   } else {

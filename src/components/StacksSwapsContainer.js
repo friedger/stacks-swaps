@@ -155,7 +155,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
             <SwapCreate
               ownerStxAddress={ownerStxAddress}
               type={type}
-              trait={formDataInitial.trait}
+              trait={formDataInitial.traitForSale}
               id={id}
               formDataInitial={formDataInitial}
               blockHeight={blockHeight}

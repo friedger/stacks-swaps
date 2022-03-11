@@ -95,15 +95,15 @@ export function SwapCreate({
 
   useEffect(() => {
     console.log({ type, formData });
-    if (type === 'stx-ft' && formData && formData.trait) {
-      const [contractId] = formData.trait.split('::');
+    if (type === 'stx-ft' && formData && formData.traitForSale) {
+      const [contractId] = formData.traitForSale.split('::');
       const [address, name] = contractId.split('.');
       getFTData(address, name).then(result => {
         console.log({ ftData: result });
         setFtData(result);
       });
-    } else if (type === 'stx-nft' && formData && formData.trait) {
-      const [contractId] = formData.trait.split('::');
+    } else if (type === 'stx-nft' && formData && formData.traitForSale) {
+      const [contractId] = formData.traitForSale.split('::');
       const [address, name] = contractId.split('.');
       getNFTData(address, name).then(result => {
         console.log({ nftData: result });
@@ -701,7 +701,8 @@ export function SwapCreate({
       case 'satoshible-ft':
         // price for escrowed asset
         // to be paid by user
-        amountOrIdForSaleCV = formData.amount * Math.pow(10, sellDecimals);
+        factor = factorAssetForSaleFromSwapType(sellType2);
+        amountOrIdForSaleCV = formData.amount * factor;
 
         break;
 
@@ -814,19 +815,8 @@ export function SwapCreate({
     setFormData({ ...formData, ...newValue });
   };
 
-  // sell (left to right)
-  const sellType = atomicSwap ? type.split('-')[1] : type;
+  // sell (right to left)
   const sellType2 = atomicSwap ? type.split('-')[1] : 'btc';
-
-  const sellDecimals =
-    sellType === 'stx'
-      ? 6
-      : type === 'stx-ft' &&
-        formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
-      ? 6
-      : type === 'stx-ft' && ftData
-      ? ftData.decimals
-      : 0;
   const sellDecimals2 =
     sellType2 === 'stx'
       ? 6
@@ -834,11 +824,12 @@ export function SwapCreate({
         formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
       ? 6
       : sellType2 === 'ft' && ftData
-      ? ftData.decimals
+      ? Number(ftData.decimals)
       : 8;
-  const asset = getAsset(sellType, formData.trait);
-  const assetName = getAssetName(sellType, formData.trait);
-  // buy (right to left)
+  console.log({sellDecimals2}, ftData?.decimals)
+  const asset = getAsset(sellType2, formData.traitForSale);
+  const assetName = getAssetName(sellType2, formData.traitForSale);
+  // buy (left to right)
   const buyWithAsset = buyAssetFromType(type);
 
   //
@@ -889,13 +880,13 @@ export function SwapCreate({
   const assetForSale = {
     isNFT: assetForSaleIsNFT,
     type: assetForSaleType,
-    trait: formData.trait,
+    trait: formData.traitForSale,
     label: assetForSaleIsNFT
       ? 'ID of NFT'
-      : `amount of ${getAssetName(assetForSaleType, formData.trait)}`,
+      : `amount of ${getAssetName(assetForSaleType, formData.traitForSale)}`,
     amountOrId: formData.amountOrIdForSale,
     nftId: formData.nftId,
-    asset: getAsset(assetForSaleType, formData.trait),
+    asset: getAsset(assetForSaleType, formData.traitForSale),
     decimals: sellDecimals2,
   };
 
@@ -944,7 +935,7 @@ export function SwapCreate({
       {atomicSwap ? (
         <p>
           Your {buyWithAsset} tokens will be sent to the contract now (including 1% fees) and will
-          be released to the buyer if the {assetName} {sellType === 'nft' ? ' is ' : ' are '}{' '}
+          be released to the buyer if the {assetName} {sellType2 === 'nft' ? ' is ' : ' are '}{' '}
           transferred to you. If the swap expired after 100 Stacks blocks and you called "cancel"
           your {buyWithAsset} tokens including fees are returned to you.
         </p>

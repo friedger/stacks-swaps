@@ -440,7 +440,6 @@ export function SwapCreate({
             contractName,
             formData.amountOrIdForSale
           );
-          console.log({ image });
           if (image) {
             setAssetForSaleUrl(image);
           }
@@ -814,6 +813,7 @@ export function SwapCreate({
   };
 
   const onFormUpdate = ({ property, value }) => {
+    setPreviewed(false)
     const newValue = {};
     newValue[property] = value.trim();
     console.log('Updating', property, value);

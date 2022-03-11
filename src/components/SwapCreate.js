@@ -279,7 +279,6 @@ export function SwapCreate({
           return;
         }
         feeId = formData.feeId;
-        console.log({ feeId });
         feeContract = getFeeOption(feeId).contract;
         [feesCV, fees] = await contractToFees(feeContract, amountISUOrIdInEscrowCV);
         functionArgs = [amountISUOrIdInEscrowCV, nftIdCV, sellerCV, assetContractCV, feesCV];
@@ -707,9 +706,8 @@ export function SwapCreate({
       case 'satoshible-ft':
         // price for escrowed asset
         // to be paid by user
-        factor = factorAssetForSaleFromSwapType(sellType2);
-        amountOrIdForSaleCV = formData.amount * factor;
-
+        factor = factorAssetForSaleFromSwapType(type, formData.traitForSale);
+        amountOrIdForSaleCV = uintCV(formData.amountOrIdForSale * factor);
         break;
 
       case 'stx-nft':

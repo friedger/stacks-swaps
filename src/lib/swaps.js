@@ -171,7 +171,6 @@ export function makeCancelSwapPostConditions(
   }
 
   // handle fees
-
   if (feeId === 'stx' || feeId === 'fixed') {
     // move stx from fee contract
     postConditions.push(
@@ -194,6 +193,7 @@ export function makeCancelSwapPostConditions(
       )
     );
   }
+  return postConditions;
 }
 
 export function makeSubmitPostConditions(

@@ -14,6 +14,7 @@ import {
   setFormDataFromSwapsEntry,
 } from '../lib/assets';
 import { c32ToB58 } from 'micro-stacks/crypto';
+import { defaultFeeIdFromSwapType } from '../lib/fees';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const { ownerStxAddress } = useStxAddresses();
@@ -32,7 +33,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
     buyerAddress: ownerStxAddress || '',
     buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
     sellerAddress: '',
-    feeId: type === 'banana-nft' ? 'banana' : 'stx',
+    feeId: defaultFeeIdFromSwapType(type),
     whenFromSwap: '',
     doneFromSwap: '',
   });
@@ -49,7 +50,7 @@ export function StacksSwapsContainer({ type, trait, id, nftId }) {
         buyerAddress: ownerStxAddress || '',
         buyerBtcAddress: ownerStxAddress ? c32ToB58(ownerStxAddress) : '',
         sellerAddress: '',
-        feeId: type === 'banana-nft' ? 'banana' : 'stx',
+        feeId: defaultFeeIdFromSwapType(type),
         whenFromSwap: '',
         doneFromSwap: '',
       });

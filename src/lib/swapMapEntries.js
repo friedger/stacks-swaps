@@ -40,7 +40,7 @@ export function buyerPropertyFromSwapType(type) {
   } else if (type.startsWith('banana-')) {
     return 'banana-sender';
   } else if (type.startsWith('usda-')) {
-    return 'usda-sender';
+    return 'buyer';
   } else if (type.startsWith('xbtc-')) {
     return 'xbtc-sender';
   } else if (type.startsWith('satoshible-')) {

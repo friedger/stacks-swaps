@@ -51,7 +51,9 @@ export function buyerPropertyFromSwapType(type) {
 }
 
 export function sellerPropertyFromSwapType(type) {
-  return type === 'nft'
+  return type === 'stx'
+    ? 'stx-receiver'
+    : type === 'nft'
     ? 'nft-receiver'
     : type === 'ft'
     ? 'ft-receiver'

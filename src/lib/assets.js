@@ -193,7 +193,8 @@ function amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData) {
     const factor = Math.pow(10, Number(ftData.decimals));
     return Number(swapsEntry.data[numberProperty].value) / factor;
   } else {
-    return Number(swapsEntry.data[numberProperty].value);
+    const factor = Math.pow(10, type === 'stx' ? 8 : 0);
+    return Number(swapsEntry.data[numberProperty].value) / factor;
   }
 }
 
@@ -212,9 +213,9 @@ function amountOrIdInEscrowFromSwapsEntry(swapsEntry, type, ftData) {
 function getFeeIdFromSwapsEntry(swapsEntry) {
   if (swapsEntry.data['fees']) {
     const [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
-    const feeIds = Object.entries(nftFeeContracts).concat(Object.entries(ftFeeContracts)).find(
-      e => e[1].address === feeAddress && e[1].name === feeName
-    );
+    const feeIds = Object.entries(nftFeeContracts)
+      .concat(Object.entries(ftFeeContracts))
+      .find(e => e[1].address === feeAddress && e[1].name === feeName);
     if (feeIds && feeIds.length > 0) {
       return feeIds[0];
     }
@@ -240,7 +241,8 @@ export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, o
   const buyerBtcAddress = isAtomic(type)
     ? c32ToB58(buyerAddress)
     : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
-  const sellerAddress = optionalCVToString(swapsEntry.data[sellerPropertyFromSwapType(type)]);
+  const sellerProperty = sellerPropertyFromSwapType(type);
+  const sellerAddress = optionalCVToString(swapsEntry.data[sellerProperty]);
 
   const feeId = getFeeIdFromSwapsEntry(swapsEntry, type);
 

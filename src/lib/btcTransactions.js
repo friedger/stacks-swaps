@@ -6,6 +6,7 @@ import SHA256 from 'crypto-js/sha256';
 import { Transaction, address } from 'bitcoinjs-lib';
 
 import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
+import { b58ToC32 } from 'micro-stacks/crypto';
 
 export const ERR_DIFFERENT_HEX = 'different hex';
 export const ERR_NO_STACKS_BLOCK = 'no stacks block';
@@ -416,4 +417,12 @@ export function btcAddressToPubscriptCV(btcAddress) {
 
 export function pubscriptCVToBtcAddress(pubscriptCV) {
   return address.fromOutputScript(Buffer.from(pubscriptCV.buffer));
+}
+
+export function stxAddressFromBtcAddress(btcAddress) {
+  try {
+    return b58ToC32(btcAddress);
+  } catch (e) {
+    return '-------';
+  }
 }

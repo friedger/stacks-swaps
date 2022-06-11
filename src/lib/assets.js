@@ -1,5 +1,5 @@
 import { ClarityType, contractPrincipalCV, cvToString, uintCV } from 'micro-stacks/clarity';
-import { pubscriptCVToBtcAddress } from './btcTransactions';
+import { pubscriptCVToBtcAddress, stxAddressFromBtcAddress } from './btcTransactions';
 import { getFTData, getNFTData } from './tokenData';
 import { optionalCVToString } from './transactions';
 import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
@@ -237,7 +237,7 @@ export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, o
 
   const buyerAddress = isAtomic(type)
     ? cvToString(swapsEntry.data[buyerPropertyFromSwapType(type)])
-    : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+    : stxAddressFromBtcAddress(pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']));
   const buyerBtcAddress = isAtomic(type)
     ? c32ToB58(buyerAddress)
     : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);

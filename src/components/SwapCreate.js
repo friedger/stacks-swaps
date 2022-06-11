@@ -916,8 +916,12 @@ export function SwapCreate({
         if (formData.doneFromSwap === 1) {
           return ['Completed'];
         } else {
-          if (formData.sellerAddress && formData.sellerAddress !== ownerStxAddress) {
-            return ['In progress'];
+          if (formData.sellerAddress) {
+            if (formData.sellerAddress === ownerStxAddress) {
+              return ['Make your BTC tx using a BTC wallet'];
+            } else {
+              return ['In progress'];
+            }
           } else {
             return [`Sell ${asset}`, setRecipientAction];
           }

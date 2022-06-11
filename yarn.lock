@@ -8944,9 +8944,9 @@ number-to-bn@1.7.0:
     bn.js "4.11.6"
     strip-hex-prefix "1.0.0"
 
-"number-to-words@github:OmgImAlexis/number-to-words":
+"number-to-words@git+https://github.com/OmgImAlexis/number-to-words.git":
   version "2.0.0"
-  resolved "git+ssh://git@github.com/OmgImAlexis/number-to-words.git#108ab1a528a0bef5f5437ef4b053f3e67b4ac374"
+  resolved "git+https://github.com/OmgImAlexis/number-to-words.git#108ab1a528a0bef5f5437ef4b053f3e67b4ac374"
   dependencies:
     esm "3.0.84"
 

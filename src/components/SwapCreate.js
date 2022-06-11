@@ -905,14 +905,22 @@ export function SwapCreate({
         if (formData.doneFromSwap === 1) {
           return ['Completed'];
         } else {
-          return [`Sell ${asset}`, submitAction];
+          if (formData.sellerAddress && formData.sellerAddress !== ownerStxAddress) {
+            return ['In progress'];
+          } else {
+            return [`Sell ${asset}`, submitAction];
+          }
         }
       } else {
         // handle buy with btc
-        if (formData.assetRecipientFromSwap) {
-          return [];
+        if (formData.doneFromSwap === 1) {
+          return ['Completed'];
         } else {
-          return [`Buy ${asset}`, setRecipientAction];
+          if (formData.sellerAddress && formData.sellerAddress !== ownerStxAddress) {
+            return ['In progress'];
+          } else {
+            return [`Sell ${asset}`, setRecipientAction];
+          }
         }
       }
     } else {

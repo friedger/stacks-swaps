@@ -593,7 +593,7 @@ export function SwapCreate({
             contract.address,
             contract.name,
             FungibleConditionCode.Equal,
-            amountISUOrIdInEscrowCV
+            Number(amountISUOrIdInEscrowCV.value)
           ),
         ];
         break;

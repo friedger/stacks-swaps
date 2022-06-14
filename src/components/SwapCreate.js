@@ -894,7 +894,7 @@ export function SwapCreate({
   const getActionFromSwap = () => {
     if (
       id &&
-      formData.buyerAddress === ownerStxAddress &&
+      (formData.buyerAddress === ownerStxAddress || !atomicSwap) &&
       formData.whenFromSwap + 100 < blockHeight &&
       formData.doneFromSwap === 0
     ) {

@@ -11,6 +11,7 @@ export default defineConfig(() => ({
   },
   build: {
     target: 'esnext',
+    outDir: 'build',
   },
   plugins: [react({ jsxRuntime: 'automatic' })],
   optimizeDeps: {

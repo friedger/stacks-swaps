@@ -6,6 +6,7 @@ import {
 } from 'micro-stacks/transactions';
 import { useOpenContractCall } from '@micro-stacks/react';
 import { useState } from 'react';
+import { useStxAddresses } from '../../lib/hooks';
 
 export default function NFTTransfer({ userSession }) {
   const [nftContract, setNftContract] = useState();
@@ -25,7 +26,7 @@ export default function NFTTransfer({ userSession }) {
     },
   });
 
-  const { mainnet: userAddress } = useStxAddresses();
+  const { ownerStxAddress } = useStxAddresses();
 
   return (
     <main className="container">
@@ -79,10 +80,10 @@ export default function NFTTransfer({ userSession }) {
               contractAddress,
               contractName,
               functionName: 'transfer',
-              functionArgs: [idCV, standardPrincipalCV(userAddress), recipientCV],
+              functionArgs: [idCV, standardPrincipalCV(ownerStxAddress), recipientCV],
               postConditions: [
                 makeStandardNonFungiblePostCondition(
-                  userAddress,
+                  ownerStxAddress,
                   NonFungibleConditionCode.DoesNotOwn,
                   createAssetInfo(contractAddress, contractName, asset),
                   idCV

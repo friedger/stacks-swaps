@@ -85,10 +85,8 @@ function Content() {
           />
           <StacksSwaps path="/:swapPath" decentralizedID={decentralizedID} />
 
-          {authenticated && (
-            <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
-          )}
-          {authenticated && <NFTTransfer path="/nft-transfer" userSession={userSession} />}
+          {authenticated && <UnlistStacksPunks path="/unlist-stacks-punks" />}
+          {authenticated && <NFTTransfer path="/nft-transfer" />}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

@@ -68,6 +68,9 @@
       "last 1 safari version"
     ]
   },
+  "engines": {
+    "node": ">=14"
+  },
   "devDependencies": {
     "@popperjs/core": "2.11.2",
     "@stacks/prettier-config": "^0.0.10",

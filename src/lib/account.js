@@ -16,15 +16,19 @@ import {
 } from './constants';
 
 export function getStacksAccount(appPrivateKey) {
-  const privateKey = createStacksPrivateKey(appPrivateKey);
-  const publicKey = getPublicKeyFromStacksPrivateKey(privateKey);
-  const address = addressFromPublicKeys(
-    AddressVersion.MainnetSingleSig,
-    AddressHashMode.SerializeP2PKH,
-    1,
-    [publicKey]
-  );
-  return { privateKey, address };
+  if (appPrivateKey) {
+    const privateKey = createStacksPrivateKey(appPrivateKey);
+    const publicKey = getPublicKeyFromStacksPrivateKey(privateKey);
+    const address = addressFromPublicKeys(
+      AddressVersion.MainnetSingleSig,
+      AddressHashMode.SerializeP2PKH,
+      1,
+      [publicKey]
+    );
+    return { privateKey, address };
+  } else {
+    return { privateKey: undefined, address: undefined };
+  }
 }
 
 export async function resolveBNS(username) {

@@ -13,13 +13,15 @@ export function useStxAddresses() {
 
   useEffect(() => {
     if (authenticated) {
-      const { address } = getStacksAccount(appPrivateKey);
-      setAppStxAddress(addressToString(address));
+      if (appPrivateKey) {
+        const { address } = getStacksAccount(appPrivateKey);
+        setAppStxAddress(addressToString(address));
+      }
       if (stxAddress) {
         setOwnerStxAddress(stxAddress);
       }
     }
-  }, [stxAddress, authenticated]);
+  }, [stxAddress, authenticated, appPrivateKey]);
 
   return { ownerStxAddress, appStxAddress };
 }

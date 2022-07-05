@@ -8,6 +8,7 @@ export default defineConfig(() => ({
     loader: 'jsx',
     include: /src\/.*\.jsx?$/,
     exclude: [],
+    jsxInject: `import React from 'react'`,
   },
   build: {
     target: 'esnext',

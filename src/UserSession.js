@@ -16,8 +16,8 @@ export function putStxAddress(userSession, address) {
   if (!stxAddressSemaphore.putting) {
     stxAddressSemaphore.putting = true;
     putFile(STX_JSON_PATH, JSON.stringify({ address }), {
-        encrypt: false,
-      })
+      encrypt: false,
+    })
       .then(() => afterSTXAddressPublished())
       .catch(r => {
         console.log(r);
@@ -38,12 +38,14 @@ export function putStxAddress(userSession, address) {
   }
 }
 
-export const finished = onDidConnect => ({ userSession }) => {
-  onDidConnect({ userSession });
-  console.log(userSession.loadUserData());
+export const finished =
+  onDidConnect =>
+  ({ userSession }) => {
+    onDidConnect({ userSession });
+    console.log(userSession.loadUserData());
 
-  const userData = userSession.loadUserData();
-  const { address } = getStacksAccount(userData.appPrivateKey);
-  console.log(JSON.stringify({ address: addressToString(address) }));
-  putStxAddress(userSession, addressToString(address));
-};
+    const userData = userSession.loadUserData();
+    const { address } = getStacksAccount(userData.appPrivateKey);
+    console.log(JSON.stringify({ address: addressToString(address) }));
+    putStxAddress(userSession, addressToString(address));
+  };

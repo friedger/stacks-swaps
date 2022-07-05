@@ -22,7 +22,7 @@ export function defaultFeeIdFromSwapType(swapType) {
   if (feeOptions && feeOptions.length > 0) {
     return feeOptions[0].type;
   } else {
-    console.error(`No feeId found for ${swapType} in `, feeOptionsByType[swapType])
+    console.error(`No feeId found for ${swapType} in `, feeOptionsByType[swapType]);
     return '';
   }
 }

@@ -9,6 +9,9 @@ export default defineConfig(() => ({
     include: /src\/.*\.jsx?$/,
     exclude: [],
   },
+  build: {
+    target: 'esnext',
+  },
   plugins: [react({ jsxRuntime: 'automatic' })],
   optimizeDeps: {
     esbuildOptions: {

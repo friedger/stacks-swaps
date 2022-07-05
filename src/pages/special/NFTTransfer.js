@@ -42,7 +42,11 @@ export default function NFTTransfer({ userSession }) {
         <h1>Transfer an NFT</h1>
         This will transfer an NFT
         <br />
-        NFT contract + NFT name <br />
+        <hr />
+        Select the NFT contract
+        <br />
+        Enter NFT contract, in a format like this:
+        SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S.nfts-for-peace::nfts-for-peace <br />
         <input className="form-control" onChange={e => setNftContract(e.target.value)} />
         <br />
         <button
@@ -57,11 +61,24 @@ export default function NFTTransfer({ userSession }) {
         >
           Set NFT contract
         </button>
-        <br />
+        <hr />
+        Transfer NFT
+        <pre>
+          {contractAddress}.{contractName}
+        </pre>
         NFT id <br />
-        <input className="form-control" onChange={e => setId(e.target.value)} inputMode="numeric" />
+        <input
+          className="form-control"
+          onChange={e => setId(e.target.value)}
+          inputMode="numeric"
+          placeholder="123"
+        />
         Recipient address <br />
-        <input className="form-control" onChange={e => setRecipient(e.target.value)} />
+        <input
+          className="form-control"
+          onChange={e => setRecipient(e.target.value)}
+          placeholder="SP1234..."
+        />
         <button
           className="btn btn-outline-primary"
           onClick={() => {

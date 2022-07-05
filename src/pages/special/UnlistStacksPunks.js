@@ -5,24 +5,16 @@ import {
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
   NonFungibleConditionCode,
-  PostConditionMode,
 } from 'micro-stacks/transactions';
-import { useContractCall } from '@micro-stacks/react';
+import { useOpenContractCall } from '@micro-stacks/react';
 import { BN } from 'bn.js';
 import React, { useState } from 'react';
-import { NETWORK } from '../../lib/constants';
 
 export default function UnlistStacksPunks({ userSession }) {
   const [id, setId] = useState();
   const [status, setStatus] = useState();
 
-  const { handleContractCall } = useContractCall({
-    contractAddress: 'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
-    contractName: 'stacks-punks-market',
-    functionName: 'unlist-punk',
-    postConditionMode: PostConditionMode.Deny,
-    userSession,
-    network: NETWORK,
+  const { openContractCall } = useOpenContractCall({
     onFinish: result => {
       setStatus(result);
     },
@@ -42,9 +34,12 @@ export default function UnlistStacksPunks({ userSession }) {
         <button
           className="btn btn-outline-primary"
           disabled={!userSession || !userSession.isUserSignedIn()}
-          onClick={() => {
+          onClick={async () => {
             const idCV = uintCV(id);
-            handleContractCall({
+            await openContractCall({
+              contractAddress: 'SPJW1XE278YMCEYMXB8ZFGJMH8ZVAAEDP2S2PJYG',
+              contractName: 'stacks-punks-market',
+              functionName: 'unlist-punk',
               functionArgs: [idCV],
               postConditions: [
                 makeContractSTXPostCondition(

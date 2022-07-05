@@ -1,6 +1,6 @@
 import React from 'react';
 import { Router } from '@reach/router';
-import { MicroStacksProvider, useSession, useAuth } from '@micro-stacks/react';
+import { ClientProvider, useAccount } from '@micro-stacks/react';
 import Auth from './components/Auth';
 import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
@@ -24,7 +24,7 @@ const authOptions = {
 
 export default function App() {
   return (
-    <MicroStacksProvider authOptions={authOptions}>
+    <ClientProvider appName={authOptions.appDetails.name} appIconUrl={authOptions.appDetails.icon}>
       <header className="d-flex flex-wrap justify-content-between align-items-center mx-3 py-3 mb-4 border-bottom">
         <div>
           <a
@@ -53,15 +53,13 @@ export default function App() {
         </div>
       </header>
       <Content />
-    </MicroStacksProvider>
+    </ClientProvider>
   );
 }
 function Content() {
-  const [userSession] = useSession();
-  const { isSignedIn } = useAuth();
+  const { stxAddress, decentralizedID } = useAccount();
+  const authenticated = !!stxAddress;
 
-  const authenticated = userSession && isSignedIn;
-  const decentralizedID = authenticated && userSession.decentralizedID;
   const swap = atomicSwaps[0];
   return (
     <>
@@ -73,30 +71,20 @@ function Content() {
 
           <Tac path="/tac" />
           <BitcoinMonkeys path="/bitcoin-monkeys" />
-          <StacksSwaps
-            path="/:swapPath/swap/:id"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
+          <StacksSwaps path="/:swapPath/swap/:id" decentralizedID={decentralizedID} />
           <StacksSwaps
             path="/:swapPath/:trait/:nftId"
             type={swap.type}
             decentralizedID={decentralizedID}
-            userSession={userSession}
             trait={swap.trait}
           />
           <StacksSwaps
             path="/:swapPath/:trait/"
             type={swap.type}
             decentralizedID={decentralizedID}
-            userSession={userSession}
             trait={swap.trait}
           />
-          <StacksSwaps
-            path="/:swapPath"
-            decentralizedID={decentralizedID}
-            userSession={userSession}
-          />
+          <StacksSwaps path="/:swapPath" decentralizedID={decentralizedID} />
 
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />

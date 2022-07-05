@@ -1,8 +1,6 @@
 import { addressToString } from 'micro-stacks/clarity';
 import {
-  useSession,
-  useIsSignedIn,
-  useStxAddresses as useMicroStxAddresses,
+  useAuth, useAccount
 } from '@micro-stacks/react';
 import { useState, useEffect } from 'react';
 import { getStacksAccount } from './account';
@@ -10,20 +8,20 @@ import { getStacksAccount } from './account';
 export function useStxAddresses() {
   const [ownerStxAddress, setOwnerStxAddress] = useState();
   const [appStxAddress, setAppStxAddress] = useState();
-  const [userSession] = useSession();
-  const isUserSignedIn = useIsSignedIn();
+  const {appPrivateKey, stxAddress} = useAccount();
+  const {isSignedIn} = useAuth()
 
-  const authenticated = userSession && isUserSignedIn;
-  const addresses = useMicroStxAddresses();
+  const authenticated = stxAddress && isSignedIn;
+
   useEffect(() => {
     if (authenticated) {
-      const { address } = getStacksAccount(userSession.appPrivateKey);
+      const { address } = getStacksAccount(appPrivateKey);
       setAppStxAddress(addressToString(address));
-      if (addresses) {
-        setOwnerStxAddress(addresses.mainnet);
+      if (stxAddress) {
+        setOwnerStxAddress(stxAddress);
       }
     }
-  }, [addresses, userSession, authenticated]);
+  }, [stxAddress, authenticated]);
 
   return { ownerStxAddress, appStxAddress };
 }

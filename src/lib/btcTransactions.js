@@ -2,9 +2,13 @@ import { bufferCV, ClarityType, cvToString, listCV, tupleCV, uintCV } from 'micr
 import { callReadOnlyFunction } from 'micro-stacks/transactions';
 import MerkleTree from 'merkletreejs';
 import reverse from 'buffer-reverse';
-import SHA256 from 'crypto-js/sha256';
-import { Transaction, address } from 'bitcoinjs-lib';
-
+import { sha256 } from '@noble/hashes/sha256';
+import {
+  decodeBase58Address,
+  decodeTransaction,
+  encodeBase58AddressFormat,
+  hexToBin,
+} from '@bitauth/libauth';
 import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
 import { b58ToC32 } from 'micro-stacks/crypto';
 
@@ -187,9 +191,9 @@ export function numberToBuffer(value, size) {
 // return something like this
 // "0200000001fbfaf2992b0ec1c24b237c7c8a8e6dfee0d19d18544e76cfa3e6ae4d20d7e2650000000000fdffffff02d8290800000000001976a914dd2c7d66ea6df0629fc222929311d0eb7d9146b588ac42a14700000000001600142a551add041ec0ffd755b5a993afa7a11ca59b0b1a900a00"
 // without witness
-function txForHash(tx) {
-  const transaction = Transaction.fromHex(tx);
-  return transaction.__toBuffer(undefined, undefined, false).toString('hex');
+function txForHash(txHex) {
+  const transaction = decodeTransaction(hexToBin(txHex));
+  return transaction.toBuffer().toString('hex');
 }
 
 async function getStxBlock(bitcoinBlockHeight) {
@@ -237,8 +241,8 @@ export async function paramsFromTx(btcTxId, stxHeight) {
   }
 
   /*
-  tx.hex = tx.tx_hex;
-  */
+        tx.hex = tx.tx_hex;
+        */
 
   // tx hex without witness
   const txCV = bufferCV(MerkleTree.bufferify(txForHash(tx.hex)));
@@ -256,11 +260,11 @@ export async function paramsFromTx(btcTxId, stxHeight) {
     ins: listCV(
       tx.inputs.map(input => {
         /*
-        input.prev_hash = input.received_from.txid;
-        input.output_index = input.received_from.output_no;
-        input.script = input.script_hex;
-        input.sequence = 123;
-        */
+                                input.prev_hash = input.received_from.txid;
+                                input.output_index = input.received_from.output_no;
+                                input.script = input.script_hex;
+                                input.sequence = 123;
+                                */
         switch (input.script_type) {
           case 'pay-to-witness-pubkey-hash':
             return tupleCV({
@@ -412,11 +416,11 @@ export async function paramsFromTx(btcTxId, stxHeight) {
 }
 
 export function btcAddressToPubscriptCV(btcAddress) {
-  return bufferCV(address.toOutputScript(btcAddress));
+  return bufferCV(decodeBase58Address(sha256, btcAddress));
 }
 
 export function pubscriptCVToBtcAddress(pubscriptCV) {
-  return address.fromOutputScript(Buffer.from(pubscriptCV.buffer));
+  return encodeBase58AddressFormat(sha256, pubscriptCV.buffer);
 }
 
 export function stxAddressFromBtcAddress(btcAddress) {

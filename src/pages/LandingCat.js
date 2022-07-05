@@ -5,7 +5,7 @@ import GetStartedButton from './../components/GetStartedButton';
 // Landing page with Stacks Connect for authentication
 
 export default function LandingCat(props) {
-  const { handleSignIn } = useAuth();
+  const { authenticate } = useAuth();
 
   return (
     <div className="Landing">
@@ -36,7 +36,7 @@ export default function LandingCat(props) {
             In addition to Catamaran swaps, the UI also provides support for swaps of digital assets
             just on the Stacks chain.
           </p>
-          <GetStartedButton handleSignIn={handleSignIn} />
+          <GetStartedButton handleSignIn={authenticate} />
         </div>
       </div>
     </div>

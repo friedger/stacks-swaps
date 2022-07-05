@@ -19,7 +19,7 @@ import {
   NonFungibleConditionCode,
   PostConditionMode,
 } from 'micro-stacks/transactions';
-import { useContractCall, useSession } from '@micro-stacks/react';
+import { useOpenContractCall } from '@micro-stacks/react';
 import {
   getReversedTxId,
   paramsFromTx,
@@ -34,7 +34,7 @@ import {
 import { getAsset, getAssetName } from './assets';
 import { saveTxData } from '../lib/transactions';
 
-export function SwapSubmit({ ownerStxAddress, type, trait, id, formData }) {
+export function SwapSubmit({ type, trait, id }) {
   const swapIdRef = useRef();
   const nftIdRef = useRef();
   const traitRef = useRef();
@@ -43,8 +43,7 @@ export function SwapSubmit({ ownerStxAddress, type, trait, id, formData }) {
   const [txId, setTxId] = useState();
   const [loading, setLoading] = useState();
   const [changed, setChanged] = useState(true);
-  const [userSession] = useSession();
-  const { handleContractCall } = useContractCall({});
+  const { openContractCall } = useOpenContractCall();
 
   const verifyAction = async () => {
     const btcTxId = btcTxIdRef.current.value.trim();
@@ -165,15 +164,13 @@ export function SwapSubmit({ ownerStxAddress, type, trait, id, formData }) {
     }
     try {
       // submit
-      await handleContractCall({
+      await openContractCall({
         contractAddress: contract.address,
         contractName: contract.name,
         functionName: 'submit-swap',
         functionArgs,
         postConditionMode: PostConditionMode.Deny,
         postConditions,
-        userSession,
-        network: NETWORK,
         anchorMode: AnchorMode.Any,
         onCancel: () => {
           setLoading(false);
@@ -181,7 +178,7 @@ export function SwapSubmit({ ownerStxAddress, type, trait, id, formData }) {
         onFinish: result => {
           setLoading(false);
           setTxId(result.txId);
-          saveTxData(result, userSession)
+          saveTxData(result)
             .then(r => {
               setLoading(false);
             })

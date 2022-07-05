@@ -73,7 +73,7 @@ export function txUrl(txId) {
 
 const indexFileName = 'index-mainnet.json';
 
-export async function saveTxData(data, userSession) {
+export async function saveTxData(data) {
   console.log(JSON.stringify(data));
   let indexArray;
   try {

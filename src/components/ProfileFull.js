@@ -9,8 +9,10 @@ import { refreshPrice, STX_USD } from '../lib/price';
 import { getTxs } from '../lib/transactions';
 import { ClarityType, hexToCV } from 'micro-stacks/clarity';
 import { contracts } from '../lib/constants';
+import { useAuth } from '@micro-stacks/react';
 
-export function ProfileFull({ stxAddress, userSession }) {
+export function ProfileFull({ stxAddress }) {
+  const { signOut } = useAuth();
   const [profileState, setProfileState] = useState({
     account: undefined,
   });
@@ -35,8 +37,8 @@ export function ProfileFull({ stxAddress, userSession }) {
   }, [stxAddress]);
 
   useEffect(() => {
-    getTxs(userSession).then(txs => setTransactions(txs));
-  }, [userSession]);
+    getTxs().then(txs => setTransactions(txs));
+  }, []);
 
   return (
     <div
@@ -114,7 +116,7 @@ export function ProfileFull({ stxAddress, userSession }) {
                 className="dropdown-item"
                 href="#"
                 onClick={() => {
-                  userSession.signUserOut('/');
+                  signOut();
                 }}
               >
                 <i className="bi bi-x-circle"></i> Sign Out

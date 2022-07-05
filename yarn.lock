@@ -2285,14 +2285,14 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@micro-stacks/react@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.npmjs.org/@micro-stacks/react/-/react-0.1.2.tgz"
-  integrity sha512-oYVUoZVarMQjyuHa9ouOxtVRmeWfVuZfKWtjG8gPdi0cGZnjyHuPsMtj/suws4FvjZqxGJkmMJNdYGdmlxbCDw==
+"@micro-stacks/react@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@micro-stacks/react/-/react-0.2.1.tgz#819fb0ab0a1ba5e379d933fe0d3c7693b9d3ed7c"
+  integrity sha512-RG1XHwWWsJ9qUbsE+SBD2atvUqpPlhpyg166K16bNA1DSHB5wKxIEa2L4zSKCCf+b0TG4gK1frqaN8w2CICWHQ==
   dependencies:
     broadcast-channel ">=4.7.1"
     jotai ">=1.4.7"
-    micro-stacks ">=0.1.15"
+    micro-stacks ">=0.5.0"
     stable-hash "0.0.2"
 
 "@noble/hashes@1.0.0":
@@ -2304,6 +2304,11 @@
   version "1.5.2"
   resolved "https://registry.npmjs.org/@noble/secp256k1/-/secp256k1-1.5.2.tgz"
   integrity sha512-5mzA40W2q55VCRuC9XzmkiEnODdY0c5a7qsK2QcOfI5/MuVQyBaWGQyE6YOEF7kDwp+tDVWGsCDVJUME+wsWWw==
+
+"@noble/secp256k1@1.5.5":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-1.5.5.tgz#315ab5745509d1a8c8e90d0bdf59823ccf9bcfc3"
+  integrity sha512-sZ1W6gQzYnu45wPrWx8D3kwI2/U29VYTx9OjbDAd7jwRItJ0cSTMPRL/C8AWZFn9kWFLQGqEXVEE86w4Z8LpIQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -2411,18 +2416,23 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@stacks/blockchain-api-client@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/@stacks/blockchain-api-client/-/blockchain-api-client-2.0.0.tgz"
-  integrity sha512-Ijc4VTbnOnksD/suELbSC1jjrkdwd4vjmcZLSFRlJL8aAFpTxTEGfwkwhtCKh1ieeoLzt20gTjyVzlkIBRF9oQ==
+"@socket.io/component-emitter@~3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.0.0.tgz#8863915676f837d9dad7b76f50cb500c1e9422e9"
+  integrity sha512-2pTGuibAXJswAPJjaKisthqS/NOK5ypG4LYT6tEAV0S/mxW0zOIvYvGK0V8w8+SHxAm6vRMSjqSalFXeBAqs+Q==
+
+"@stacks/blockchain-api-client@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@stacks/blockchain-api-client/-/blockchain-api-client-4.0.4.tgz#21d1926a80f50a44a1f456b0e3f2d08e88d13c31"
+  integrity sha512-uuKY4QucvX++N4NHCQI5RORTPwNz9PLwgFKeRzBvPCflaI3JwIxUMOL1LSKzEgaehq+wFOzyc/IMMBSq4XP3ew==
   dependencies:
     "@stacks/stacks-blockchain-api-types" "*"
-    "@types/ws" "^7.4.0"
-    cross-fetch "^3.0.6"
-    eventemitter3 "^4.0.4"
-    jsonrpc-lite "^2.2.0"
-    socket.io-client "^4.0.1"
-    ws "^7.4.0"
+    "@types/ws" "7.4.7"
+    cross-fetch "3.1.4"
+    eventemitter3 "4.0.7"
+    jsonrpc-lite "2.2.0"
+    socket.io-client "4.4.0"
+    ws "7.5.6"
 
 "@stacks/prettier-config@0.0.10":
   version "0.0.10"
@@ -2596,11 +2606,6 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/component-emitter@^1.2.10":
-  version "1.2.10"
-  resolved "https://registry.npmjs.org/@types/component-emitter/-/component-emitter-1.2.10.tgz"
-  integrity sha512-bsjleuRKWmGqajMerkzox19aGbscQX5rmmvvXl3wlIp5gMG1HgkiwPxsN5p070fBDKTNSPgojVbuY1+HWMbFhg==
-
 "@types/eslint@^7.28.2":
   version "7.29.0"
   resolved "https://registry.npmjs.org/@types/eslint/-/eslint-7.29.0.tgz"
@@ -2753,9 +2758,9 @@
     anymatch "^3.0.0"
     source-map "^0.6.0"
 
-"@types/ws@^7.4.0":
+"@types/ws@7.4.7":
   version "7.4.7"
-  resolved "https://registry.npmjs.org/@types/ws/-/ws-7.4.7.tgz"
+  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-7.4.7.tgz#f7c390a36f7a0679aa69de2d501319f4f8d9b702"
   integrity sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==
   dependencies:
     "@types/node" "*"
@@ -3692,11 +3697,6 @@ base-x@^3.0.8:
   dependencies:
     safe-buffer "^5.0.1"
 
-base64-arraybuffer@0.1.4:
-  version "0.1.4"
-  resolved "https://registry.npmjs.org/base64-arraybuffer/-/base64-arraybuffer-0.1.4.tgz"
-  integrity sha1-mBjHngWbE1X5fgQooBfIOOkLqBI=
-
 base64-js@^1.0.2, base64-js@^1.3.1:
   version "1.5.1"
   resolved "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz"
@@ -4470,7 +4470,7 @@ commondir@^1.0.1:
   resolved "https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz"
   integrity sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
 
-component-emitter@^1.2.1, component-emitter@~1.3.0:
+component-emitter@^1.2.1:
   version "1.3.0"
   resolved "https://registry.npmjs.org/component-emitter/-/component-emitter-1.3.0.tgz"
   integrity sha512-Rd3se6QB+sO1TwqZjscQrurpEPIfO0/yYnSin6Q/rD3mOutHvUrCAhJub3r90uNb+SESBuE0QYoB90YdfatsRg==
@@ -4702,9 +4702,9 @@ create-react-context@0.3.0:
     gud "^1.0.0"
     warning "^4.0.3"
 
-cross-fetch@^3.0.6:
+cross-fetch@3.1.4:
   version "3.1.4"
-  resolved "https://registry.npmjs.org/cross-fetch/-/cross-fetch-3.1.4.tgz"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.4.tgz#9723f3a3a247bf8b89039f3a380a9244e8fa2f39"
   integrity sha512-1eAtFWdIubi6T4XPy6ei9iUFoKpUkIF971QLN8lIvvvwueI65+Nw5haMNKUwfJxabqlIIDODJKGrQ66gxC0PbQ==
   dependencies:
     node-fetch "2.6.1"
@@ -5047,6 +5047,13 @@ debug@^4.0.1, debug@^4.3.1:
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.3.tgz#04266e0b70a98d4462e6e288e38259213332b664"
   integrity sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q==
+  dependencies:
+    ms "2.1.2"
+
+debug@~4.3.2:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
+  integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
   dependencies:
     ms "2.1.2"
 
@@ -5440,27 +5447,25 @@ end-of-stream@^1.0.0, end-of-stream@^1.1.0:
   dependencies:
     once "^1.4.0"
 
-engine.io-client@~5.1.2:
-  version "5.1.2"
-  resolved "https://registry.npmjs.org/engine.io-client/-/engine.io-client-5.1.2.tgz"
-  integrity sha512-blRrgXIE0A/eurWXRzvfCLG7uUFJqfTGFsyJzXSK71srMMGJ2VraBLg8Mdw28uUxSpVicepBN9X7asqpD1mZcQ==
+engine.io-client@~6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/engine.io-client/-/engine.io-client-6.1.1.tgz#800d4b9db5487d169686729e5bd887afa78d36b0"
+  integrity sha512-V05mmDo4gjimYW+FGujoGmmmxRaDsrVr7AXA3ZIfa04MWM1jOfZfUwou0oNqhNwy/votUDvGDt4JA4QF4e0b4g==
   dependencies:
-    base64-arraybuffer "0.1.4"
-    component-emitter "~1.3.0"
+    "@socket.io/component-emitter" "~3.0.0"
     debug "~4.3.1"
-    engine.io-parser "~4.0.1"
+    engine.io-parser "~5.0.0"
     has-cors "1.1.0"
     parseqs "0.0.6"
     parseuri "0.0.6"
-    ws "~7.4.2"
+    ws "~8.2.3"
+    xmlhttprequest-ssl "~2.0.0"
     yeast "0.1.2"
 
-engine.io-parser@~4.0.1:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/engine.io-parser/-/engine.io-parser-4.0.2.tgz"
-  integrity sha512-sHfEQv6nmtJrq6TKuIz5kyEKH/qSdK56H/A+7DnAuUPWosnIZAS2NHNcPLmyjtY3cGS/MqJdZbUjW97JU72iYg==
-  dependencies:
-    base64-arraybuffer "0.1.4"
+engine.io-parser@~5.0.0:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/engine.io-parser/-/engine.io-parser-5.0.4.tgz#0b13f704fa9271b3ec4f33112410d8f3f41d0fc0"
+  integrity sha512-+nVFp+5z1E3HcToEnO7ZIj3g+3k9389DvWtvJZz0T6/eOCPIyyxehFcedoYrZQrp0LgQbD9pPXhpMBKMd5QURg==
 
 enhanced-resolve@^4.3.0:
   version "4.5.0"
@@ -5921,7 +5926,7 @@ ethjs-unit@0.1.6:
     bn.js "4.11.6"
     number-to-bn "1.7.0"
 
-eventemitter3@^4.0.0, eventemitter3@^4.0.4:
+eventemitter3@4.0.7, eventemitter3@^4.0.0, eventemitter3@^4.0.4:
   version "4.0.7"
   resolved "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
@@ -8107,9 +8112,9 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonrpc-lite@^2.2.0:
+jsonrpc-lite@2.2.0:
   version "2.2.0"
-  resolved "https://registry.npmjs.org/jsonrpc-lite/-/jsonrpc-lite-2.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/jsonrpc-lite/-/jsonrpc-lite-2.2.0.tgz#fb3aa9d292c8970eb7f83c6040c6554767bbc6a6"
   integrity sha512-/cbbSxtZWs1O7R4tWqabrCM/t3N8qKUZMAg9IUqpPvUs6UyRvm6pCNYkskyKN/XU0UgffW+NY2ZRr8t0AknX7g==
 
 "jsx-ast-utils@^2.4.1 || ^3.0.0":
@@ -8475,7 +8480,15 @@ methods@~1.1.2:
   resolved "https://registry.npmjs.org/methods/-/methods-1.1.2.tgz"
   integrity sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
 
-micro-stacks@>=0.1.15, micro-stacks@^0.2.2:
+micro-stacks@>=0.5.0:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/micro-stacks/-/micro-stacks-0.6.1.tgz#c3ee9733ffa442f4337af5c8a5b0241eb5c2659e"
+  integrity sha512-5VzDJOQRrgdHrc0CwFew6k1tQMZ4c7nn7yxiyK3BVX2Hqw9alulwANTt6tzS7U/WBFR0qz6ta9E0Ti+z9T4zpg==
+  dependencies:
+    "@noble/hashes" "1.0.0"
+    "@noble/secp256k1" "1.5.5"
+
+micro-stacks@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npmjs.org/micro-stacks/-/micro-stacks-0.2.2.tgz"
   integrity sha512-2mZqWcXWkmOXWsb7pShS+9X8XpPdNWZ0HCYYGxdEvHOuWQY4XeAai307xNh5afIFY2aik/OTljFjUmKIvGtU8Q==
@@ -11461,26 +11474,24 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-socket.io-client@^4.0.1:
-  version "4.1.3"
-  resolved "https://registry.npmjs.org/socket.io-client/-/socket.io-client-4.1.3.tgz"
-  integrity sha512-hISFn6PDpgDifVUiNklLHVPTMv1LAk8poHArfIUdXa+gKgbr0MZbAlquDFqCqsF30yBqa+jg42wgos2FK50BHA==
+socket.io-client@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/socket.io-client/-/socket.io-client-4.4.0.tgz#d6568ebd79ac12e2d6b628e7e90e60f1d48d99ff"
+  integrity sha512-g7riSEJXi7qCFImPow98oT8X++MSsHz6MMFRXkWNJ6uEROSHOa3kxdrsYWMq85dO+09CFMkcqlpjvbVXQl4z6g==
   dependencies:
-    "@types/component-emitter" "^1.2.10"
+    "@socket.io/component-emitter" "~3.0.0"
     backo2 "~1.0.2"
-    component-emitter "~1.3.0"
-    debug "~4.3.1"
-    engine.io-client "~5.1.2"
+    debug "~4.3.2"
+    engine.io-client "~6.1.1"
     parseuri "0.0.6"
-    socket.io-parser "~4.0.4"
+    socket.io-parser "~4.1.1"
 
-socket.io-parser@~4.0.4:
-  version "4.0.4"
-  resolved "https://registry.npmjs.org/socket.io-parser/-/socket.io-parser-4.0.4.tgz"
-  integrity sha512-t+b0SS+IxG7Rxzda2EVvyBZbvFPBCjJoyHuE0P//7OAsN23GItzDRdWa6ALxZI/8R5ygK7jAR6t028/z+7295g==
+socket.io-parser@~4.1.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/socket.io-parser/-/socket.io-parser-4.1.2.tgz#0a97d4fb8e67022158a568450a6e41887e42035e"
+  integrity sha512-j3kk71QLJuyQ/hh5F/L2t1goqzdTL0gvDzuhTuNSwihfuFUrcSji0qFZmJJPtG6Rmug153eOPsUizeirf1IIog==
   dependencies:
-    "@types/component-emitter" "^1.2.10"
-    component-emitter "~1.3.0"
+    "@socket.io/component-emitter" "~3.0.0"
     debug "~4.3.1"
 
 sockjs-client@^1.5.0:
@@ -13081,6 +13092,11 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
+ws@7.5.6:
+  version "7.5.6"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.6.tgz#e59fc509fb15ddfb65487ee9765c5a51dec5fe7b"
+  integrity sha512-6GLgCqo2cy2A2rjCNFlxQS6ZljG/coZfZXclldI8FB/1G3CCI36Zd8xy2HrFVACi8tfk5XrgLQEk+P0Tnz9UcA==
+
 ws@^6.2.1:
   version "6.2.2"
   resolved "https://registry.yarnpkg.com/ws/-/ws-6.2.2.tgz#dd5cdbd57a9979916097652d78f1cc5faea0c32e"
@@ -13088,20 +13104,15 @@ ws@^6.2.1:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@^7.4.0:
-  version "7.5.3"
-  resolved "https://registry.npmjs.org/ws/-/ws-7.5.3.tgz"
-  integrity sha512-kQ/dHIzuLrS6Je9+uv81ueZomEwH0qVYstcAQ4/Z93K8zeko9gtAbttJWzoC5ukqXY1PpoouV3+VSOqEAFt5wg==
-
 ws@^7.4.6:
   version "7.5.7"
   resolved "https://registry.npmjs.org/ws/-/ws-7.5.7.tgz"
   integrity sha512-KMvVuFzpKBuiIXW3E4u3mySRO2/mCHSyZDJQM5NQ9Q9KHWHWh0NHgfbRMLLrceUK5qAL4ytALJbpRMjixFZh8A==
 
-ws@~7.4.2:
-  version "7.4.6"
-  resolved "https://registry.npmjs.org/ws/-/ws-7.4.6.tgz"
-  integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
+ws@~8.2.3:
+  version "8.2.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.2.3.tgz#63a56456db1b04367d0b721a0b80cae6d8becbba"
+  integrity sha512-wBuoj1BDpC6ZQ1B7DWQBYVLphPWkm8i9Y0/3YdHjHKHiohOJ1ws+3OccDWtH+PoC9DZD5WOTrJvNbWvjS6JWaA==
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
@@ -13142,6 +13153,11 @@ xmlchars@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/xmlchars/-/xmlchars-2.2.0.tgz"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
+
+xmlhttprequest-ssl@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/xmlhttprequest-ssl/-/xmlhttprequest-ssl-2.0.0.tgz#91360c86b914e67f44dce769180027c0da618c67"
+  integrity sha512-QKxVRxiRACQcVuQEYFsI1hhkrMlrXHPegbbd1yn9UHOmRxY+si12nQYzri3vbzt8VdTTRviqcKxcyllFas5z2A==
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.2"

@@ -1,4 +1,3 @@
-import React from 'react';
 export default function Tac() {
   return (
     <div className="Landing">

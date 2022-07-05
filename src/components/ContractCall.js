@@ -1,4 +1,3 @@
-import React from 'react';
 export function ContractCall({ tx }) {
   return (
     <div className="small container bg-white">

@@ -1,4 +1,3 @@
-import React from 'react';
 import { STX_USD } from '../lib/price';
 import { useAtomValue } from 'jotai/utils';
 

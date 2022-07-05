@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '@micro-stacks/react';
 import GetStartedButton from './GetStartedButton';
 

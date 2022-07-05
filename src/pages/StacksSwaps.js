@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertAllPages } from '../components/AlertAllPages';
 import { StacksSwapsContainer } from '../components/StacksSwapsContainer';
 import { SwapPathNotFound } from '../components/SwapPathNotFound';

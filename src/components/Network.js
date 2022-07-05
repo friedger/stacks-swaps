@@ -1,4 +1,3 @@
-import React from 'react';
 import { STACK_API_URL, mainnet } from '../lib/constants';
 export function Network() {
   return (

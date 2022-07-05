@@ -1,5 +1,5 @@
 import { Link } from '@reach/router';
-import React from 'react';
+
 import { AssetIcon } from './AssetIcon';
 import { getAsset, getDeepLink } from './assets';
 

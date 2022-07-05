@@ -1,4 +1,3 @@
-import React from 'react';
 import { ProfileFull } from './ProfileFull';
 import { Address } from './Address';
 import { useAuth } from '@micro-stacks/react';

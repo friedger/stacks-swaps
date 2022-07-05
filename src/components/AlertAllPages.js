@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function AlertAllPages() {
   return (
     <div className="alert alert-warning alert-dismissible fade show" role="alert">

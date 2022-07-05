@@ -1,4 +1,3 @@
-import React from 'react';
 export function Contract({ ctr }) {
   return (
     <span title={ctr.name}>

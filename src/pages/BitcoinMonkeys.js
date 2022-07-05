@@ -1,4 +1,3 @@
-import React from 'react';
 import { BANANA_TOKEN, BITCOIN_MONKEYS } from '../components/assets';
 import { AtomicIntroButton } from '../components/AtomicIntroButton';
 // Intro page with choice of swaps

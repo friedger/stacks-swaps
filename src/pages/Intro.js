@@ -1,4 +1,3 @@
-import React from 'react';
 import { CatamaranIntroButton } from '../components/CatamaranIntroButton';
 import {
   BANANA_TOKEN,

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Router } from '@reach/router';
 import { ClientProvider, useAccount } from '@micro-stacks/react';
 import Auth from './components/Auth';

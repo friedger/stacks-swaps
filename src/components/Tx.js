@@ -1,4 +1,3 @@
-import React from 'react';
 import { chainSuffix } from '../lib/constants';
 import { Address } from './Address';
 import { Amount } from './Amount';

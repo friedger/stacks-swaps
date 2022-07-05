@@ -1,5 +1,5 @@
 import { navigate } from '@reach/router';
-import React from 'react';
+
 import { AssetIcon } from '../components/AssetIcon';
 
 // Landing page with Stacks Connect for authentication

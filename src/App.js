@@ -11,6 +11,7 @@ import { ProfileSmall } from './components/ProfileSmall';
 import LandingAtomic from './pages/LandingAtomic';
 import Landing from './pages/Landing';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
+import NFTTransfer from './pages/special/NFTTransfer';
 import { atomicSwaps } from './lib/constants';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
 
@@ -100,6 +101,7 @@ function Content() {
           {authenticated && (
             <UnlistStacksPunks path="/unlist-stacks-punks" userSession={userSession} />
           )}
+          {authenticated && <NFTTransfer path="/nft-transfer" userSession={userSession} />}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

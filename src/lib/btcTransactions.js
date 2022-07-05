@@ -193,6 +193,7 @@ export function numberToBuffer(value, size) {
 // without witness
 function txForHash(txHex) {
   const transaction = decodeTransaction(hexToBin(txHex));
+  transaction.toHex();
   return transaction.toBuffer().toString('hex');
 }
 

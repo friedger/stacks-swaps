@@ -5,7 +5,7 @@ import {
   NonFungibleConditionCode,
 } from 'micro-stacks/transactions';
 import { useOpenContractCall } from '@micro-stacks/react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function NFTTransfer({ userSession }) {
   const [nftContract, setNftContract] = useState();

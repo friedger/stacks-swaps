@@ -1,5 +1,5 @@
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { chainSuffix, STACKS_API_WS_URL, transactionsApi } from '../lib/constants';
 
 export function TxStatus({ txId, resultPrefix }) {

@@ -8,7 +8,7 @@ import {
 } from 'micro-stacks/transactions';
 import { useOpenContractCall } from '@micro-stacks/react';
 import { BN } from 'bn.js';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function UnlistStacksPunks({ userSession }) {
   const [id, setId] = useState();

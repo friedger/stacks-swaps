@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   BTC_FT_SWAP_CONTRACT,
   BTC_NFT_SWAP_CONTRACT,

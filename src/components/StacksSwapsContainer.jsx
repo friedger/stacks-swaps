@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStxAddresses } from '../lib/hooks';
 import { StacksSwapsDashboard } from './StacksSwapsDashboard';
 import { SwapCreate } from './SwapCreate';

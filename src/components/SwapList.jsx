@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { contracts } from '../lib/constants';
 import { Contract } from './Contract';
 

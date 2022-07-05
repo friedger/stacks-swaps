@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs/promises';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import AutoImport from 'unplugin-auto-import/vite';
 
 export default defineConfig(() => ({
   esbuild: {
@@ -14,14 +15,18 @@ export default defineConfig(() => ({
     target: 'esnext',
     outDir: 'build',
   },
-  plugins: [react({ jsxRuntime: 'automatic' })],
+  plugins: [
+    react({
+      include: /\.[tj]sx?$/,
+    }),
+  ],
   optimizeDeps: {
+    include: ['react/jsx-runtime'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
       // Enable esbuild polyfill plugins
-
       plugins: [
         NodeGlobalsPolyfillPlugin({
           buffer: true,

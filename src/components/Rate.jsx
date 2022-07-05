@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { refreshPrice, STX_USD } from '../lib/price';
 
 export function Rate() {

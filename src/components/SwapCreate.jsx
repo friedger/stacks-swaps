@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 import { noneCV, principalCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';

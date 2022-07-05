@@ -20,7 +20,7 @@ import {
   PostConditionMode,
 } from 'micro-stacks/transactions';
 import { BN } from 'bn.js';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { accountsApi, NETWORK } from '../../lib/constants';
 
 const feesCV = contractPrincipalCV(

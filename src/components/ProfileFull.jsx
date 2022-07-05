@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchAccount } from '../lib/account';
 import { Address } from './Address';
 import { Amount } from './Amount';

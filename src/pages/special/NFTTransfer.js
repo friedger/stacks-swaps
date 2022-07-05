@@ -7,7 +7,6 @@ import {
 import { useOpenContractCall } from '@micro-stacks/react';
 import React, { useState } from 'react';
 
-
 export default function NFTTransfer({ userSession }) {
   const [nftContract, setNftContract] = useState();
   const [id, setId] = useState();

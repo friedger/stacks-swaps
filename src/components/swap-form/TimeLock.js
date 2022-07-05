@@ -9,7 +9,7 @@ export default function TimeLock({ startHeight, blockHeight }) {
           className={`progress-bar ${blockHeight > startHeight + 100 ? 'bg-danger' : ''}`}
           role="progressbar"
           style={{
-            width: `${(now * 100 / endHeight)}%`,
+            width: `${(now * 100) / endHeight}%`,
           }}
           aria-valuenow={now}
           aria-valuemin={startHeight}

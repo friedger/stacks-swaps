@@ -5,7 +5,7 @@ import GetStartedButton from './GetStartedButton';
 // Authentication button adapting to status
 
 export default function Auth() {
-  const { handleSignIn, handleSignOut, isSignedIn } = useAuth();
+  const { authenticate, signOut, isSignedIn } = useAuth();
 
   if (isSignedIn) {
     return (
@@ -13,13 +13,13 @@ export default function Auth() {
         className="btn btn-outline-primary"
         onClick={() => {
           console.log('signOut');
-          handleSignOut();
+          signOut();
         }}
       >
         Log Out
       </button>
     );
   } else {
-    return <GetStartedButton handleSignIn={handleSignIn} type="small" />;
+    return <GetStartedButton handleSignIn={authenticate} type="small" />;
   }
 }

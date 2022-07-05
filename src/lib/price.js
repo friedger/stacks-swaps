@@ -9,8 +9,8 @@ export async function refreshPrice(update) {
     });
     const result = await fetch(
       'https://api.coingecko.com/api/v3/simple/price?ids=blockstack&vs_currencies=USD&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false'
-    )
-    const resultJson = await result.json()
+    );
+    const resultJson = await result.json();
     update(v => {
       return { value: resultJson?.blockstack?.usd, loading: false };
     });

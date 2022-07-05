@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
@@ -25,8 +27,7 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to use this Stacks app.</noscript>
-
-    <div id="App" class="h-100"></div>
+    <div id="root" class="h-100"></div>
     <footer class="container-fluid text-center border-top mt-4 py-5">
       <p>
         The Catamaran Swaps UI is open source and
@@ -44,13 +45,9 @@
         >
           available on GitHub.</a
         >. Use at your own risk!
-        <a
-          href="/tac"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Terms and Conditions</a
-        >.
+        <a href="/tac" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>.
       </p>
     </footer>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

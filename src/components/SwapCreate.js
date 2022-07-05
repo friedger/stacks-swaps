@@ -17,7 +17,7 @@ import {
 } from 'micro-stacks/transactions';
 import { fetchAccountBalances } from 'micro-stacks/api';
 
-import { useAuth, useContractCall, useSession } from '@micro-stacks/react';
+import { useAuth, useOpenContractCall, useAccount } from '@micro-stacks/react';
 import {
   BANANA_TOKEN,
   getAsset,
@@ -80,14 +80,8 @@ export function SwapCreate({
   }, [formDataInitial]);
 
   const contract = contracts[type];
-  const { handleContractCall } = useContractCall({
-    contractAddress: contract.address,
-    contractName: contract.name,
-    network: NETWORK,
-    anchorMode: AnchorMode.Any,
-  });
+  const { openContractCall } = useOpenContractCall();
   const { handleSignIn } = useAuth();
-  const [userSession] = useSession();
 
   const atomicSwap = isAtomic(type);
 
@@ -296,7 +290,10 @@ export function SwapCreate({
         setStatus('Unsupported type');
         return;
     }
-    await handleContractCall({
+    await openContractCall({
+      contractAddress: contract.address,
+      contractName: contract.name,
+      anchorMode: AnchorMode.Any,
       functionName: 'create-swap',
       functionArgs,
       postConditionMode: PostConditionMode.Deny,
@@ -308,7 +305,7 @@ export function SwapCreate({
       onFinish: result => {
         setStatus('Saving transaction to your storage');
         setTxId(result.txId);
-        saveTxData(result, userSession)
+        saveTxData(result)
           .then(r => {
             setLoading(false);
             setStatus(undefined);
@@ -525,7 +522,10 @@ export function SwapCreate({
       default:
         break;
     }
-    await handleContractCall({
+    await openContractCall({
+      contractAddress: contract.address,
+      contractName: contract.name,
+      anchorMode: AnchorMode.Any,
       functionName,
       functionArgs,
       postConditionMode: PostConditionMode.Deny,
@@ -652,7 +652,9 @@ export function SwapCreate({
         setLoading(false);
         return;
     }
-    await handleContractCall({
+    await openContractCall({
+      contractAddress: contract.address,
+      contractName: contract.name,
       functionName: 'cancel',
       functionArgs,
       postConditionMode: PostConditionMode.Deny,
@@ -664,7 +666,7 @@ export function SwapCreate({
       onFinish: result => {
         setLoading(false);
         setTxId(result.txId);
-        saveTxData(result, userSession)
+        saveTxData(result)
           .then(r => {
             setLoading(false);
           })
@@ -779,7 +781,10 @@ export function SwapCreate({
 
     try {
       // submit
-      await handleContractCall({
+      await openContractCall({
+        contractAddress: contract.address,
+        contractName: contract.name,
+        anchorMode: AnchorMode.Any,
         functionName: 'submit-swap',
         functionArgs,
         postConditionMode: PostConditionMode.Deny,
@@ -796,7 +801,7 @@ export function SwapCreate({
             return;
           }
           setTxId(result.txId.txid);
-          saveTxData(result, userSession)
+          saveTxData(result)
             .then(r => {
               setLoading(false);
             })

@@ -30,7 +30,7 @@ export default function Tac() {
               <li> acknowledge that the website is not production-ready.</li>
             </ul>
           </p>
-          <img src="/oi_imprint.gif" alt="contact details"/>
+          <img src="/oi_imprint.gif" alt="contact details" />
         </div>
       </div>
     </div>

@@ -3,12 +3,9 @@ import {
   createAssetInfo,
   makeStandardNonFungiblePostCondition,
   NonFungibleConditionCode,
-  PostConditionMode,
 } from 'micro-stacks/transactions';
-import { useContractCall, useStxAddresses } from '@micro-stacks/react';
-import { BN } from 'bn.js';
+import { useOpenContractCall } from '@micro-stacks/react';
 import React, { useState } from 'react';
-import { NETWORK } from '../../lib/constants';
 
 export default function NFTTransfer({ userSession }) {
   const [nftContract, setNftContract] = useState();
@@ -19,13 +16,7 @@ export default function NFTTransfer({ userSession }) {
   const [contractName, setContractName] = useState();
   const [asset, setAsset] = useState();
 
-  const { handleContractCall } = useContractCall({
-    contractAddress,
-    contractName,
-    functionName: 'transfer',
-    postConditionMode: PostConditionMode.Deny,
-    userSession,
-    network: NETWORK,
+  const { openContractCall } = useOpenContractCall({
     onFinish: result => {
       setStatus(result);
     },
@@ -81,10 +72,13 @@ export default function NFTTransfer({ userSession }) {
         />
         <button
           className="btn btn-outline-primary"
-          onClick={() => {
+          onClick={async () => {
             const recipientCV = standardPrincipalCV(recipient);
             const idCV = uintCV(id);
-            handleContractCall({
+            await openContractCall({
+              contractAddress,
+              contractName,
+              functionName: 'transfer',
               functionArgs: [idCV, standardPrincipalCV(userAddress), recipientCV],
               postConditions: [
                 makeStandardNonFungiblePostCondition(

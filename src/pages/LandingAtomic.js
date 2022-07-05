@@ -5,7 +5,7 @@ import GetStartedButton from './../components/GetStartedButton';
 // Landing page with Stacks Connect for authentication
 
 export default function LandingAtomic(props) {
-  const { handleSignIn } = useAuth();
+  const { authenticate } = useAuth();
 
   return (
     <div className="Landing">
@@ -29,7 +29,7 @@ export default function LandingAtomic(props) {
             The seller executes the atomic swap and receives the STX, the buyer receives the
             fungible tokens from escrow.
           </p>
-          <GetStartedButton handleSignIn={handleSignIn} />
+          <GetStartedButton handleSignIn={authenticate} />
         </div>
       </div>
     </div>

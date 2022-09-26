@@ -13,6 +13,7 @@ import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 import NFTTransfer from './pages/special/NFTTransfer';
 import { atomicSwaps } from './lib/constants';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
+import ResendFailedTx from './pages/special/ResendFailedTx';
 
 const authOptions = {
   appDetails: {
@@ -87,6 +88,7 @@ function Content() {
 
           {authenticated && <UnlistStacksPunks path="/unlist-stacks-punks" />}
           {authenticated && <NFTTransfer path="/nft-transfer" />}
+          {authenticated && <ResendFailedTx path="/resend" />}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

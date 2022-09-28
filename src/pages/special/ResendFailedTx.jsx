@@ -51,7 +51,7 @@ export default function ResendFailedTx() {
               functionName: function_name,
               functionArgs,
               postConditions,
-              postConditionMode: PostConditionMode.Deny,
+              postConditionMode: PostConditionMode.Allow,
             });
           }}
         >

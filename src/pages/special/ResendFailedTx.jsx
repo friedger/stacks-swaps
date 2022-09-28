@@ -36,8 +36,8 @@ export default function ResendFailedTx() {
             const postConditions = []; // TODO reconstruct post conditions
             const txResult = hexToCV(result.tx_result.hex);
             if (
-              txResult.type !== ClarityType.ResponseErr ||
-              Number(txResult.value.value) !== 3001
+              txResult.tx_status === 'success' ||
+              (txResult.type === ClarityType.ResponseErr && Number(txResult.value.value) !== 3001)
             ) {
               setStatus(
                 'Support only for txs with result (err u3001), but was ' + result.tx_result.repr

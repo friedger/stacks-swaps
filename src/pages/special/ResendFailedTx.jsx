@@ -1,8 +1,8 @@
 import { ClarityType } from 'micro-stacks/clarity';
-import { PostConditionMode } from 'micro-stacks/transactions';
+import { callReadOnlyFunction, PostConditionMode } from 'micro-stacks/transactions';
 import { useOpenContractCall } from '@micro-stacks/react';
 import { useState } from 'react';
-import { transactionsApi } from '../../lib/constants';
+import { namesApi, transactionsApi } from '../../lib/constants';
 import { hexToCV } from '../../lib/transactions';
 
 export default function ResendFailedTx() {
@@ -26,6 +26,11 @@ export default function ResendFailedTx() {
         <br />
         <input className="form-control" onChange={e => setId(e.target.value)} />
         <br />
+        Note that the tx is send as insecure tx because your name might have been owned by somebody
+        else, but there is no way to find out.
+        <br />
+        Only confirm in your wallet if the smart contract is{' '}
+        <code>SP000000000000000000002Q6VF78.bns</code>.<br />
         <button
           className="btn btn-outline-primary"
           onClick={async () => {

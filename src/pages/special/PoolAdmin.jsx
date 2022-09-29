@@ -36,7 +36,7 @@ export default function PoolAdmin() {
         Reward address hash bytes in hex (010203..):
         <input className="form-control" onChange={e => setHashBytes(e.target.value.trim())} />
         <br />
-        Reward address version in hex (00 or 05):
+        Reward address version in hex (00 or 01):
         <input className="form-control" onChange={e => setVersion(e.target.value.trim())} />
         <br />
         Start burn height:

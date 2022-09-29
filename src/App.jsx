@@ -14,6 +14,7 @@ import NFTTransfer from './pages/special/NFTTransfer';
 import { atomicSwaps } from './lib/constants';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
 import ResendFailedTx from './pages/special/ResendFailedTx';
+import PoolAdmin from './pages/special/PoolAdmin';
 
 const authOptions = {
   appDetails: {
@@ -89,6 +90,7 @@ function Content() {
           {authenticated && <UnlistStacksPunks path="/unlist-stacks-punks" />}
           {authenticated && <NFTTransfer path="/nft-transfer" />}
           {authenticated && <ResendFailedTx path="/resend" />}
+          {authenticated && <PoolAdmin path="/pool-admin" />}
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

@@ -39,7 +39,7 @@
     "react-download-link": "^2.3.0",
     "react-input-switch": "^2.2.2",
     "react-jdenticon": "^0.0.9",
-    "react-router-dom": "^6.2.1",
+    "react-router-dom": "^6.2.1"
   },
   "prettier": "@stacks/prettier-config",
   "scripts": {

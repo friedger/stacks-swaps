@@ -7,7 +7,7 @@ import {
   uintCV,
 } from 'micro-stacks/clarity';
 import { PostConditionMode } from 'micro-stacks/transactions';
-import { useAccount, useOpenContractCall } from '@micro-stacks/react';
+import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
 import { useState } from 'react';
 import { hexToBytes } from 'micro-stacks/common';
 import { smartContractsApi } from '../../lib/constants';
@@ -69,6 +69,7 @@ export default function PoolAdmin() {
   const [rewardCycle3, setRewardCycle3] = useState();
 
   const { stxAddress } = useAccount();
+  const { authenticate } = useAuth();
 
   const { openContractCall } = useOpenContractCall({
     onFinish: result => {
@@ -83,116 +84,124 @@ export default function PoolAdmin() {
     <main className="container">
       <div>
         <h1>Pool Admin function</h1>
-        Using <code>SP000000000000000000002Q6VF78.bns</code> only.
-        <br />
-        {JSON.stringify(status)}
-        <h2>delegate-stacks-stx</h2>
-        <br />
-        Stacker:
-        <input className="form-control" onChange={e => setStacker(e.target.value.trim())} />
-        <br />
-        Amount in uSTX:
-        <input className="form-control" onChange={e => setAmountUstx(e.target.value.trim())} />
-        <br />
-        Reward address hash bytes in hex (010203..):
-        <input className="form-control" onChange={e => setHashBytes(e.target.value.trim())} />
-        <br />
-        Reward address version in hex (00 or 01):
-        <input className="form-control" onChange={e => setVersion(e.target.value.trim())} />
-        <br />
-        Start burn height:
-        <input className="form-control" onChange={e => setStartBurnHt(e.target.value.trim())} />
-        <br />
-        Lock period (max 12):
-        <input className="form-control" onChange={e => setLockPeriod(e.target.value.trim())} />
-        <br />
-        <button
-          className="btn btn-outline-primary"
-          onClick={async () => {
-            const [contractAddress, contractName] = ['SP000000000000000000002Q6VF78', 'pox'];
-            const functionName = 'delegate-stack-stx';
-            const functionArgs = [
-              standardPrincipalCV(stacker),
-              uintCV(amountUstx),
-              tupleCV({
-                hashbytes: bufferCV(hexToBytes(hashbytes)),
-                version: bufferCV(hexToBytes(version)),
-              }),
-              uintCV(parseInt(startBurnHt)),
-              uintCV(parseInt(lockPeriod)),
-            ];
-            const postConditions = [];
-            await openContractCall({
-              contractAddress,
-              contractName,
-              functionName,
-              functionArgs,
-              postConditions,
-              postConditionMode: PostConditionMode.Deny,
-            });
-          }}
-        >
-          Lock user's Stacks
-        </button>
-        <hr />
-        <h2>Check partially stacked amount</h2>
-        Reward address hash bytes in hex (010203..):
-        <input className="form-control" onChange={e => setHashBytes3(e.target.value.trim())} />
-        <br />
-        Reward address version in hex (00 or 01):
-        <input className="form-control" onChange={e => setVersion3(e.target.value.trim())} />
-        <br />
-        Reward Cycle:
-        <input className="form-control" onChange={e => setRewardCycle3(e.target.value.trim())} />
-        <br />
-        <button
-          className="btn btn-outline-primary"
-          onClick={async () => {
-            const details = await getPartialStacked(stxAddress, rewardCycle3, hashbytes3, version3);
-            setPartialDetails(details);
-          }}
-        >
-          Check amount
-        </button>
-        <div>
-          <pre>{JSON.stringify(partialDetails)}</pre>
-        </div>
-        <hr />
-        <h2>stack-aggregation-commit</h2>
-        Reward address hash bytes in hex (010203..):
-        <input className="form-control" onChange={e => setHashBytes2(e.target.value.trim())} />
-        <br />
-        Reward address version in hex (00 or 01):
-        <input className="form-control" onChange={e => setVersion2(e.target.value.trim())} />
-        <br />
-        Reward Cycle:
-        <input className="form-control" onChange={e => setRewardCycle(e.target.value.trim())} />
-        <br />
-        <button
-          className="btn btn-outline-primary"
-          onClick={async () => {
-            const [contractAddress, contractName] = ['SP000000000000000000002Q6VF78', 'pox'];
-            const functionName = 'stack-aggregation-commit';
-            const functionArgs = [
-              tupleCV({
-                hashbytes: bufferCV(hexToBytes(hashbytes2)),
-                version: bufferCV(hexToBytes(version2)),
-              }),
-              uintCV(parseInt(rewardCycle)),
-            ];
-            const postConditions = [];
-            await openContractCall({
-              contractAddress,
-              contractName,
-              functionName,
-              functionArgs,
-              postConditions,
-              postConditionMode: PostConditionMode.Deny,
-            });
-          }}
-        >
-          Finalize Cycle
-        </button>
+        Using <code>SP000000000000000000002Q6VF78.bns</code> only. (stxAddress ?{' '}
+        <>
+          <br />
+          {JSON.stringify(status)}
+          <h2>delegate-stacks-stx</h2>
+          <br />
+          Stacker:
+          <input className="form-control" onChange={e => setStacker(e.target.value.trim())} />
+          <br />
+          Amount in uSTX:
+          <input className="form-control" onChange={e => setAmountUstx(e.target.value.trim())} />
+          <br />
+          Reward address hash bytes in hex (010203..):
+          <input className="form-control" onChange={e => setHashBytes(e.target.value.trim())} />
+          <br />
+          Reward address version in hex (00 or 01):
+          <input className="form-control" onChange={e => setVersion(e.target.value.trim())} />
+          <br />
+          Start burn height:
+          <input className="form-control" onChange={e => setStartBurnHt(e.target.value.trim())} />
+          <br />
+          Lock period (max 12):
+          <input className="form-control" onChange={e => setLockPeriod(e.target.value.trim())} />
+          <br />
+          <button
+            className="btn btn-outline-primary"
+            onClick={async () => {
+              const [contractAddress, contractName] = ['SP000000000000000000002Q6VF78', 'pox'];
+              const functionName = 'delegate-stack-stx';
+              const functionArgs = [
+                standardPrincipalCV(stacker),
+                uintCV(amountUstx),
+                tupleCV({
+                  hashbytes: bufferCV(hexToBytes(hashbytes)),
+                  version: bufferCV(hexToBytes(version)),
+                }),
+                uintCV(parseInt(startBurnHt)),
+                uintCV(parseInt(lockPeriod)),
+              ];
+              const postConditions = [];
+              await openContractCall({
+                contractAddress,
+                contractName,
+                functionName,
+                functionArgs,
+                postConditions,
+                postConditionMode: PostConditionMode.Deny,
+              });
+            }}
+          >
+            Lock user's Stacks
+          </button>
+          <hr />
+          <h2>Check partially stacked amount</h2>
+          Reward address hash bytes in hex (010203..):
+          <input className="form-control" onChange={e => setHashBytes3(e.target.value.trim())} />
+          <br />
+          Reward address version in hex (00 or 01):
+          <input className="form-control" onChange={e => setVersion3(e.target.value.trim())} />
+          <br />
+          Reward Cycle:
+          <input className="form-control" onChange={e => setRewardCycle3(e.target.value.trim())} />
+          <br />
+          <button
+            className="btn btn-outline-primary"
+            onClick={async () => {
+              const details = await getPartialStacked(
+                stxAddress,
+                rewardCycle3,
+                hashbytes3,
+                version3
+              );
+              setPartialDetails(details);
+            }}
+          >
+            Check amount
+          </button>
+          <div>
+            <pre>{JSON.stringify(partialDetails)}</pre>
+          </div>
+          <hr />
+          <h2>stack-aggregation-commit</h2>
+          Reward address hash bytes in hex (010203..):
+          <input className="form-control" onChange={e => setHashBytes2(e.target.value.trim())} />
+          <br />
+          Reward address version in hex (00 or 01):
+          <input className="form-control" onChange={e => setVersion2(e.target.value.trim())} />
+          <br />
+          Reward Cycle:
+          <input className="form-control" onChange={e => setRewardCycle(e.target.value.trim())} />
+          <br />
+          <button
+            className="btn btn-outline-primary"
+            onClick={async () => {
+              const [contractAddress, contractName] = ['SP000000000000000000002Q6VF78', 'pox'];
+              const functionName = 'stack-aggregation-commit';
+              const functionArgs = [
+                tupleCV({
+                  hashbytes: bufferCV(hexToBytes(hashbytes2)),
+                  version: bufferCV(hexToBytes(version2)),
+                }),
+                uintCV(parseInt(rewardCycle)),
+              ];
+              const postConditions = [];
+              await openContractCall({
+                contractAddress,
+                contractName,
+                functionName,
+                functionArgs,
+                postConditions,
+                postConditionMode: PostConditionMode.Deny,
+              });
+            }}
+          >
+            Finalize Cycle
+          </button>
+        </>
+        : <GetStartedButton handleSignIn={authenticate} />)
       </div>
     </main>
   );

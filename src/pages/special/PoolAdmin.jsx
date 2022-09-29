@@ -13,6 +13,10 @@ export default function PoolAdmin() {
   const [status, setStatus] = useState();
   const [lockPeriod, setLockPeriod] = useState();
 
+  const [hashbytes2, setHashBytes2] = useState();
+  const [version2, setVersion2] = useState();
+  const [rewardCycle, setRewardCycle] = useState();
+
   const { openContractCall } = useOpenContractCall({
     onFinish: result => {
       setStatus(result);
@@ -26,6 +30,10 @@ export default function PoolAdmin() {
     <main className="container">
       <div>
         <h1>Pool Admin function</h1>
+        Using <code>SP000000000000000000002Q6VF78.bns</code> only.
+        <br />
+        {JSON.stringify(status)}
+        <h2>delegate-stacks-stx</h2>
         <br />
         Stacker:
         <input className="form-control" onChange={e => setStacker(e.target.value.trim())} />
@@ -45,7 +53,6 @@ export default function PoolAdmin() {
         Lock period (max 12):
         <input className="form-control" onChange={e => setLockPeriod(e.target.value.trim())} />
         <br />
-        <code>SP000000000000000000002Q6VF78.bns</code>.<br />
         <button
           className="btn btn-outline-primary"
           onClick={async () => {
@@ -74,8 +81,44 @@ export default function PoolAdmin() {
         >
           Lock user's Stacks
         </button>
+
+        <hr/>
+
+        <h2>stack-aggregation-commit</h2>
+        Reward address hash bytes in hex (010203..):
+        <input className="form-control" onChange={e => setHashBytes2(e.target.value.trim())} />
         <br />
-        {JSON.stringify(status)}
+        Reward address version in hex (00 or 01):
+        <input className="form-control" onChange={e => setVersion2(e.target.value.trim())} />
+        <br />
+        Reward Cycle:
+        <input className="form-control" onChange={e => setRewardCycle(e.target.value.trim())} />
+        <br />
+        <button
+          className="btn btn-outline-primary"
+          onClick={async () => {
+            const [contractAddress, contractName] = ['SP000000000000000000002Q6VF78', 'pox'];
+            const functionName = 'stack-aggregation-commit';
+            const functionArgs = [
+              tupleCV({
+                hashbytes: bufferCV(hexToBytes(hashbytes2)),
+                version: bufferCV(hexToBytes(version2)),
+              }),
+              uintCV(parseInt(rewardCycle)),
+            ];
+            const postConditions = [];
+            await openContractCall({
+              contractAddress,
+              contractName,
+              functionName,
+              functionArgs,
+              postConditions,
+              postConditionMode: PostConditionMode.Deny,
+            });
+          }}
+        >
+          Finalize Cycle
+        </button>
       </div>
     </main>
   );

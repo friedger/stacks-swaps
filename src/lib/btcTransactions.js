@@ -268,14 +268,6 @@ export async function paramsFromTx(btcTxId, stxHeight) {
                                 */
         switch (input.script_type) {
           case 'pay-to-witness-pubkey-hash':
-            return tupleCV({
-              outpoint: tupleCV({
-                hash: bufferCV(reverse(Buffer.from(input.prev_hash, 'hex'))),
-                index: bufferCV(numberToBuffer(input.output_index, 4)),
-              }),
-              scriptSig: bufferCV(Buffer.from(input.script, 'hex')),
-              sequence: bufferCV(numberToBuffer(input.sequence, 4)),
-            });
           case 'pay-to-pubkey-hash':
           default:
             return tupleCV({

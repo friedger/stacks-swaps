@@ -5,6 +5,7 @@ import {
   Configuration,
   InfoApi,
   BlocksApi,
+  NamesApi,
 } from '@stacks/blockchain-api-client';
 import { StacksMainnet } from 'micro-stacks/network';
 import {
@@ -77,7 +78,7 @@ export const STX_FT_SWAP_FRIE_FEE_CONTRACT = {
 
 export const STX_NFT_SWAP_CONTRACT = {
   address: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
-  name: 'stx-nft-swap-v1',
+  name: 'stx-nft-swap-v2',
 };
 
 export const STX_NFT_SWAP_FEE_CONTRACT = {
@@ -277,3 +278,4 @@ export const smartContractsApi = new SmartContractsApi(config);
 export const transactionsApi = new TransactionsApi(config);
 export const infoApi = new InfoApi(config);
 export const blocksApi = new BlocksApi(config);
+export const namesApi = new NamesApi(config);

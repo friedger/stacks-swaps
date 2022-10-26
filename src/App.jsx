@@ -15,6 +15,7 @@ import { atomicSwaps } from './lib/constants';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
 import ResendFailedTx from './pages/special/ResendFailedTx';
 import PoolAdmin from './pages/special/PoolAdmin';
+import Curator from './pages/special/Curator';
 
 const authOptions = {
   appDetails: {
@@ -88,6 +89,7 @@ function Content() {
           <StacksSwaps path="/:swapPath" decentralizedID={decentralizedID} />
 
           {authenticated && <UnlistStacksPunks path="/unlist-stacks-punks" />}
+          {authenticated && <Curator path="/curator" />}
           <NFTTransfer path="/nft-transfer" />
           <ResendFailedTx path="/resend" />
           <PoolAdmin path="/pool-admin" />

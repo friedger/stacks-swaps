@@ -35,6 +35,7 @@
     "micro-stacks": "0.6.1",
     "number-to-words": "git+https://github.com/OmgImAlexis/number-to-words.git",
     "react": "18.2.0",
+    "react-bootstrap": "^2.7.4",
     "react-dom": "18.2.0",
     "react-download-link": "^2.3.0",
     "react-input-switch": "^2.2.2",

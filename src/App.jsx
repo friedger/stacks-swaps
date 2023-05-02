@@ -16,6 +16,7 @@ import BitcoinMonkeys from './pages/BitcoinMonkeys';
 import ResendFailedTx from './pages/special/ResendFailedTx';
 import PoolAdmin from './pages/special/PoolAdmin';
 import Curator from './pages/special/Curator';
+import FAQ from './pages/Faq';
 
 const authOptions = {
   appDetails: {
@@ -72,6 +73,7 @@ function Content() {
           {authenticated && <Intro path="/catamaran" hideAtomic />}
 
           <Tac path="/tac" />
+          <FAQ path="/faq" />
           <BitcoinMonkeys path="/bitcoin-monkeys" />
           <StacksSwaps path="/:swapPath/swap/:id" decentralizedID={decentralizedID} />
           <StacksSwaps

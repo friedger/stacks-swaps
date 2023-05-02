@@ -1,0 +1,33 @@
+[
+  {
+    "question": "What can go wrong with catamaran swaps (BTC - STX)?",
+    "answers": [
+      "With Stacks 2.0x, it can happen that Bitcoin transactions can't be verified on the Stacks blockchain due to so-called flash blocks. These Bitcoin blocks were not mined by Stacks miners and they are not visible to the Stacks blockchain. This changes with Stacks 2.1. Therefore, only use these swaps with users that you trust to resolve such a case off-chain."
+    ]
+  },
+  {
+    "question": "What can go wrong with atomic swaps?",
+    "answers": [
+      "- When creating the swap, you could enter the wrong token, you could enter the wrong amount, the UI could calculate the smallest unit of tokens incorrectly. <br/>**Check all details when signing the transaction!**",
+      "- When finalizing the swap, you could have used the wrong swap id. <br/>**Check all details when signing the transaction!**.<br/> The swap can be canceled after 100 blocks. Therefore, make sure that the swap is finalized before. Use a suitable fee."
+    ]
+  },
+  {
+    "question": "Where can I get FRIE tokens to pay fees?",
+    "answers": [
+      "FRIE tokens can be minted at a price of 1 STX = 1 FRIE. The token contract can be found e.g. at <a target='_blank' rel='noopener noreferrer' href='https://explorer.stacks.co/txid/SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1?chain=mainnet'>Stacks explorer (friedger.btc.friedger-token-v1)</a>. All minting fees go to friedger.btc.\n\nCurrently, there is no UI to mint FRIE tokens. Some tokens were distributed as a bonus by Friedger Pool during cycle #16."
+    ]
+  },
+  {
+    "question": "Where can I find more details about the used smart contracts?",
+    "answers": [
+      "The smart contracts are open source and contains several tests. You find the git repo at <a target='_blank' rel='noopener noreferrer' href='https://github.com/friedger/clarity-catamaranswaps'>github.com/friedger/clarity-catamaranswaps</a>."
+    ]
+  },
+  {
+    "question": "What was the first swap?",
+    "answers": [
+      "Read about the first swap of an NFT on Stacks for Bitcoins <a target='_blank' rel='noopener noreferrer' href='https://app.sigle.io/friedger.id/A-l0d8h0Bq7uEGTWl004B'>here</a>."
+    ]
+  }
+]

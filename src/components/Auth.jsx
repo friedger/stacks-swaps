@@ -4,7 +4,7 @@ import GetStartedButton from './GetStartedButton';
 // Authentication button adapting to status
 
 export default function Auth() {
-  const { authenticate, signOut, isSignedIn } = useAuth();
+  const { openAuthRequest, signOut, isSignedIn } = useAuth();
 
   if (isSignedIn) {
     return (
@@ -19,6 +19,6 @@ export default function Auth() {
       </button>
     );
   } else {
-    return <GetStartedButton handleSignIn={authenticate} type="small" />;
+    return <GetStartedButton openAuthRequest={openAuthRequest} type="small" />;
   }
 }

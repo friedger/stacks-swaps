@@ -5,7 +5,7 @@ import { useStxAddresses } from '../lib/hooks';
 
 export function ProfileSmall() {
   const { ownerStxAddress } = useStxAddresses();
-  const { session, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   if (isSignedIn) {
     return (
       <>
@@ -21,7 +21,7 @@ export function ProfileSmall() {
             {ownerStxAddress ? <Address addr={ownerStxAddress} /> : 'Profile'}
           </a>
         </div>
-        <ProfileFull stxAddress={ownerStxAddress} userSession={session} />
+        <ProfileFull stxAddress={ownerStxAddress} />
       </>
     );
   } else {

@@ -37,7 +37,7 @@ export function ProfileFull({ stxAddress }) {
   }, [stxAddress]);
 
   useEffect(() => {
-   // getTxs().then(txs => setTransactions(txs));
+    // getTxs().then(txs => setTransactions(txs));
   }, []);
 
   return (

@@ -20,7 +20,7 @@ export default function NFTTransfer({ userSession }) {
   const [asset, setAsset] = useState();
 
   const { stxAddress } = useAccount();
-  const { authenticate } = useAuth();
+  const { openAuthRequest } = useAuth();
 
   const { openContractCall } = useOpenContractCall({
     onFinish: result => {
@@ -105,7 +105,7 @@ export default function NFTTransfer({ userSession }) {
             {JSON.stringify(status)}
           </>
         ) : (
-          <GetStartedButton handleSignIn={authenticate} />
+          <GetStartedButton openAuthRequest={openAuthRequest} />
         )}
       </div>
     </main>

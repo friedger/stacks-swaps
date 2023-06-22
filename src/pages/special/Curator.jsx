@@ -1,20 +1,8 @@
-import {
-  bufferCV,
-  ClarityType,
-  contractPrincipalCV,
-  cvToHex,
-  noneCV,
-  standardPrincipalCV,
-  stringAsciiCV,
-  tupleCV,
-  uintCV,
-} from 'micro-stacks/clarity';
+import { useAccount, useOpenContractCall } from '@micro-stacks/react';
+import { contractPrincipalCV, noneCV, stringAsciiCV, uintCV } from 'micro-stacks/clarity';
 import { PostConditionMode } from 'micro-stacks/transactions';
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
 import { useState } from 'react';
-import { hexToBytes } from 'micro-stacks/common';
-import { infoApi, smartContractsApi } from '../../lib/constants';
-import { hexToCV } from '../../lib/transactions';
+import { infoApi } from '../../lib/constants';
 
 export default function Curator() {
   const [status, setStatus] = useState();
@@ -59,7 +47,7 @@ export default function Curator() {
           className="btn btn-outline-primary"
           onClick={async () => {
             const info = await infoApi.getCoreApiInfo();
-            const blockHeight = info.stacks_tip_height
+            const blockHeight = info.stacks_tip_height;
             const [contractAddress, contractName] = [
               'SP3XA0MBJ3TD14HRAT0ZP65N933XMG6E6QAS00CTW',
               'fine-art-exhibition-v1',

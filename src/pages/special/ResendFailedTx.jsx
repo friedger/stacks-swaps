@@ -8,7 +8,7 @@ import GetStartedButton from '../../components/GetStartedButton';
 
 export default function ResendFailedTx() {
   const { stxAddress } = useAccount();
-  const { authenticate } = useAuth();
+  const { openAuthRequest } = useAuth();
 
   const [id, setId] = useState();
   const [status, setStatus] = useState();
@@ -25,7 +25,8 @@ export default function ResendFailedTx() {
     <main className="container">
       <div>
         <h1>Resend Failed Transaction</h1>
-        Here you can resend the failed BNS register transaction.<br/>
+        Here you can resend the failed BNS register transaction.
+        <br />
         {stxAddress ? (
           <>
             <br />
@@ -73,7 +74,7 @@ export default function ResendFailedTx() {
             {JSON.stringify(status)}
           </>
         ) : (
-          <GetStartedButton handleSignIn={authenticate} />
+          <GetStartedButton openAuthRequest={openAuthRequest} />
         )}
       </div>
     </main>

@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
-import { contracts, ftFeeContracts, nftFeeContracts, NETWORK } from '../lib/constants';
-import { TxStatus } from './TxStatus';
+import { fetchAccountBalances } from 'micro-stacks/api';
 import { noneCV, principalCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
 import {
   AnchorMode,
-  createAssetInfo,
+  FungibleConditionCode,
   NonFungibleConditionCode,
   PostConditionMode,
-  FungibleConditionCode,
+  createAssetInfo,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
@@ -15,22 +13,13 @@ import {
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
 } from 'micro-stacks/transactions';
-import { fetchAccountBalances } from 'micro-stacks/api';
+import { Fragment, useEffect, useState } from 'react';
+import { NETWORK, contracts, ftFeeContracts, nftFeeContracts } from '../lib/constants';
+import { TxStatus } from './TxStatus';
 
-import { useAuth, useOpenContractCall, useAccount } from '@micro-stacks/react';
-import {
-  BANANA_TOKEN,
-  getAsset,
-  getAssetName,
-  SATOSHIBLES,
-  USDA_TOKEN,
-  XBTC_TOKEN,
-} from './assets';
-import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
-import { saveTxData } from '../lib/transactions';
+import { useAuth, useOpenContractCall } from '@micro-stacks/react';
+import { c32ToB58 } from 'micro-stacks/crypto';
 import { resolveBNS } from '../lib/account';
-import { getFTData, getNFTData } from '../lib/tokenData';
-import { contractToFees } from '../lib/fees';
 import {
   assetInEscrowFromType,
   assetTypeInEscrowFromSwapType,
@@ -44,17 +33,28 @@ import {
   resolveOwnerForNFT,
   splitAssetIdentifier,
 } from '../lib/assets';
+import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
+import { contractToFees } from '../lib/fees';
 import {
+  getAssetInEscrow,
+  isAssetForSaleANonFungibleToken,
+  isAssetInEscrowANonFungibleToken,
   makeCancelSwapPostConditions,
   makeCreateSwapPostConditions,
   makeSubmitPostConditions,
-  isAssetForSaleANonFungibleToken,
-  getAssetInEscrow,
-  isAssetInEscrowANonFungibleToken,
 } from '../lib/swaps';
-import SwapForm from './SwapCreateForm';
+import { getFTData, getNFTData } from '../lib/tokenData';
+import { saveTxData } from '../lib/transactions';
 import GetStartedButton from './GetStartedButton';
-import { c32ToB58 } from 'micro-stacks/crypto';
+import SwapForm from './SwapCreateForm';
+import {
+  BANANA_TOKEN,
+  SATOSHIBLES,
+  USDA_TOKEN,
+  XBTC_TOKEN,
+  getAsset,
+  getAssetName,
+} from './assets';
 
 export function SwapCreate({
   ownerStxAddress,
@@ -81,7 +81,7 @@ export function SwapCreate({
 
   const contract = contracts[type];
   const { openContractCall } = useOpenContractCall();
-  const { handleSignIn } = useAuth();
+  const { openAuthRequest } = useAuth();
 
   const atomicSwap = isAtomic(type);
 
@@ -123,10 +123,10 @@ export function SwapCreate({
       setLoading(false);
       setStatus(
         errors.map((e, index) => (
-          <React.Fragment key={index}>
+          <Fragment key={index}>
             {e}
             <br />
-          </React.Fragment>
+          </Fragment>
         ))
       );
       return;
@@ -965,7 +965,7 @@ export function SwapCreate({
         </p>
       )}
       {!ownerStxAddress ? (
-        <GetStartedButton handleSignIn={handleSignIn} />
+        <GetStartedButton openAuthRequest={openAuthRequest} />
       ) : (
         <SwapForm
           atomicSwap={atomicSwap}

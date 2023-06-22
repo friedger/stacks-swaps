@@ -6,6 +6,7 @@ import {
   InfoApi,
   BlocksApi,
   NamesApi,
+  NonFungibleTokensApi,
 } from '@stacks/blockchain-api-client';
 import { StacksMainnet } from 'micro-stacks/network';
 import {
@@ -279,3 +280,4 @@ export const transactionsApi = new TransactionsApi(config);
 export const infoApi = new InfoApi(config);
 export const blocksApi = new BlocksApi(config);
 export const namesApi = new NamesApi(config);
+export const nonFungibleTokensApi = new NonFungibleTokensApi(config);

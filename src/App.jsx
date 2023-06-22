@@ -1,21 +1,22 @@
-import { Router } from '@reach/router';
 import { ClientProvider, useAccount } from '@micro-stacks/react';
+import { Router } from '@reach/router';
 import Auth from './components/Auth';
-import LandingCat from './pages/LandingCat';
 import Intro from './pages/Intro';
+import LandingCat from './pages/LandingCat';
 
-import Tac from './pages/Tac';
-import StacksSwaps from './pages/StacksSwaps';
 import { ProfileSmall } from './components/ProfileSmall';
-import LandingAtomic from './pages/LandingAtomic';
-import Landing from './pages/Landing';
-import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
-import NFTTransfer from './pages/special/NFTTransfer';
 import { atomicSwaps } from './lib/constants';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
-import ResendFailedTx from './pages/special/ResendFailedTx';
-import PoolAdmin from './pages/special/PoolAdmin';
+import Landing from './pages/Landing';
+import LandingAtomic from './pages/LandingAtomic';
+import StacksSwaps from './pages/StacksSwaps';
+import Tac from './pages/Tac';
+import BTCSportFlagsTransferMany from './pages/special/BTCSportsFlagsTransferMany';
 import Curator from './pages/special/Curator';
+import NFTTransfer from './pages/special/NFTTransfer';
+import PoolAdmin from './pages/special/PoolAdmin';
+import ResendFailedTx from './pages/special/ResendFailedTx';
+import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 
 const authOptions = {
   appDetails: {
@@ -93,6 +94,7 @@ function Content() {
           <NFTTransfer path="/nft-transfer" />
           <ResendFailedTx path="/resend" />
           <PoolAdmin path="/pool-admin" />
+          <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many" />
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

@@ -70,7 +70,7 @@ export default function PoolAdmin() {
   const [rewardCycle3, setRewardCycle3] = useState();
 
   const { stxAddress } = useAccount();
-  const { authenticate } = useAuth();
+  const { openAuthRequest } = useAuth();
 
   const { openContractCall } = useOpenContractCall({
     onFinish: result => {
@@ -207,7 +207,7 @@ export default function PoolAdmin() {
             </button>
           </>
         ) : (
-          <GetStartedButton handleSignIn={authenticate} />
+          <GetStartedButton openAuthRequest={openAuthRequest} />
         )}
       </div>
     </main>

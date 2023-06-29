@@ -17,6 +17,7 @@ import NFTTransfer from './pages/special/NFTTransfer';
 import PoolAdmin from './pages/special/PoolAdmin';
 import ResendFailedTx from './pages/special/ResendFailedTx';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
+import BTCSportFlagsBurnMany from './pages/special/BTCSportsFlagsBurnMany';
 
 const authOptions = {
   appDetails: {
@@ -95,6 +96,7 @@ function Content() {
           <ResendFailedTx path="/resend" />
           <PoolAdmin path="/pool-admin" />
           <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many" />
+          <BTCSportFlagsBurnMany path="/btc-sports-flags-burn-many" />
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

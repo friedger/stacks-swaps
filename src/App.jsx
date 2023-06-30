@@ -95,6 +95,7 @@ function Content() {
           <NFTTransfer path="/nft-transfer" />
           <ResendFailedTx path="/resend" />
           <PoolAdmin path="/pool-admin" />
+          <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many/:receiver" />
           <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many" />
           <BTCSportFlagsBurnMany path="/btc-sports-flags-burn-many" />
         </>

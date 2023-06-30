@@ -1,14 +1,16 @@
 import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
+import { useParams } from '@reach/router';
 import { Box, Button, Text } from '@stacks/ui';
 import { listCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
+import { validateStacksAddress } from 'micro-stacks/crypto';
 import {
   NonFungibleConditionCode,
   makeStandardNonFungiblePostCondition,
 } from 'micro-stacks/transactions';
 import { useEffect, useState } from 'react';
+import GetStartedButton from '../../components/GetStartedButton';
 import { nonFungibleTokensApi } from '../../lib/constants';
 import { points } from './BTCSportsFlags';
-import GetStartedButton from '../../components/GetStartedButton';
 
 function Flag({ flag, onSelect, selectedIds }) {
   const id = flag.value.repr.substr(1);
@@ -33,6 +35,8 @@ export default function BTCSportFlagsTransferMany() {
   const [status, setStatus] = useState();
   const [total, setTotal] = useState();
   const [shown, setShown] = useState();
+
+  const { receiver } = useParams();
 
   const { openAuthRequest } = useAuth();
   const { stxAddress } = useAccount();
@@ -75,10 +79,22 @@ export default function BTCSportFlagsTransferMany() {
     <main className="container">
       <div>
         <h1>BTC Sports Flags/Coins Transfer Many</h1>
-        Hello, use this transfer-many option to transfer flags in bulk to BTC Sports burn wallet
-        (btcsburn.btc) to exchange for promotions. Please go to{' '}
-        <a href="https://discord.gg/btcsports">https://discord.gg/btcsports</a> in order to find out
-        active promotions. Thanks!
+        Hello, use this transfer-many option to transfer flags in bulk to
+        {receiver ? (
+          <>
+            {' '}
+            stacks address {receiver}.{' '}
+            {!validateStacksAddress(receiver) && <b>This address is invalid!</b>}
+            {receiver === stxAddress && <b>This is your address!</b>}
+          </>
+        ) : (
+          <>
+            BTC Sports burn wallet (btcsburn.btc = 'SP15P146EH0NJB7KNGMWX1NB5EE8750ZM2ZB2BK5Z) to
+            exchange for promotions. Please go to{' '}
+            <a href="https://discord.gg/btcsports">https://discord.gg/btcsports</a> in order to find
+            out active promotions. Thanks!
+          </>
+        )}
         <br />
         {stxAddress ? (
           <>
@@ -114,7 +130,10 @@ export default function BTCSportFlagsTransferMany() {
             <br />
             <Button
               className="btn btn-outline-primary"
-              disabled={!stxAddress}
+              disabled={
+                !stxAddress ||
+                (receiver && (!validateStacksAddress(receiver) || receiver === stxAddress))
+              }
               onClick={async () => {
                 await openContractCall({
                   contractAddress: 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X',
@@ -122,7 +141,7 @@ export default function BTCSportFlagsTransferMany() {
                   functionName: 'transfer-many',
                   functionArgs: [
                     listCV(ids.map(id => uintCV(id))),
-                    standardPrincipalCV('SP15P146EH0NJB7KNGMWX1NB5EE8750ZM2ZB2BK5Z'),
+                    standardPrincipalCV(receiver || 'SP15P146EH0NJB7KNGMWX1NB5EE8750ZM2ZB2BK5Z'),
                   ],
                   postConditions: ids.map(id =>
                     makeStandardNonFungiblePostCondition(

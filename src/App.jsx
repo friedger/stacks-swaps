@@ -18,6 +18,7 @@ import PoolAdmin from './pages/special/PoolAdmin';
 import ResendFailedTx from './pages/special/ResendFailedTx';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
 import BTCSportFlagsBurnMany from './pages/special/BTCSportsFlagsBurnMany';
+import Arkadiko from './pages/special/Arkadiko';
 
 const authOptions = {
   appDetails: {
@@ -98,6 +99,7 @@ function Content() {
           <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many/:receiver" />
           <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many" />
           <BTCSportFlagsBurnMany path="/btc-sports-flags-burn-many" />
+          <Arkadiko path="/arkadiko" />
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

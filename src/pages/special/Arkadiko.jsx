@@ -1,7 +1,9 @@
 import { useAccount, useOpenContractCall } from '@micro-stacks/react';
-import { principalCV, uintCV } from 'micro-stacks/clarity';
+import { cvToString, falseCV, principalCV, uintCV } from 'micro-stacks/clarity';
 import {
   FungibleConditionCode,
+  PostConditionMode,
+  callReadOnlyFunction,
   createAssetInfo,
   makeContractFungiblePostCondition,
 } from 'micro-stacks/transactions';
@@ -22,6 +24,24 @@ export default function Arkadiko({}) {
     },
   });
 
+  const fetchRatio = async id => {
+    try {
+      const result = await callReadOnlyFunction({
+        contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+        contractName: 'arkadiko-freddie-v1-1',
+        functionName: 'calculate-current-collateral-to-debt-ratio',
+        functionArgs: [
+          uintCV(id),
+          principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-collateral-types-v3-1'),
+          principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-2'),
+          falseCV(),
+        ],
+      });
+      setStatus(cvToString(result));
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <main className="container">
       <div>
@@ -31,8 +51,11 @@ export default function Arkadiko({}) {
         <input
           onChange={e => {
             const value = parseInt(e.currentTarget.value);
-            console.log(value)
-            if (!isNaN(value)) setId(value);
+            console.log(value);
+            if (!isNaN(value)) {
+              setId(value);
+              fetchRatio(value);
+            }
           }}
           value={id}
         />
@@ -62,6 +85,8 @@ export default function Arkadiko({}) {
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-liquidation-rewards-v1-2'
                 ),
               ],
+              postConditionMode: PostConditionMode.Allow,
+              /*
               postConditions: [
                 makeContractFungiblePostCondition(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
@@ -71,6 +96,7 @@ export default function Arkadiko({}) {
                   createAssetInfo('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR', 'usda-token', 'usda')
                 ),
               ],
+              */
             });
           }}
         >

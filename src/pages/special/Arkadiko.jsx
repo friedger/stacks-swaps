@@ -1,15 +1,10 @@
+import { useAccount, useOpenContractCall } from '@micro-stacks/react';
 import { principalCV, uintCV } from 'micro-stacks/clarity';
 import {
-  createAssetInfo,
   FungibleConditionCode,
+  createAssetInfo,
   makeContractFungiblePostCondition,
-  makeContractNonFungiblePostCondition,
-  makeContractSTXPostCondition,
-  makeStandardSTXPostCondition,
-  NonFungibleConditionCode,
 } from 'micro-stacks/transactions';
-import { useAccount, useOpenContractCall } from '@micro-stacks/react';
-import { BN } from 'bn.js';
 import { useState } from 'react';
 
 export default function Arkadiko({}) {
@@ -33,9 +28,17 @@ export default function Arkadiko({}) {
         <h1>Arkadiko Vault list</h1>
         <br />
         Vault Id
-        <input onChange={text => setId(parseInt(text))} value={id} />
+        <input
+          onChange={e => {
+            const value = parseInt(e.currentTarget.value);
+            console.log(value)
+            if (!isNaN(value)) setId(value);
+          }}
+          value={id}
+        />
         <button
           className="btn btn-outline-primary"
+          disabled={!stxAddress}
           onClick={async () => {
             await openContractCall({
               contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',

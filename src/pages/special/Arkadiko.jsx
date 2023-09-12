@@ -25,6 +25,7 @@ export default function Arkadiko({}) {
   });
 
   const fetchRatio = async id => {
+    setStatus('...');
     try {
       const result = await callReadOnlyFunction({
         contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
@@ -40,6 +41,7 @@ export default function Arkadiko({}) {
       setStatus(cvToString(result));
     } catch (e) {
       console.log(e);
+      setStatus("");
     }
   };
   return (
@@ -50,11 +52,19 @@ export default function Arkadiko({}) {
         Vault Id
         <input
           onChange={e => {
-            const value = parseInt(e.currentTarget.value);
-            console.log(value);
-            if (!isNaN(value)) {
-              setId(value);
-              fetchRatio(value);
+            try {
+              const value = parseInt(e.currentTarget.value);
+              console.log(value);
+              if (!isNaN(value)) {
+                setId(value);
+                fetchRatio(value);
+              } else {
+                setId();
+                setStatus('');
+              }
+            } catch (e) {
+              console.log(e);
+              setStatus('');
             }
           }}
           value={id}
@@ -85,9 +95,18 @@ export default function Arkadiko({}) {
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-liquidation-rewards-v1-2'
                 ),
               ],
-              postConditionMode: PostConditionMode.Allow,
-              /*
+              postConditionMode: PostConditionMode.Deny,
+
               postConditions: [
+                // event 4
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-sip10-reserve-v1-1',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
+                ),
+                // event 7
                 makeContractFungiblePostCondition(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
                   'arkadiko-liquidation-pool-v1-1',
@@ -95,8 +114,48 @@ export default function Arkadiko({}) {
                   0,
                   createAssetInfo('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR', 'usda-token', 'usda')
                 ),
+                // event 10
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-auction-engine-v4-5',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token::usda'
+                ),
+                // event 11
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-sip10-reserve-v2-1',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
+                ),
+                // event 13
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-auction-engine-v4-5',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
+                ),
+
+                // event 17
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-auction-engine-v4-5',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token::diko'
+                ),
+                // event 19
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-swap-v2-1',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token::usda'
+                ),
               ],
-              */
             });
           }}
         >

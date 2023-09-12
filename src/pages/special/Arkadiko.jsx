@@ -1,15 +1,33 @@
 import { useAccount, useOpenContractCall } from '@micro-stacks/react';
-import { cvToString, falseCV, principalCV, uintCV } from 'micro-stacks/clarity';
+import {
+  ClarityType,
+  contractPrincipalCV,
+  cvToString,
+  falseCV,
+  noneCV,
+  principalCV,
+  uintCV,
+} from 'micro-stacks/clarity';
 import {
   FungibleConditionCode,
   PostConditionMode,
   callReadOnlyFunction,
-  createAssetInfo,
-  makeContractFungiblePostCondition,
+  makeContractFungiblePostCondition
 } from 'micro-stacks/transactions';
 import { useState } from 'react';
 
-export default function Arkadiko({}) {
+const sleep = () => new Promise(resolve => setTimeout(resolve, 5000));
+
+const fetchVaultById = async id => {
+  return callReadOnlyFunction({
+    contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+    contractName: 'arkadiko-freddie-v1-1',
+    functionName: 'get-vault-by-id',
+    functionArgs: [uintCV(id)],
+  });
+};
+
+export default function Arkadiko() {
   const [id, setId] = useState(2458);
   const [status, setStatus] = useState();
 
@@ -25,8 +43,8 @@ export default function Arkadiko({}) {
   });
 
   const fetchRatio = async id => {
-    setStatus('...');
     try {
+      const vault = await fetchVaultById(id);
       const result = await callReadOnlyFunction({
         contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
         contractName: 'arkadiko-freddie-v1-1',
@@ -38,12 +56,17 @@ export default function Arkadiko({}) {
           falseCV(),
         ],
       });
-      setStatus(cvToString(result));
+      const isBelow180 =
+        result.type === ClarityType.ResponseOk &&
+        result.value.value <= 180 &&
+        result.value.value > 0;
+      return { id, vault, result, isBelow180 };
     } catch (e) {
       console.log(e);
-      setStatus("");
     }
+    return { id, vault: noneCV(), result: noneCV() };
   };
+
   return (
     <main className="container">
       <div>
@@ -54,10 +77,12 @@ export default function Arkadiko({}) {
           onChange={e => {
             try {
               const value = parseInt(e.currentTarget.value);
-              console.log(value);
               if (!isNaN(value)) {
+                fetchRatio(value).then(({ id, vault, result }) => {
+                  console.log(id, cvToString(result), cvToString(vault));
+                  setStatus(cvToString(result));
+                });
                 setId(value);
-                fetchRatio(value);
               } else {
                 setId();
                 setStatus('');
@@ -73,6 +98,27 @@ export default function Arkadiko({}) {
           className="btn btn-outline-primary"
           disabled={!stxAddress}
           onClick={async () => {
+            const vault = await fetchVaultById(id);
+            if (vault.data['auction-ended'].type === ClarityType.BoolTrue) {
+              setStatus('Auction already ended');
+              return;
+            }
+            const collToken = vault.data['collateral-token'].data;
+            const ft =
+              collToken === 'STX'
+                ? principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token')
+                : collToken === 'xBTC'
+                ? principalCV('SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin')
+                : // auto-alex
+                  principalCV('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.auto-alex');
+            const reserveName =
+              vault.data['revoked-stacking'].type === ClarityType.BoolFalse
+                ? 'arkadiko-sip10-reserve-v2-1'
+                : 'arkadiko-stx-reserve-v1-1';
+            const reserve = contractPrincipalCV(
+              'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+              reserveName
+            );
             await openContractCall({
               contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
               contractName: 'arkadiko-auction-engine-v4-5',
@@ -84,10 +130,8 @@ export default function Arkadiko({}) {
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-collateral-types-v3-1'
                 ),
                 principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-2'),
-                principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token'),
-                principalCV(
-                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-sip10-reserve-v2-1'
-                ),
+                ft,
+                reserve,
                 principalCV(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-liquidation-pool-v1-1'
                 ),
@@ -95,13 +139,21 @@ export default function Arkadiko({}) {
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-liquidation-rewards-v1-2'
                 ),
               ],
-              postConditionMode: PostConditionMode.Deny,
+              postConditionMode: PostConditionMode.Allow,
 
               postConditions: [
-                // event 4
+                // xstx is minted and burnt in reserve v1.1
                 makeContractFungiblePostCondition(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
                   'arkadiko-sip10-reserve-v1-1',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
+                ),
+                // event 4
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  reserveName,
                   FungibleConditionCode.GreaterEqual,
                   0,
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
@@ -112,7 +164,7 @@ export default function Arkadiko({}) {
                   'arkadiko-liquidation-pool-v1-1',
                   FungibleConditionCode.GreaterEqual,
                   0,
-                  createAssetInfo('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR', 'usda-token', 'usda')
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token::usda'
                 ),
                 // event 10
                 makeContractFungiblePostCondition(
@@ -125,7 +177,7 @@ export default function Arkadiko({}) {
                 // event 11
                 makeContractFungiblePostCondition(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
-                  'arkadiko-sip10-reserve-v2-1',
+                  reserveName,
                   FungibleConditionCode.GreaterEqual,
                   0,
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
@@ -138,7 +190,6 @@ export default function Arkadiko({}) {
                   0,
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token::xstx'
                 ),
-
                 // event 17
                 makeContractFungiblePostCondition(
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
@@ -154,6 +205,40 @@ export default function Arkadiko({}) {
                   FungibleConditionCode.GreaterEqual,
                   0,
                   'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token::usda'
+                ),
+
+                // auto-alex reserve
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  reserveName,
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.auto-alex::auto-alex'
+                ),
+                // auto-alex auction
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-auction-engine-v4-5',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.auto-alex::auto-alex'
+                ),
+
+                // xbtc reserve
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  reserveName,
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin::wrapped-bitcoin'
+                ),
+                // xbtc auction
+                makeContractFungiblePostCondition(
+                  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',
+                  'arkadiko-auction-engine-v4-5',
+                  FungibleConditionCode.GreaterEqual,
+                  0,
+                  'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin::wrapped-bitcoin'
                 ),
               ],
             });

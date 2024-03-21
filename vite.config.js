@@ -1,30 +1,19 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import { defineConfig } from 'vite';
+import eslint from 'vite-plugin-eslint';
+import svgr from 'vite-plugin-svgr';
 
-export default defineConfig(() => ({
-  esbuild: {
-    loader: 'jsx',
-    include: /src\/.*\.jsx?$/,
-    exclude: [],
-    jsxInject: `import React from 'react'`,
-  },
-  build: {
-    target: 'esnext',
-    outDir: 'build',
-  },
-  plugins: [react()],
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'esnext',
-      define: {
-        global: 'globalThis',
-      },
-      plugins: [
-        NodeGlobalsPolyfillPlugin({
-          buffer: true,
-        }),
-      ],
+export default defineConfig(() => {
+  return {
+    build: {
+      outDir: 'build',
     },
-  },
-}));
+    plugins: [
+      react(),
+      svgr({
+        include: '**/*.svg?react',
+      }),
+      eslint(),
+    ],
+  };
+});

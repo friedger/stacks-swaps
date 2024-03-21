@@ -1,69 +1,53 @@
 {
-  "name": "stacks-swaps",
-  "version": "0.0.1",
-  "description": "Swapping BTC for tokens on the Stacks chain",
-  "author": "Friedger Müffke",
-  "contributors": [
-    {
-      "name": "Friedger Müffke",
-      "email": "mail@friedger.de",
-      "url": "https://friedger.de/"
-    }
-  ],
-  "license": "GPL-3.0-or-later",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/friedger/stacks-swaps.git"
-  },
+  "name": "catamaranswap",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
   "prettier": "@stacks/prettier-config",
   "dependencies": {
-    "@bitauth/libauth": "^2.1.0",
-    "@emotion/react": "^11.11.4",
-    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
-    "@noble/hashes": "^1.3.3",
-    "@stacks/blockchain-api-client": "^7.8.2",
-    "@stacks/common": "^6.10.0",
+    "@reduxjs/toolkit": "^2.2.2",
+    "@stacks/blockchain-api-client": "^7.9.0",
     "@stacks/connect": "^7.7.1",
     "@stacks/connect-react": "^22.4.2",
     "@stacks/network": "^6.11.3",
-    "@stacks/storage": "^6.12.0",
-    "@stacks/transactions": "^6.12.0",
-    "@stacks/ui": "^7.10.0",
-    "bitcoinjs-lib": "^6.1.5",
-    "c32check": "^2.0.0",
-    "crypto-js": "^4.2.0",
-    "jotai": "^2.7.0",
-    "lodash.groupby": "^4.6.0",
-    "merkletreejs": "0.3.11",
-    "number-to-words": "git+https://github.com/OmgImAlexis/number-to-words.git",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-download-link": "^2.3.0",
-    "react-image-gallery": "^1.3.0",
-    "react-input-switch": "^2.2.2",
-    "react-jdenticon": "^1.1.0",
-    "react-router-dom": "^6.22.2"
+    "@stacks/transactions": "^6.12.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.67",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "axios": "^1.6.8",
+    "cross-fetch": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.1.0",
+    "react-router-dom": "^6.22.3",
+    "react-toastify": "^10.0.5",
+    "redux-persist": "^6.0.0",
+    "typescript": "^5.4.3",
+    "vite": "^5.2.2",
+    "vite-plugin-svgr": "^4.2.0",
+    "web-vitals": "^3.5.2"
   },
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "lint:prettier:fix": "prettier --write \"src/**/*.{js,jsx}\""
+    "serve": "vite preview"
   },
   "eslintConfig": {
-    "extends": "react-app",
-    "env": {
-      "es2020": true
-    }
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all",
-      "not ie <= 99",
-      "not android <= 4.4.4"
+      "not op_mini all"
     ],
     "development": [
       "last 1 chrome version",
@@ -71,20 +55,14 @@
       "last 1 safari version"
     ]
   },
-  "engines": {
-    "node": ">=14"
-  },
   "devDependencies": {
-    "@popperjs/core": "2.11.8",
     "@stacks/prettier-config": "^0.0.10",
-    "@types/react": "^18.2.62",
-    "@types/react-dom": "^18.2.19",
-    "@vitejs/plugin-react": "^4.2.1",
-    "bootstrap": "5.3.3",
-    "postcss-normalize": "^10.0.1",
-    "prettier": "^3.2.5",
-    "react-scripts": "^5.0.1",
-    "react-test-renderer": "^18.2.0",
-    "vite": "^5.1.5"
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }

@@ -1,27 +1,25 @@
-import { useContractCall } from '@micro-stacks/react';
+import { useContractCall } from '@stacks/connect-react';
 import {
+  AnchorMode,
+  FungibleConditionCode,
+  NonFungibleConditionCode,
+  PostConditionMode,
   contractPrincipalCV,
+  createAssetInfo,
   cvToString,
   hexToCV,
   listCV,
+  makeContractSTXPostCondition,
+  makeStandardNonFungiblePostCondition,
+  makeStandardSTXPostCondition,
   someCV,
   standardPrincipalCV,
   trueCV,
   uintCV,
-} from 'micro-stacks/clarity';
-import {
-  AnchorMode,
-  createAssetInfo,
-  FungibleConditionCode,
-  makeContractSTXPostCondition,
-  makeStandardNonFungiblePostCondition,
-  makeStandardSTXPostCondition,
-  NonFungibleConditionCode,
-  PostConditionMode,
-} from 'micro-stacks/transactions';
+} from '@stacks/transactions';
 import { BN } from 'bn.js';
 import { useEffect, useState } from 'react';
-import { accountsApi, NETWORK } from '../../lib/constants';
+import { NETWORK, accountsApi } from '../../lib/constants';
 
 const feesCV = contractPrincipalCV(
   'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',

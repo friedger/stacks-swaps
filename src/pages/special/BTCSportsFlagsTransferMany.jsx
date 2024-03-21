@@ -1,15 +1,16 @@
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
 import { useParams } from '@reach/router';
-import { Box, Button, Text } from '@stacks/ui';
-import { listCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
-import { validateStacksAddress } from 'micro-stacks/crypto';
 import {
   NonFungibleConditionCode,
+  listCV,
   makeStandardNonFungiblePostCondition,
-} from 'micro-stacks/transactions';
+  standardPrincipalCV,
+  uintCV,
+  validateStacksAddress,
+} from '@stacks/transactions';
 import { useEffect, useState } from 'react';
 import GetStartedButton from '../../components/GetStartedButton';
 import { nonFungibleTokensApi } from '../../lib/constants';
+import { useAccount, useAuth, useOpenContractCall } from '../../lib/hooks';
 import { points } from './BTCSportsFlags';
 
 function Flag({ flag, onSelect, selectedIds }) {
@@ -102,11 +103,11 @@ export default function BTCSportFlagsTransferMany() {
               <>
                 Showing {shown} / {total}
                 <br />
-                <Box justifyContent="center" p="tight" columnGap="loose">
+                <div justifyContent="center" p="tight" columnGap="loose">
                   {flags.map((flag, i) => {
                     return <Flag key={i} flag={flag} onSelect={onSelect} selectedIds={ids} />;
                   })}
-                </Box>
+                </div>
               </>
             ) : (
               <>Loading your NFTs</>
@@ -114,7 +115,7 @@ export default function BTCSportFlagsTransferMany() {
             <br />
             Selected {ids.length}
             <br />
-            <Box justifyContent="center" p="tight" columnGap="loose">
+            <div justifyContent="center" p="tight" columnGap="loose">
               {ids.map((id, i) => {
                 return (
                   <Text key={i} m="5px" background="yellow">
@@ -122,13 +123,13 @@ export default function BTCSportFlagsTransferMany() {
                   </Text>
                 );
               })}
-            </Box>
-            <Button mode="tertiary" onClick={() => setIds([])}>
+            </div>
+            <button mode="tertiary" onClick={() => setIds([])}>
               Clear Selection
-            </Button>
+            </button>
             <br />
             <br />
-            <Button
+            <button
               className="btn btn-outline-primary"
               disabled={
                 !stxAddress ||
@@ -155,7 +156,7 @@ export default function BTCSportFlagsTransferMany() {
               }}
             >
               Transfer Selected Items
-            </Button>
+            </button>
             <br />
             {JSON.stringify(status)}
           </>

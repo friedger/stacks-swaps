@@ -1,11 +1,10 @@
 import {
+  ClarityType,
+  cvToHex,
+  cvToString,
   hexToCV as stacksHexToCV,
   uintCV,
-  ClarityType,
-  cvToString,
-  cvToHex,
-} from 'micro-stacks/clarity';
-import { getFile, putFile } from 'micro-stacks/storage';
+} from '@stacks/transactions';
 import {
   accountsApi,
   chainSuffix,

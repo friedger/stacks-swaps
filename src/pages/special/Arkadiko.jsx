@@ -1,20 +1,18 @@
-import { useAccount, useOpenContractCall } from '@micro-stacks/react';
 import {
   ClarityType,
-  contractPrincipalCV,
-  cvToString,
-  falseCV,
-  noneCV,
-  principalCV,
-  uintCV,
-} from 'micro-stacks/clarity';
-import {
   FungibleConditionCode,
   PostConditionMode,
   callReadOnlyFunction,
-  makeContractFungiblePostCondition
-} from 'micro-stacks/transactions';
+  contractPrincipalCV,
+  cvToString,
+  falseCV,
+  makeContractFungiblePostCondition,
+  noneCV,
+  principalCV,
+  uintCV,
+} from '@stacks/transactions';
 import { useState } from 'react';
+import { useAccount, useOpenContractCall } from '../../lib/hooks';
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -108,9 +106,9 @@ export default function Arkadiko() {
               collToken === 'STX'
                 ? principalCV('SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.xstx-token')
                 : collToken === 'xBTC'
-                ? principalCV('SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin')
-                : // auto-alex
-                  principalCV('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.auto-alex');
+                  ? principalCV('SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin')
+                  : // auto-alex
+                    principalCV('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.auto-alex');
             const reserveName =
               vault.data['revoked-stacking'].type === ClarityType.BoolFalse
                 ? 'arkadiko-sip10-reserve-v2-1'

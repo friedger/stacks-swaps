@@ -1,13 +1,13 @@
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
-import { Box, Button, Text } from '@stacks/ui';
-import { listCV, uintCV } from 'micro-stacks/clarity';
 import {
   NonFungibleConditionCode,
+  listCV,
   makeStandardNonFungiblePostCondition,
-} from 'micro-stacks/transactions';
+  uintCV,
+} from '@stacks/transactions';
 import { useEffect, useState } from 'react';
 import GetStartedButton from '../../components/GetStartedButton';
 import { nonFungibleTokensApi } from '../../lib/constants';
+import { useAccount, useAuth, useOpenContractCall } from '../../lib/hooks';
 import { points } from './BTCSportsFlags';
 
 function Flag({ flag, onSelect, selectedIds }) {
@@ -106,12 +106,12 @@ export default function BTCSportFlagsBurnMany() {
                 );
               })}
             </Box>
-            <Button mode="tertiary" onClick={() => setIds([])}>
+            <button mode="tertiary" onClick={() => setIds([])}>
               Clear Selection
-            </Button>
+            </button>
             <br />
             <br />
-            <Button
+            <button
               className="btn btn-outline-primary"
               disabled={!stxAddress}
               onClick={async () => {
@@ -119,9 +119,7 @@ export default function BTCSportFlagsBurnMany() {
                   contractAddress: 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X',
                   contractName: 'btc-sports-flags-burn-many',
                   functionName: 'burn-many',
-                  functionArgs: [
-                    listCV(ids.map(id => uintCV(id))),
-                  ],
+                  functionArgs: [listCV(ids.map(id => uintCV(id)))],
                   postConditions: ids.map(id =>
                     makeStandardNonFungiblePostCondition(
                       stxAddress,
@@ -134,7 +132,7 @@ export default function BTCSportFlagsBurnMany() {
               }}
             >
               Burn Selected Items
-            </Button>
+            </button>
             <br />
             {JSON.stringify(status)}
           </>

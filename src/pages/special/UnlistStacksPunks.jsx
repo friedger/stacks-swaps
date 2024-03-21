@@ -1,14 +1,14 @@
-import { uintCV } from 'micro-stacks/clarity';
 import {
   createAssetInfo,
   FungibleConditionCode,
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
   NonFungibleConditionCode,
-} from 'micro-stacks/transactions';
-import { useOpenContractCall } from '@micro-stacks/react';
+  uintCV,
+} from '@stacks/transactions';
 import { BN } from 'bn.js';
 import { useState } from 'react';
+import { useOpenContractCall } from '../../lib/hooks';
 
 export default function UnlistStacksPunks({ userSession }) {
   const [id, setId] = useState();

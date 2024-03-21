@@ -1,25 +1,19 @@
-import { useRef, useState } from 'react';
-import {
-  BTC_FT_SWAP_CONTRACT,
-  BTC_NFT_SWAP_CONTRACT,
-  BTC_STX_SWAP_CONTRACT,
-  contracts,
-  NETWORK,
-  smartContractsApi,
-} from '../lib/constants';
-import { TxStatus } from './TxStatus';
-import { contractPrincipalCV, cvToHex, cvToString, hexToCV, uintCV } from 'micro-stacks/clarity';
 import {
   AnchorMode,
-  createAssetInfo,
   FungibleConditionCode,
+  NonFungibleConditionCode,
+  PostConditionMode,
+  contractPrincipalCV,
+  createAssetInfo,
+  cvToHex,
+  cvToString,
+  hexToCV,
   makeContractFungiblePostCondition,
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
-  NonFungibleConditionCode,
-  PostConditionMode,
-} from 'micro-stacks/transactions';
-import { useOpenContractCall } from '@micro-stacks/react';
+  uintCV,
+} from '@stacks/transactions';
+import { useRef, useState } from 'react';
 import {
   getReversedTxId,
   paramsFromTx,
@@ -31,8 +25,17 @@ import {
   wasTxMined,
   wasTxMinedFromHex,
 } from '../lib/btcTransactions';
-import { getAsset, getAssetName } from './assets';
+import {
+  BTC_FT_SWAP_CONTRACT,
+  BTC_NFT_SWAP_CONTRACT,
+  BTC_STX_SWAP_CONTRACT,
+  contracts,
+  smartContractsApi,
+} from '../lib/constants';
 import { saveTxData } from '../lib/transactions';
+import { TxStatus } from './TxStatus';
+import { getAsset, getAssetName } from './assets';
+import { useOpenContractCall } from '../lib/hooks';
 
 export function SwapSubmit({ type, trait, id }) {
   const swapIdRef = useRef();

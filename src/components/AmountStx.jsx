@@ -1,5 +1,5 @@
+import { useAtomValue } from 'jotai';
 import { STX_USD } from '../lib/price';
-import { useAtomValue } from 'jotai/utils';
 
 export function AmountStx({ ustx }) {
   const rate = useAtomValue(STX_USD);

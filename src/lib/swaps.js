@@ -8,7 +8,7 @@ import {
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
   NonFungibleConditionCode,
-} from 'micro-stacks/transactions';
+} from '@stacks/transactions';
 import { BANANA_TOKEN, SATOSHIBLES, USDA_TOKEN, XBTC_TOKEN } from '../components/assets';
 import { splitAssetIdentifier } from './assets';
 

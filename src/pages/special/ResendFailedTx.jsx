@@ -1,10 +1,9 @@
-import { ClarityType } from 'micro-stacks/clarity';
-import { callReadOnlyFunction, PostConditionMode } from 'micro-stacks/transactions';
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
+import { ClarityType, PostConditionMode } from '@stacks/transactions';
 import { useState } from 'react';
-import { namesApi, transactionsApi } from '../../lib/constants';
-import { hexToCV } from '../../lib/transactions';
 import GetStartedButton from '../../components/GetStartedButton';
+import { transactionsApi } from '../../lib/constants';
+import { useAccount, useAuth, useOpenContractCall } from '../../lib/hooks';
+import { hexToCV } from '../../lib/transactions';
 
 export default function ResendFailedTx() {
   const { stxAddress } = useAccount();

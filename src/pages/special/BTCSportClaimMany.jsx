@@ -1,15 +1,6 @@
-import { uintCV } from 'micro-stacks/clarity';
-import {
-  createAssetInfo,
-  FungibleConditionCode,
-  makeContractNonFungiblePostCondition,
-  makeContractSTXPostCondition,
-  makeStandardSTXPostCondition,
-  NonFungibleConditionCode,
-} from 'micro-stacks/transactions';
-import { useAccount, useOpenContractCall } from '@micro-stacks/react';
-import { BN } from 'bn.js';
+import { FungibleConditionCode, makeStandardSTXPostCondition } from '@stacks/transactions';
 import { useState } from 'react';
+import { useAccount, useOpenContractCall } from '../../lib/hooks';
 
 export default function BTCSportClaimMany({}) {
   const [id, setId] = useState();
@@ -46,7 +37,7 @@ export default function BTCSportClaimMany({}) {
             });
           }}
         >
-          Claim Three 
+          Claim Three
         </button>
         <br />
         {JSON.stringify(status)}

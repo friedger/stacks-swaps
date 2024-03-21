@@ -1,8 +1,13 @@
-import { useAccount, useOpenContractCall } from '@micro-stacks/react';
-import { contractPrincipalCV, noneCV, stringAsciiCV, uintCV } from 'micro-stacks/clarity';
-import { PostConditionMode } from 'micro-stacks/transactions';
+import {
+  PostConditionMode,
+  contractPrincipalCV,
+  noneCV,
+  stringAsciiCV,
+  uintCV,
+} from '@stacks/transactions';
 import { useState } from 'react';
 import { infoApi } from '../../lib/constants';
+import { useAccount, useOpenContractCall } from '../../lib/hooks';
 
 export default function Curator() {
   const [status, setStatus] = useState();

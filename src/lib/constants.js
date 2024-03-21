@@ -1,14 +1,14 @@
 import {
-  TransactionsApi,
-  SmartContractsApi,
   AccountsApi,
+  BlocksApi,
   Configuration,
   InfoApi,
-  BlocksApi,
   NamesApi,
   NonFungibleTokensApi,
+  SmartContractsApi,
+  TransactionsApi,
 } from '@stacks/blockchain-api-client';
-import { StacksMainnet } from 'micro-stacks/network';
+import { StacksMainnet } from '@stacks/network';
 import {
   BANANA_TOKEN,
   BITCOIN_MONKEYS,

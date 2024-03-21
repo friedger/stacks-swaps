@@ -1,5 +1,9 @@
-import { ClarityType, contractPrincipalCV, cvToString } from 'micro-stacks/clarity';
-import { callReadOnlyFunction } from 'micro-stacks/transactions';
+import {
+  ClarityType,
+  callReadOnlyFunction,
+  contractPrincipalCV,
+  cvToString,
+} from '@stacks/transactions';
 import { feeOptionsByType } from './constants';
 
 export async function contractToFees(feeContract, amountInEscrowCV) {

@@ -1,11 +1,9 @@
-import { ClarityType, contractPrincipalCV, cvToString, uintCV } from 'micro-stacks/clarity';
+import { callReadOnlyFunction, fetchNamesByAddress } from '@stacks/blockchain-api-client';
+import { ClarityType, contractPrincipalCV, cvToString, uintCV } from '@stacks/transactions';
+import { c32ToB58 } from 'c32check';
+import { XBTC_TOKEN, getAsset } from '../components/assets';
 import { pubscriptCVToBtcAddress, stxAddressFromBtcAddress } from './btcTransactions';
-import { getFTData, getNFTData } from './tokenData';
-import { optionalCVToString } from './transactions';
-import { ftFeeContracts, NETWORK, nftFeeContracts } from './constants';
-import { callReadOnlyFunction, fetchNamesByAddress } from 'micro-stacks/api';
-import { fetchPrivate } from 'micro-stacks/common';
-import { BANANA_TOKEN, getAsset, XBTC_TOKEN } from '../components/assets';
+import { NETWORK, ftFeeContracts, nftFeeContracts } from './constants';
 import {
   amountOrIdPropertyForSaleFromSwapsType,
   amountOrIdPropertyInEscrowFromSwapsEntry,
@@ -15,7 +13,8 @@ import {
   sellerPropertyFromSwapType,
 } from './swapMapEntries';
 import { getAssetInEscrow, traitForSaleFromSwapsEntry } from './swaps';
-import { c32ToB58 } from 'micro-stacks/crypto';
+import { getFTData, getNFTData } from './tokenData';
+import { optionalCVToString } from './transactions';
 
 /**
  *
@@ -37,14 +36,14 @@ export function buyAssetFromType(type) {
   return type.startsWith('stx-') //
     ? 'STX'
     : type.startsWith('banana-')
-    ? 'BANANA'
-    : type.startsWith('usda-')
-    ? 'USDA'
-    : type.startsWith('xbtc-')
-    ? 'xBTC'
-    : type.startsWith('satoshible-')
-    ? 'Satoshible'
-    : 'BTC';
+      ? 'BANANA'
+      : type.startsWith('usda-')
+        ? 'USDA'
+        : type.startsWith('xbtc-')
+          ? 'xBTC'
+          : type.startsWith('satoshible-')
+            ? 'Satoshible'
+            : 'BTC';
 }
 
 export function assetInEscrowFromType(type) {
@@ -65,23 +64,23 @@ export function getBuyLabelFromType(type) {
     ? type === 'stx-nft'
       ? `Price for NFT in STXs`
       : type === 'banana-nft'
-      ? 'Price of NFT in $BANANAs'
-      : type === 'banana-ft'
-      ? 'amount of $BANANA'
-      : type.startsWith('satoshible-')
-      ? 'ID of Satoshible'
-      : type === 'usda-nft'
-      ? 'Price of NFT in USDA'
-      : type === 'usda-ft'
-      ? 'amount of USDA'
-      : type === 'xbtc-nft'
-      ? 'Price of NFT in xBTC'
-      : type === 'xbtc-ft'
-      ? 'amount of xBTC'
-      : `amount of STXs` // default for atomic swaps
+        ? 'Price of NFT in $BANANAs'
+        : type === 'banana-ft'
+          ? 'amount of $BANANA'
+          : type.startsWith('satoshible-')
+            ? 'ID of Satoshible'
+            : type === 'usda-nft'
+              ? 'Price of NFT in USDA'
+              : type === 'usda-ft'
+                ? 'amount of USDA'
+                : type === 'xbtc-nft'
+                  ? 'Price of NFT in xBTC'
+                  : type === 'xbtc-ft'
+                    ? 'amount of xBTC'
+                    : `amount of STXs` // default for atomic swaps
     : type === 'nft'
-    ? `Price for NFT in Bitcoin`
-    : `amount of Bitcoins`; // type === stx or ft
+      ? `Price for NFT in Bitcoin`
+      : `amount of Bitcoins`; // type === stx or ft
 }
 
 export function getBuyLabelFromType2(type) {
@@ -89,39 +88,39 @@ export function getBuyLabelFromType2(type) {
     ? type === 'stx-nft'
       ? `Price for NFT in STXs`
       : type === 'banana-nft'
-      ? 'Price of NFT in $BANANAs'
-      : type === 'banana-ft'
-      ? 'amount of $BANANA'
-      : type.startsWith('satoshible-')
-      ? 'ID of Satoshible'
-      : type === 'usda-nft'
-      ? 'Price of NFT in USDA'
-      : type === 'usda-ft'
-      ? 'amount of USDA'
-      : type === 'xbtc-nft'
-      ? 'Price of NFT in xBTC'
-      : type === 'xbtc-ft'
-      ? 'amount of xBTC'
-      : `amount of STXs` // default for atomic swaps
+        ? 'Price of NFT in $BANANAs'
+        : type === 'banana-ft'
+          ? 'amount of $BANANA'
+          : type.startsWith('satoshible-')
+            ? 'ID of Satoshible'
+            : type === 'usda-nft'
+              ? 'Price of NFT in USDA'
+              : type === 'usda-ft'
+                ? 'amount of USDA'
+                : type === 'xbtc-nft'
+                  ? 'Price of NFT in xBTC'
+                  : type === 'xbtc-ft'
+                    ? 'amount of xBTC'
+                    : `amount of STXs` // default for atomic swaps
     : type === 'stx'
-    ? 'amount of STXs'
-    : type === 'usda'
-    ? 'amount of USDA'
-    : type === 'xbtc'
-    ? 'amount of XBTC'
-    : 'amount';
+      ? 'amount of STXs'
+      : type === 'usda'
+        ? 'amount of USDA'
+        : type === 'xbtc'
+          ? 'amount of XBTC'
+          : 'amount';
 }
 
 export function buyDecimalsFromType(type) {
   return type.startsWith('stx-') //
     ? 6
     : type.startsWith('banana-')
-    ? 6
-    : type.startsWith('usda-')
-    ? 6
-    : type.startsWith('xbtc-')
-    ? 8
-    : 8;
+      ? 6
+      : type.startsWith('usda-')
+        ? 6
+        : type.startsWith('xbtc-')
+          ? 8
+          : 8;
 }
 
 export function buyDecimalsFromType2(type) {
@@ -130,12 +129,12 @@ export function buyDecimalsFromType2(type) {
   return escrow === 'stx' //
     ? 6
     : escrow === 'banana'
-    ? 6
-    : escrow === 'usda'
-    ? 6
-    : escrow === 'xbtc'
-    ? 8
-    : 0;
+      ? 6
+      : escrow === 'usda'
+        ? 6
+        : escrow === 'xbtc'
+          ? 8
+          : 0;
 }
 
 export async function getFtDataFromSwapsEntry(swapsEntry, type) {
@@ -166,24 +165,24 @@ export function factorAssetInEscrowFromSwapType(type) {
   return type.startsWith('stx') //
     ? 1_000_000
     : type.startsWith('banana-')
-    ? 1_000_000
-    : type.startsWith('usda')
-    ? 1_000_000
-    : type.startsWith('xbtc')
-    ? 100_000_000
-    : type.startsWith('satoshible')
-    ? 1
-    : 100_000_000;
+      ? 1_000_000
+      : type.startsWith('usda')
+        ? 1_000_000
+        : type.startsWith('xbtc')
+          ? 100_000_000
+          : type.startsWith('satoshible')
+            ? 1
+            : 100_000_000;
 }
 
 export function factorAssetForSaleFromSwapType(type, trait) {
   return type === 'stx' || type === 'ft' || type === 'nft'
     ? 100_000_000
     : type.endsWith('-nft')
-    ? 1
-    : trait === XBTC_TOKEN
-    ? 100_000_000
-    : 1_000_000;
+      ? 1
+      : trait === XBTC_TOKEN
+        ? 100_000_000
+        : 1_000_000;
 }
 
 // returns number with decimals or nft id
@@ -250,8 +249,8 @@ export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, o
   const doneFromSwap = swapsEntry.data['done']
     ? Number(swapsEntry.data['done'].value)
     : swapsEntry.data['open'].type === ClarityType.BoolTrue
-    ? 0
-    : 1;
+      ? 0
+      : 1;
 
   setFormData({
     amountOrIdInEscrow,

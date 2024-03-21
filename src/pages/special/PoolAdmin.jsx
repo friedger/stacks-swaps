@@ -1,18 +1,18 @@
+import { hexToBytes } from '@stacks/common';
 import {
   bufferCV,
   ClarityType,
   cvToHex,
+  PostConditionMode,
   standardPrincipalCV,
   tupleCV,
   uintCV,
-} from 'micro-stacks/clarity';
-import { PostConditionMode } from 'micro-stacks/transactions';
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
+} from '@stacks/transactions';
 import { useState } from 'react';
-import { hexToBytes } from 'micro-stacks/common';
-import { smartContractsApi } from '../../lib/constants';
-import { hexToCV } from '../../lib/transactions';
 import GetStartedButton from '../../components/GetStartedButton';
+import { smartContractsApi } from '../../lib/constants';
+import { useAccount, useOpenContractCall } from '../../lib/hooks';
+import { hexToCV } from '../../lib/transactions';
 
 export async function getPartialStacked(stxAddress, rewardCycle, hashbytes, version) {
   const key = cvToHex(

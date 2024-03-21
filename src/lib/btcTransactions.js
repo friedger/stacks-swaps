@@ -1,16 +1,23 @@
-import { bufferCV, ClarityType, cvToString, listCV, tupleCV, uintCV } from 'micro-stacks/clarity';
-import { callReadOnlyFunction } from 'micro-stacks/transactions';
-import MerkleTree from 'merkletreejs';
-import reverse from 'buffer-reverse';
-import { sha256 } from '@noble/hashes/sha256';
 import {
   decodeBase58Address,
   decodeTransaction,
   encodeBase58AddressFormat,
   hexToBin,
 } from '@bitauth/libauth';
+import { sha256 } from '@noble/hashes/sha256';
+import {
+  bufferCV,
+  callReadOnlyFunction,
+  ClarityType,
+  cvToString,
+  listCV,
+  tupleCV,
+  uintCV,
+} from '@stacks/transactions';
+import reverse from 'buffer-reverse';
+import { b58ToC32 } from 'c32check';
+import MerkleTree from 'merkletreejs';
 import { blocksApi, CLARITY_BITCOIN_CONTRACT, CONTRACT_ADDRESS, NETWORK } from './constants';
-import { b58ToC32 } from 'micro-stacks/crypto';
 
 export const ERR_DIFFERENT_HEX = 'different hex';
 export const ERR_NO_STACKS_BLOCK = 'no stacks block';

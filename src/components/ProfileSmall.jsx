@@ -1,7 +1,7 @@
-import { ProfileFull } from './ProfileFull';
-import { Address } from './Address';
-import { useAuth } from '@micro-stacks/react';
 import { useStxAddresses } from '../lib/hooks';
+import { useAuth } from '../lib/useAuth';
+import { Address } from './Address';
+import { ProfileFull } from './ProfileFull';
 
 export function ProfileSmall() {
   const { ownerStxAddress } = useStxAddresses();

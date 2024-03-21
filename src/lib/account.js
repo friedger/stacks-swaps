@@ -1,12 +1,14 @@
-import { bufferCVFromString, ClarityType, cvToString } from 'micro-stacks/clarity';
 import {
-  createStacksPrivateKey,
-  AddressVersion,
-  AddressHashMode,
-  callReadOnlyFunction,
   addressFromPublicKeys,
-  getPublicKeyFromStacksPrivateKey,
-} from 'micro-stacks/transactions';
+  AddressHashMode,
+  AddressVersion,
+  bufferCVFromString,
+  callReadOnlyFunction,
+  ClarityType,
+  createStacksPrivateKey,
+  cvToString,
+  getPublicKey,
+} from '@stacks/transactions';
 import {
   accountsApi,
   BNS_CONTRACT_NAME,
@@ -18,7 +20,7 @@ import {
 export function getStacksAccount(appPrivateKey) {
   if (appPrivateKey) {
     const privateKey = createStacksPrivateKey(appPrivateKey);
-    const publicKey = getPublicKeyFromStacksPrivateKey(privateKey);
+    const publicKey = getPublicKey(privateKey);
     const address = addressFromPublicKeys(
       AddressVersion.MainnetSingleSig,
       AddressHashMode.SerializeP2PKH,

@@ -1,4 +1,4 @@
-import { callReadOnlyFunction } from 'micro-stacks/transactions';
+import { callReadOnlyFunction } from '@stacks/transactions';
 import { NETWORK, smartContractsApi } from './constants';
 
 export async function getFTData(contractAddress, contractName) {

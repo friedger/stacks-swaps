@@ -16,6 +16,7 @@ export default defineConfig(() => ({
   plugins: [react()],
   optimizeDeps: {
     esbuildOptions: {
+      target: 'esnext',
       define: {
         global: 'globalThis',
       },

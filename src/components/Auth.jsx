@@ -1,24 +1,26 @@
-import { useAuth } from '@micro-stacks/react';
+import { useConnect } from '@stacks/connect-react';
+import { useAuth } from '../lib/useAuth';
 import GetStartedButton from './GetStartedButton';
 
 // Authentication button adapting to status
 
 export default function Auth() {
-  const { openAuthRequest, signOut, isSignedIn } = useAuth();
+  const { handleSignOut, state } = useAuth();
+  const { doOpenAuth } = useConnect();
 
-  if (isSignedIn) {
+  if (state?.userData) {
     return (
       <button
         className="btn btn-outline-primary"
         onClick={() => {
           console.log('signOut');
-          signOut();
+          handleSignOut();
         }}
       >
         Log Out
       </button>
     );
   } else {
-    return <GetStartedButton openAuthRequest={openAuthRequest} type="small" />;
+    return <GetStartedButton openAuthRequest={doOpenAuth} type="small" />;
   }
 }

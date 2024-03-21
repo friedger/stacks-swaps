@@ -1,5 +1,4 @@
-import { fetchAccountBalances } from 'micro-stacks/api';
-import { noneCV, principalCV, someCV, standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
+import { fetchAccountBalances } from '@stacks/blockchain-api-client';
 import {
   AnchorMode,
   FungibleConditionCode,
@@ -12,13 +11,17 @@ import {
   makeStandardFungiblePostCondition,
   makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
-} from 'micro-stacks/transactions';
+  noneCV,
+  principalCV,
+  someCV,
+  standardPrincipalCV,
+  uintCV,
+} from '@stacks/transactions';
 import { Fragment, useEffect, useState } from 'react';
 import { NETWORK, contracts, ftFeeContracts, nftFeeContracts } from '../lib/constants';
 import { TxStatus } from './TxStatus';
 
-import { useAuth, useOpenContractCall } from '@micro-stacks/react';
-import { c32ToB58 } from 'micro-stacks/crypto';
+import { c32ToB58 } from 'c32check';
 import { resolveBNS } from '../lib/account';
 import {
   assetInEscrowFromType,
@@ -35,6 +38,7 @@ import {
 } from '../lib/assets';
 import { btcAddressToPubscriptCV } from '../lib/btcTransactions';
 import { contractToFees } from '../lib/fees';
+import { useAuth, useOpenContractCall } from '../lib/hooks';
 import {
   getAssetInEscrow,
   isAssetForSaleANonFungibleToken,
@@ -831,11 +835,11 @@ export function SwapCreate({
     sellType2 === 'stx'
       ? 6
       : sellType2 === 'ft' &&
-        formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
-      ? 6
-      : sellType2 === 'ft' && ftData
-      ? Number(ftData.decimals)
-      : 8;
+          formData.trait === 'SPN4Y5QPGQA8882ZXW90ADC2DHYXMSTN8VAR8C3X.friedger-token-v1::friedger'
+        ? 6
+        : sellType2 === 'ft' && ftData
+          ? Number(ftData.decimals)
+          : 8;
   console.log({ sellDecimals2 }, ftData?.decimals);
   const asset = getAsset(sellType2, formData.traitForSale);
   const assetName = getAssetName(sellType2, formData.traitForSale);

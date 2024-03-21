@@ -13,8 +13,8 @@ import {
   isAtomic,
   setFormDataFromSwapsEntry,
 } from '../lib/assets';
-import { c32ToB58 } from 'micro-stacks/crypto';
 import { defaultFeeIdFromSwapType } from '../lib/fees';
+import { c32ToB58 } from 'c32check';
 
 export function StacksSwapsContainer({ type, trait, id, nftId }) {
   const { ownerStxAddress } = useStxAddresses();

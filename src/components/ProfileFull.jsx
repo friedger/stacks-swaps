@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { ClarityType, hexToCV } from '@stacks/transactions';
+import { useAtom } from 'jotai';
+import { useEffect, useState } from 'react';
+import {} from 'react-jdenticon';
 import { fetchAccount } from '../lib/account';
+import { contracts } from '../lib/constants';
+import { STX_USD, refreshPrice } from '../lib/price';
 import { Address } from './Address';
 import { Amount } from './Amount';
 import { TxStatus } from './TxStatus';
-import {} from 'react-jdenticon';
-import { useAtom } from 'jotai';
-import { refreshPrice, STX_USD } from '../lib/price';
-import { getTxs } from '../lib/transactions';
-import { ClarityType, hexToCV } from 'micro-stacks/clarity';
-import { contracts } from '../lib/constants';
-import { useAuth } from '@micro-stacks/react';
+import { useAuth } from '../lib/hooks';
 
 export function ProfileFull({ stxAddress }) {
   const { signOut } = useAuth();

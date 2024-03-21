@@ -1,16 +1,9 @@
-import { standardPrincipalCV, uintCV } from 'micro-stacks/clarity';
-import {
-  createAssetInfo,
-  makeStandardNonFungiblePostCondition,
-  NonFungibleConditionCode,
-  PostConditionMode,
-} from 'micro-stacks/transactions';
-import { useAccount, useAuth, useOpenContractCall } from '@micro-stacks/react';
+import { PostConditionMode, standardPrincipalCV, uintCV } from '@stacks/transactions';
 import { useState } from 'react';
-import { useStxAddresses } from '../../lib/hooks';
 import GetStartedButton from '../../components/GetStartedButton';
+import { useAccount, useAuth, useOpenContractCall, useStxAddresses } from '../../lib/hooks';
 
-export default function NFTTransfer({ userSession }) {
+export default function NFTTransfer() {
   const [nftContract, setNftContract] = useState();
   const [id, setId] = useState();
   const [recipient, setRecipient] = useState();
@@ -70,7 +63,7 @@ export default function NFTTransfer({ userSession }) {
             ) : (
               <>Enter asset identifier first</>
             )}
-            } NFT id <br />
+            NFT id <br />
             <input
               className="form-control"
               onChange={e => setId(e.target.value)}

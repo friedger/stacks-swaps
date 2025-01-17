@@ -31,7 +31,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="swaps" element={<Swap />} />
-          <Route path="swaps/:id" element={<SwapDetails />} />
           <Route path="tac" element={<Tac />} />
         </Routes>
         <ToastContainer />

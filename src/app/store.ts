@@ -16,6 +16,7 @@ import {
   REGISTER,
 } from "redux-persist";
 import swapReducer from "./slices/Swap";
+import userReducer from "./slices/User";
 
 const persistConfig = {
   key: "root",
@@ -24,6 +25,7 @@ const persistConfig = {
 };
 export const rootReducers = combineReducers({
   swap: swapReducer,
+  user: userReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducers);

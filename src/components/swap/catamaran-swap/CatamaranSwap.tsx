@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { AccountsApi, Configuration } from '@stacks/blockchain-api-client';
 import axios from 'axios';
 import { fetch } from 'cross-fetch';
 import { useDispatch } from 'react-redux';
@@ -14,6 +13,7 @@ import BtcImg from '/src/assets/img/btc.png';
 import ChevronDownImg from '/src/assets/img/chevron-down.svg?react';
 import InfoImg from '/src/assets/img/info.svg?react';
 import SBtcImg from '/src/assets/img/sbtc.png';
+import { client } from '../../../lib/apiClient';
 
 interface AccountBalance {
   balance: number;
@@ -38,6 +38,11 @@ const CatamaranSwap = ({
 }: {
   setSwapProgress: React.Dispatch<React.SetStateAction<SwapProgress>>;
 }) => {
+
+  const dispatch = useDispatch<AppDispatch>();
+  const swapInfo = useAppSelector(state => state.swap);
+  const { isAuthenticated, wallet } = useAppSelector(state => state.user);
+
   const [amounts, setAmounts] = useState({
     sendAmount: 1,
     receiveAmount: 1,
@@ -52,7 +57,9 @@ const CatamaranSwap = ({
     total_received: '',
     total_sent: '',
   });
-  const [btcAddress, setBtcAddress] = useState<string>('');
+  const { stxAddress: userSTXAddress, btcAddress: userBTCAddress } = wallet;
+  console.log({ userSTXAddress, userBTCAddress });
+  const [btcAddress, setBtcAddress] = useState<string>(userBTCAddress);
   const [stxAddress, setStxAddress] = useState<string>('');
   const [usdCurrencies, setUSDCurrencies] = useState({
     stx: 0,
@@ -60,15 +67,6 @@ const CatamaranSwap = ({
   });
   const { sendAmount, receiveAmount } = amounts;
   const { balance } = accountBalance;
-  const dispatch = useDispatch<AppDispatch>();
-  const swapInfo = useAppSelector(state => state.swap);
-  const isAuthenticated = userSession.isUserSignedIn();
-
-  const userWalletData = isAuthenticated ? userSession.loadUserData() : undefined;
-  const userSTXAddress = userWalletData ? userWalletData.profile.stxAddress.mainnet : '';
-  const userBTCAddress = userWalletData
-    ? (userWalletData.profile.btcAddress.p2wpkh.mainnet as string)
-    : '';
 
   useEffect(() => {
     if (userBTCAddress) {
@@ -112,19 +110,9 @@ const CatamaranSwap = ({
   useEffect(() => {
     if (userSTXAddress) {
       void (async () => {
-        const apiConfig = new Configuration({
-          fetchApi: fetch,
-          basePath: import.meta.env.VITE_STACKS_API_ENDPOINT,
-        });
-
-        const accounts = new AccountsApi(apiConfig);
-
-        const balanceInfo = await accounts.getAccountBalance({
-          principal: userSTXAddress,
-        });
+        const account = { balance: 0 } // await client.fetchAccount(userSTXAddress);
         setAccountBalance({
-          ...balanceInfo.stx,
-          balance: Number(balanceInfo.stx.balance) / 10 ** 6,
+          balance: Number(account.balance) / 10 ** 6,
         } as AccountBalance);
       })();
     }
@@ -222,7 +210,7 @@ const CatamaranSwap = ({
           <div className="mt-2 w-full flex justify-between items-center">
             <div className="flex flex-col">
               <input
-                className={`w-full text-[28px] leading-6 font-light bg-transparent outline-none w-1/2 ${error.sendAmount ? 'outline-1 outline-red-500' : ''
+                className={`w-full text-[28px] leading-6 font-light bg-transparent outline-none ${error.sendAmount ? 'outline-1 outline-red-500' : ''
                   }`}
                 type="number"
                 name="sendAmount"

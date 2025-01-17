@@ -1,17 +1,19 @@
 import React from 'react';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { userConnected } from '../../app/slices/User/thunks';
+import { resolveProvider } from '../../lib/provider';
 import Modal from './Modal';
-import { showConnect } from '@stacks/connect';
-import { userSession } from '../../lib/userSession';
+import { waitFor } from '@testing-library/react';
 
 const ConnectWallet = () => {
   const [showModal, setShowModal] = React.useState(false);
-  const isAuthenticated = userSession.isUserSignedIn();
-  const address = isAuthenticated
-    ? (userSession.loadUserData().profile.stxAddress.mainnet as string)
-    : '';
+  const dispatch = useAppDispatch();
+
+  const { isAuthenticated, wallet: { stxAddress, btcAddress } } = useAppSelector(state => state.user);
+
 
   const logout = () => {
-    userSession.signUserOut('/');
+    dispatch(userConnected({ isAuthenticated: false, wallet: { stxAddress: "", btcAddress: '' } }));
     window.location.reload();
   };
 
@@ -25,23 +27,29 @@ const ConnectWallet = () => {
     document.body.style.overflowY = 'auto';
   };
 
-  const authenticate = () => {
+  const authenticate = async () => {
     if (isAuthenticated) {
       openModal();
     } else {
-      showConnect({
-        appDetails: {
-          name: 'Stacks React Starter',
-          icon: window.location.origin + '/logo512.png',
-        },
-        redirectTo: '/',
-        onFinish: () => {
-          window.location.reload();
-        },
-        userSession,
-      });
+      const provider = resolveProvider();
+      console.log({ provider });
+      if (provider) {
+        try {
+          const response = await provider.request("getAddresses") as { result: { addresses: ({ symbol: "STX", address: string; publicKey: string } | { symbol: "BTC", address: string; type: string })[] } };
+          console.log({ response });
+          if (response.result?.addresses) {
+            const stxAddress = response.result.addresses.find((address) => address.symbol === "STX");
+            const btcAddress = response.result.addresses.find((address) => address.symbol === "BTC" && address.type === "p2wpkh");
+            if (stxAddress && btcAddress) {
+              dispatch(userConnected({ isAuthenticated: true, wallet: { stxAddress: stxAddress.address, btcAddress: btcAddress?.address, stxPublicKey: stxAddress.publicKey } }));
+            }
+          }
+        } catch (error) {
+          console.log((error as any).error);
+        }
+      }
     }
-  };
+  }
 
   return (
     <>
@@ -52,7 +60,7 @@ const ConnectWallet = () => {
         type="button"
         onClick={authenticate}
       >
-        {isAuthenticated ? `${address.slice(0, 5)}...${address.slice(-3)}` : 'Connect Wallet'}
+        {isAuthenticated ? `${stxAddress.slice(0, 5)}...${stxAddress.slice(-3)}` : 'Connect Wallet'}
       </button>
       <Modal showModal={showModal} handleConfirm={logout} handleClose={closeModal}>
         <p className="mx-auto">Do you want to logout?</p>

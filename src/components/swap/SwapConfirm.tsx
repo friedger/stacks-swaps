@@ -1,10 +1,11 @@
 import React from 'react';
 
-import StxImg from '/src/assets/img/stx.png';
+import sBtcImg from '/src/assets/img/sbtc.png';
 import BtcImg from '/src/assets/img/btc.png';
 import DownImg from '/src/assets/img/down.svg?react';
 import { useAppSelector } from '../../app/hooks';
 import { SwapProgress } from '../../lib/swap';
+import { completeSwap } from '../../lib/stacks';
 
 const SwapConfirm = ({
   setSwapProgress,
@@ -12,6 +13,7 @@ const SwapConfirm = ({
   setSwapProgress: React.Dispatch<React.SetStateAction<SwapProgress>>;
 }) => {
   const swapInfo = useAppSelector(state => state.swap);
+  const userState = useAppSelector(state => state.user);
   const {
     amountInfo: { sendAmount, receiveAmount },
     addressInfo: { userBTCAddress, receiverSTXAddress },
@@ -22,6 +24,8 @@ const SwapConfirm = ({
   };
 
   const onConfirmBtnClicked = async () => {
+    const response = await completeSwap(swapInfo, userState);
+    console.log({ response });
     setSwapProgress(SwapProgress.SWAP_COMPLETED);
   };
 
@@ -31,10 +35,10 @@ const SwapConfirm = ({
       <div className="p-5 flex flex-col gap-5 rounded-lg bg-[rgba(7,7,10,0.03)] dark:bg-[#14151A] border-[1px] border-[rgba(7,7,10,0.1)] dark:border-[rgba(255,255,255,0.1)]">
         <div className="w-full flex justify-between items-center">
           <div className="flex gap-2 items-center">
-            <img className="h-7 w-7" src={StxImg} alt="" />
+            <img className="h-7 w-7" src={sBtcImg} alt="" />
             <p className="text-2xl font-medium leading-6">{sendAmount}</p>
           </div>
-          <p className="text-[28px] leading-6">STX</p>
+          <p className="text-[28px] leading-6">sBTC</p>
         </div>
         <div className="w-7 h-7 flex items-center justify-center">
           <DownImg className="dark:stroke-white stroke-special-black" />
@@ -63,12 +67,8 @@ const SwapConfirm = ({
         <div className="w-full flex justify-between items-center">
           <p className="opacity-50">Price</p>
           <p>
-            {receiveAmount} BTC/{sendAmount} STX
+            {receiveAmount} BTC/{sendAmount} sBTC
           </p>
-        </div>
-        <div className="w-full flex justify-between items-center">
-          <p className="opacity-50">Network Fee</p>
-          <p>~$14.90</p>
         </div>
       </div>
 

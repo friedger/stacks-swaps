@@ -1,7 +1,8 @@
 //@ts-nocheck
-
-export const resolveProvider = () => {
-  const providerName = localStorage.getItem("stacking-tracker-sign-provider");
+import { LeatherProvider } from "@leather.io/rpc";
+import { SwapDetail } from "../app/slices/Swap";
+export const resolveProvider = (): LeatherProvider => {
+  const providerName = localStorage.getItem("stacks-provider") || "leather";
   if (!providerName) return null;
 
   if (providerName === "xverse" && window.XverseProviders?.StacksProvider) {

@@ -28,7 +28,7 @@ const initialState: SwapDetail = {
 };
 
 export const swapSlice = createSlice({
-  name: "user",
+  name: "swap",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

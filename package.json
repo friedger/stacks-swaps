@@ -17,10 +17,12 @@
   },
   "type": "module",
   "dependencies": {
+    "@leather.io/rpc": "^2.5.4",
     "@reduxjs/toolkit": "^2.5.0",
     "@stacks/blockchain-api-client": "^8.4.0",
     "@stacks/connect": "^7.10.0",
     "@stacks/network": "^7.0.2",
+    "@stacks/rpc-client": "^0.8.18",
     "@stacks/transactions": "^7.0.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -48,7 +50,7 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "lint:prettier:fix": "prettier --write \"src/**/*.{js,jsx,ts, tsx}\""
+    "lint:prettier:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "eslintConfig": {
     "extends": [
@@ -72,8 +74,6 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.20.0",
-    "@typescript-eslint/parser": "^8.20.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -84,7 +84,6 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react-refresh": "^0.4.18",
     "postcss": "^8.5.1",
-    "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17"
   }
 }

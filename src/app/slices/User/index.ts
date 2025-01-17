@@ -4,14 +4,18 @@ import { userConnected } from "./thunks";
 export interface UserState {
   isAuthenticated: boolean;
   wallet: {
-    address: string;
+    stxAddress: string;
+    btcAddress: string;
+    stxPublicKey: string;
   };
 }
 
 const initialState: UserState = {
   isAuthenticated: false,
   wallet: {
-    address: "",
+    stxAddress: "",
+    btcAddress: "",
+    stxPublicKey: "",
   },
 };
 
@@ -25,3 +29,5 @@ export const userSlice = createSlice({
     });
   },
 });
+
+export default userSlice.reducer;

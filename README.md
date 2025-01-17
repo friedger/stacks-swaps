@@ -7,10 +7,10 @@ Information and basic UI to inspect and execute trustless swaps between Bitcoin 
 To view the UI locally:
 
 1. Download this repo (or clone it)
-2. Run `yarn install`
-3. Run `yarn start`
+2. Run `pnpm install`
+3. Run `pnpm start`
 
-A new browser window will open to `localhost:3000`.
+A new browser window will open to `localhost:5173`.
 
 ## Deploy your own with netlify
 

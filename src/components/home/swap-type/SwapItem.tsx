@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import StxImg from '/src/assets/img/stx.png';
 import BtcImg from '/src/assets/img/btc.png';

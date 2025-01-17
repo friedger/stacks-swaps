@@ -4,14 +4,14 @@ import {
   cvToString,
   hexToCV as stacksHexToCV,
   uintCV,
-} from '@stacks/transactions';
+} from "@stacks/transactions";
 import {
   accountsApi,
   chainSuffix,
   contracts,
   smartContractsApi,
   transactionsApi,
-} from './constants';
+} from "./constants";
 
 export async function fetchSwapTxList(type) {
   const contract = contracts[type];
@@ -21,7 +21,7 @@ export async function fetchSwapTxList(type) {
 
   console.log(response);
   const result = response.results.filter(
-    tx => tx.tx_status === 'success' && tx.tx_type === 'contract_call'
+    (tx) => tx.tx_status === "success" && tx.tx_type === "contract_call",
   );
 
   console.log(result);
@@ -33,10 +33,10 @@ export async function fetchSwapsEntry(type, id) {
   const response = await smartContractsApi.getContractDataMapEntry({
     contractAddress: contract.address,
     contractName: contract.name,
-    mapName: 'swaps',
+    mapName: "swaps",
     key: cvToHex(uintCV(id)),
   });
-  if (response.data === '0x09') {
+  if (response.data === "0x09") {
     return undefined;
   } else {
     return hexToCV(response.data).value;
@@ -44,7 +44,12 @@ export async function fetchSwapsEntry(type, id) {
 }
 
 export function resultToStatus(result) {
-  if (result && !result.error && result.startsWith('"') && result.length === 66) {
+  if (
+    result &&
+    !result.error &&
+    result.startsWith('"') &&
+    result.length === 66
+  ) {
     const txId = result.substr(1, 64);
     return txIdToStatus(txId);
   } else if (result && result.error) {
@@ -70,7 +75,7 @@ export function txUrl(txId) {
   return `https://explorer.stacks.co/txid/0x${txId}${chainSuffix}`;
 }
 
-const indexFileName = 'index-mainnet.json';
+const indexFileName = "index-mainnet.json";
 
 export async function saveTxData(data) {
   console.log(JSON.stringify(data));
@@ -94,9 +99,9 @@ export async function getTxs() {
     indexFile = await getFile(indexFileName);
     indexArray = JSON.parse(indexFile);
     return Promise.all(
-      indexArray.map(async txId => {
+      indexArray.map(async (txId) => {
         return getTxWithStorage(txId);
-      })
+      }),
     );
   } catch (e) {
     console.log(e);
@@ -107,13 +112,13 @@ export async function getTxs() {
 export async function getTxsAsCSV(userSession, filter) {
   const txs = await getTxs(userSession);
   const txsAsCSV = txs
-    .filter(tx => tx.apiData && tx.apiData.tx_status === 'success')
+    .filter((tx) => tx.apiData && tx.apiData.tx_status === "success")
     .filter(filter)
     .reduce((result, tx) => {
       return (
         result +
         tx.apiData.events
-          .filter(e => e.event_type === 'stx_asset')
+          .filter((e) => e.event_type === "stx_asset")
           .reduce((eventResult, e) => {
             return (
               eventResult +
@@ -123,22 +128,22 @@ export async function getTxsAsCSV(userSession, filter) {
                 tx.apiData.tx_id
               }\n`
             );
-          }, '')
+          }, "")
       );
-    }, 'recipient, amount, timestamp, explorer_url, send_many_url\n');
+    }, "recipient, amount, timestamp, explorer_url, send_many_url\n");
   return txsAsCSV;
 }
 
 export async function getTxsAsJSON(userSession, filter) {
   const txs = await getTxs(userSession);
   const txsAsJSON = txs
-    .filter(tx => tx.apiData && tx.apiData.tx_status === 'success')
+    .filter((tx) => tx.apiData && tx.apiData.tx_status === "success")
     .filter(filter)
     .reduce((result, tx) => {
       return result.concat(
         tx.apiData.events
-          .filter(e => e.event_type === 'stx_asset')
-          .map(e => {
+          .filter((e) => e.event_type === "stx_asset")
+          .map((e) => {
             const exportedTx = {
               recipient: e.asset.recipient,
               amount: e.asset.amount / 1000000,
@@ -147,7 +152,7 @@ export async function getTxsAsJSON(userSession, filter) {
               send_many_url: `https://sendstx.com/txid/${tx.apiData.tx_id}`,
             };
             return exportedTx;
-          })
+          }),
       );
     }, []);
   return txsAsJSON;
@@ -160,7 +165,7 @@ async function getTxWithStorage(txId) {
     if (!tx.data) {
       tx = { data: { txId } };
     }
-    if (!tx.apiData || tx.apiData.tx_status === 'pending') {
+    if (!tx.apiData || tx.apiData.tx_status === "pending") {
       tx = await createTxWithApiData(txId, tx);
     }
     return tx;
@@ -201,12 +206,18 @@ async function createTxWithApiData(txId, tx) {
       eventOffset,
       offsetLimit,
     });
-    console.log(txId, apiData, eventOffset, apiData.events, apiData.event_count);
+    console.log(
+      txId,
+      apiData,
+      eventOffset,
+      apiData.events,
+      apiData.event_count,
+    );
     events = events.concat(apiData.events);
     console.log(apiData.event_count);
   }
   const txWithApiData = { ...tx, apiData: { ...apiData, events } };
-  if (apiData.tx_status !== 'pending') {
+  if (apiData.tx_status !== "pending") {
     await putFile(`txs/${txId}.json`, JSON.stringify(txWithApiData));
   }
   return txWithApiData;
@@ -214,7 +225,7 @@ async function createTxWithApiData(txId, tx) {
 
 export function optionalCVToString(cv) {
   if (cv.type === ClarityType.OptionalNone) {
-    return '';
+    return "";
   } else {
     return cvToString(cv.value);
   }

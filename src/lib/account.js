@@ -8,14 +8,14 @@ import {
   createStacksPrivateKey,
   cvToString,
   getPublicKey,
-} from '@stacks/transactions';
+} from "@stacks/transactions";
 import {
   accountsApi,
   BNS_CONTRACT_NAME,
   GENESIS_CONTRACT_ADDRESS,
   NETWORK,
   STACKS_API_ACCOUNTS_URL,
-} from './constants';
+} from "./constants";
 
 export function getStacksAccount(appPrivateKey) {
   if (appPrivateKey) {
@@ -25,7 +25,7 @@ export function getStacksAccount(appPrivateKey) {
       AddressVersion.MainnetSingleSig,
       AddressHashMode.SerializeP2PKH,
       1,
-      [publicKey]
+      [publicKey],
     );
     return { privateKey, address };
   } else {
@@ -34,16 +34,19 @@ export function getStacksAccount(appPrivateKey) {
 }
 
 export async function resolveBNS(username) {
-  const parts = username ? username.split('.') : [];
+  const parts = username ? username.split(".") : [];
   if (parts.length === 2) {
     const result = await callReadOnlyFunction({
       contractAddress: GENESIS_CONTRACT_ADDRESS,
       contractName: BNS_CONTRACT_NAME,
-      functionName: 'name-resolve',
-      functionArgs: [bufferCVFromString(parts[1]), bufferCVFromString(parts[0])],
+      functionName: "name-resolve",
+      functionArgs: [
+        bufferCVFromString(parts[1]),
+        bufferCVFromString(parts[0]),
+      ],
       network: NETWORK,
       senderAddress: GENESIS_CONTRACT_ADDRESS,
-    }).catch(e => {
+    }).catch((e) => {
       return { type: ClarityType.ResponseErr };
     });
     if (result.type === ClarityType.ResponseOk) {
@@ -65,9 +68,9 @@ export function fetchAccount(addressAsString) {
   if (addressAsString) {
     return accountsApi
       .getAccountBalance({ principal: addressAsString })
-      .then(response => response.stx);
+      .then((response) => response.stx);
   } else {
-    return Promise.reject('addressAsString not defined');
+    return Promise.reject("addressAsString not defined");
   }
 }
 
@@ -76,9 +79,9 @@ export function fetchAccount(addressAsString) {
  * returns the json object with property `balance` in hex.
  */
 export function fetchAccount2(addressAsString) {
-  console.log('Checking account');
+  console.log("Checking account");
   const balanceUrl = `${STACKS_API_ACCOUNTS_URL}/${addressAsString}`;
-  return fetch(balanceUrl).then(r => {
+  return fetch(balanceUrl).then((r) => {
     console.log({ r });
     return r.json();
   });

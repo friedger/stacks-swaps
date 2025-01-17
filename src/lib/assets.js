@@ -1,9 +1,20 @@
-import { callReadOnlyFunction, fetchNamesByAddress } from '@stacks/blockchain-api-client';
-import { ClarityType, contractPrincipalCV, cvToString, uintCV } from '@stacks/transactions';
-import { c32ToB58 } from 'c32check';
-import { XBTC_TOKEN, getAsset } from '../components/assets';
-import { pubscriptCVToBtcAddress, stxAddressFromBtcAddress } from './btcTransactions';
-import { NETWORK, ftFeeContracts, nftFeeContracts } from './constants';
+import {
+  callReadOnlyFunction,
+  fetchNamesByAddress,
+} from "@stacks/blockchain-api-client";
+import {
+  ClarityType,
+  contractPrincipalCV,
+  cvToString,
+  uintCV,
+} from "@stacks/transactions";
+import { c32ToB58 } from "c32check";
+import { XBTC_TOKEN, getAsset } from "../components/assets";
+import {
+  pubscriptCVToBtcAddress,
+  stxAddressFromBtcAddress,
+} from "./btcTransactions";
+import { NETWORK, ftFeeContracts, nftFeeContracts } from "./constants";
 import {
   amountOrIdPropertyForSaleFromSwapsType,
   amountOrIdPropertyInEscrowFromSwapsEntry,
@@ -11,10 +22,10 @@ import {
   ftPropertyFromSwapsType,
   nftPropertyFromSwapsType,
   sellerPropertyFromSwapType,
-} from './swapMapEntries';
-import { getAssetInEscrow, traitForSaleFromSwapsEntry } from './swaps';
-import { getFTData, getNFTData } from './tokenData';
-import { optionalCVToString } from './transactions';
+} from "./swapMapEntries";
+import { getAssetInEscrow, traitForSaleFromSwapsEntry } from "./swaps";
+import { getFTData, getNFTData } from "./tokenData";
+import { optionalCVToString } from "./transactions";
 
 /**
  *
@@ -22,117 +33,117 @@ import { optionalCVToString } from './transactions';
  * @returns contract as CV and asset name
  */
 export function splitAssetIdentifier(assetString) {
-  const [contractAddress, tail] = assetString.split('.');
-  const [contractName, assetName] = tail.split('::');
+  const [contractAddress, tail] = assetString.split(".");
+  const [contractName, assetName] = tail.split("::");
   const contractCV = contractPrincipalCV(contractAddress, contractName);
   return [contractCV, assetName, contractName, contractAddress];
 }
 
 export function isAtomic(type) {
-  return type.indexOf('-') > 0;
+  return type.indexOf("-") > 0;
 }
 
 export function buyAssetFromType(type) {
-  return type.startsWith('stx-') //
-    ? 'STX'
-    : type.startsWith('banana-')
-      ? 'BANANA'
-      : type.startsWith('usda-')
-        ? 'USDA'
-        : type.startsWith('xbtc-')
-          ? 'xBTC'
-          : type.startsWith('satoshible-')
-            ? 'Satoshible'
-            : 'BTC';
+  return type.startsWith("stx-") //
+    ? "STX"
+    : type.startsWith("banana-")
+      ? "BANANA"
+      : type.startsWith("usda-")
+        ? "USDA"
+        : type.startsWith("xbtc-")
+          ? "xBTC"
+          : type.startsWith("satoshible-")
+            ? "Satoshible"
+            : "BTC";
 }
 
 export function assetInEscrowFromType(type) {
-  const [escrow] = type.split('-');
+  const [escrow] = type.split("-");
   return getAsset(escrow);
 }
 
 export function buyAssetTypeFromSwapType(type) {
-  return isAtomic(type) ? type.split('-')[0] : 'btc';
+  return isAtomic(type) ? type.split("-")[0] : "btc";
 }
 
 export function assetTypeInEscrowFromSwapType(type) {
-  return isAtomic(type) ? type.split('-')[0] : type;
+  return isAtomic(type) ? type.split("-")[0] : type;
 }
 
 export function getBuyLabelFromType(type) {
   return isAtomic(type)
-    ? type === 'stx-nft'
+    ? type === "stx-nft"
       ? `Price for NFT in STXs`
-      : type === 'banana-nft'
-        ? 'Price of NFT in $BANANAs'
-        : type === 'banana-ft'
-          ? 'amount of $BANANA'
-          : type.startsWith('satoshible-')
-            ? 'ID of Satoshible'
-            : type === 'usda-nft'
-              ? 'Price of NFT in USDA'
-              : type === 'usda-ft'
-                ? 'amount of USDA'
-                : type === 'xbtc-nft'
-                  ? 'Price of NFT in xBTC'
-                  : type === 'xbtc-ft'
-                    ? 'amount of xBTC'
+      : type === "banana-nft"
+        ? "Price of NFT in $BANANAs"
+        : type === "banana-ft"
+          ? "amount of $BANANA"
+          : type.startsWith("satoshible-")
+            ? "ID of Satoshible"
+            : type === "usda-nft"
+              ? "Price of NFT in USDA"
+              : type === "usda-ft"
+                ? "amount of USDA"
+                : type === "xbtc-nft"
+                  ? "Price of NFT in xBTC"
+                  : type === "xbtc-ft"
+                    ? "amount of xBTC"
                     : `amount of STXs` // default for atomic swaps
-    : type === 'nft'
+    : type === "nft"
       ? `Price for NFT in Bitcoin`
       : `amount of Bitcoins`; // type === stx or ft
 }
 
 export function getBuyLabelFromType2(type) {
   return isAtomic(type)
-    ? type === 'stx-nft'
+    ? type === "stx-nft"
       ? `Price for NFT in STXs`
-      : type === 'banana-nft'
-        ? 'Price of NFT in $BANANAs'
-        : type === 'banana-ft'
-          ? 'amount of $BANANA'
-          : type.startsWith('satoshible-')
-            ? 'ID of Satoshible'
-            : type === 'usda-nft'
-              ? 'Price of NFT in USDA'
-              : type === 'usda-ft'
-                ? 'amount of USDA'
-                : type === 'xbtc-nft'
-                  ? 'Price of NFT in xBTC'
-                  : type === 'xbtc-ft'
-                    ? 'amount of xBTC'
+      : type === "banana-nft"
+        ? "Price of NFT in $BANANAs"
+        : type === "banana-ft"
+          ? "amount of $BANANA"
+          : type.startsWith("satoshible-")
+            ? "ID of Satoshible"
+            : type === "usda-nft"
+              ? "Price of NFT in USDA"
+              : type === "usda-ft"
+                ? "amount of USDA"
+                : type === "xbtc-nft"
+                  ? "Price of NFT in xBTC"
+                  : type === "xbtc-ft"
+                    ? "amount of xBTC"
                     : `amount of STXs` // default for atomic swaps
-    : type === 'stx'
-      ? 'amount of STXs'
-      : type === 'usda'
-        ? 'amount of USDA'
-        : type === 'xbtc'
-          ? 'amount of XBTC'
-          : 'amount';
+    : type === "stx"
+      ? "amount of STXs"
+      : type === "usda"
+        ? "amount of USDA"
+        : type === "xbtc"
+          ? "amount of XBTC"
+          : "amount";
 }
 
 export function buyDecimalsFromType(type) {
-  return type.startsWith('stx-') //
+  return type.startsWith("stx-") //
     ? 6
-    : type.startsWith('banana-')
+    : type.startsWith("banana-")
       ? 6
-      : type.startsWith('usda-')
+      : type.startsWith("usda-")
         ? 6
-        : type.startsWith('xbtc-')
+        : type.startsWith("xbtc-")
           ? 8
           : 8;
 }
 
 export function buyDecimalsFromType2(type) {
-  const [escrow] = type.split('-');
+  const [escrow] = type.split("-");
 
-  return escrow === 'stx' //
+  return escrow === "stx" //
     ? 6
-    : escrow === 'banana'
+    : escrow === "banana"
       ? 6
-      : escrow === 'usda'
+      : escrow === "usda"
         ? 6
-        : escrow === 'xbtc'
+        : escrow === "xbtc"
           ? 8
           : 0;
 }
@@ -141,9 +152,9 @@ export async function getFtDataFromSwapsEntry(swapsEntry, type) {
   const property = ftPropertyFromSwapsType(type);
   if (property) {
     const ctr = cvToString(swapsEntry.data[property]);
-    const [contractAddress, contractName] = ctr.split('.');
+    const [contractAddress, contractName] = ctr.split(".");
     const ftData = await getFTData(contractAddress, contractName);
-    return [ctr + '::' + ftData.assetName, ftData];
+    return [ctr + "::" + ftData.assetName, ftData];
   } else {
     return [];
   }
@@ -153,32 +164,32 @@ export async function getNftDataFromSwapsEntry(swapsEntry, type) {
   const property = nftPropertyFromSwapsType(type);
   if (property) {
     const ctr = cvToString(swapsEntry.data[property]);
-    const [contractAddress, contractName] = ctr.split('.');
+    const [contractAddress, contractName] = ctr.split(".");
     const nftData = await getNFTData(contractAddress, contractName);
-    return [ctr + '::' + nftData.assetName, nftData];
+    return [ctr + "::" + nftData.assetName, nftData];
   } else {
     return [];
   }
 }
 
 export function factorAssetInEscrowFromSwapType(type) {
-  return type.startsWith('stx') //
+  return type.startsWith("stx") //
     ? 1_000_000
-    : type.startsWith('banana-')
+    : type.startsWith("banana-")
       ? 1_000_000
-      : type.startsWith('usda')
+      : type.startsWith("usda")
         ? 1_000_000
-        : type.startsWith('xbtc')
+        : type.startsWith("xbtc")
           ? 100_000_000
-          : type.startsWith('satoshible')
+          : type.startsWith("satoshible")
             ? 1
             : 100_000_000;
 }
 
 export function factorAssetForSaleFromSwapType(type, trait) {
-  return type === 'stx' || type === 'ft' || type === 'nft'
+  return type === "stx" || type === "ft" || type === "nft"
     ? 100_000_000
-    : type.endsWith('-nft')
+    : type.endsWith("-nft")
       ? 1
       : trait === XBTC_TOKEN
         ? 100_000_000
@@ -192,7 +203,7 @@ function amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData) {
     const factor = Math.pow(10, Number(ftData.decimals));
     return Number(swapsEntry.data[numberProperty].value) / factor;
   } else {
-    const factor = Math.pow(10, type === 'stx' ? 8 : 0);
+    const factor = Math.pow(10, type === "stx" ? 8 : 0);
     return Number(swapsEntry.data[numberProperty].value) / factor;
   }
 }
@@ -200,21 +211,25 @@ function amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData) {
 // returns number with decimals or nft id
 function amountOrIdInEscrowFromSwapsEntry(swapsEntry, type, ftData) {
   const numberProperty = amountOrIdPropertyInEscrowFromSwapsEntry(type);
-  if (type.startsWith('satoshible')) {
+  if (type.startsWith("satoshible")) {
     return Number(swapsEntry.data[numberProperty].value);
   } else {
     const factor =
-      type === 'ft' ? Math.pow(10, ftData.decimals) : factorAssetInEscrowFromSwapType(type);
+      type === "ft"
+        ? Math.pow(10, ftData.decimals)
+        : factorAssetInEscrowFromSwapType(type);
     return Number(swapsEntry.data[numberProperty].value) / factor;
   }
 }
 
 function getFeeIdFromSwapsEntry(swapsEntry) {
-  if (swapsEntry.data['fees']) {
-    const [feeAddress, feeName] = cvToString(swapsEntry.data['fees']).split('.');
+  if (swapsEntry.data["fees"]) {
+    const [feeAddress, feeName] = cvToString(swapsEntry.data["fees"]).split(
+      ".",
+    );
     const feeIds = Object.entries(nftFeeContracts)
       .concat(Object.entries(ftFeeContracts))
-      .find(e => e[1].address === feeAddress && e[1].name === feeName);
+      .find((e) => e[1].address === feeAddress && e[1].name === feeName);
     if (feeIds && feeIds.length > 0) {
       return feeIds[0];
     }
@@ -222,7 +237,12 @@ function getFeeIdFromSwapsEntry(swapsEntry) {
   return undefined;
 }
 
-export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, ownerStxAddress) {
+export async function setFormDataFromSwapsEntry(
+  swapsEntry,
+  type,
+  setFormData,
+  ownerStxAddress,
+) {
   const [ftTrait, ftData] = await getFtDataFromSwapsEntry(swapsEntry, type);
   const [nftTrait] = await getNftDataFromSwapsEntry(swapsEntry, type);
 
@@ -230,25 +250,31 @@ export async function setFormDataFromSwapsEntry(swapsEntry, type, setFormData, o
   const decimalsInEscrow = buyDecimalsFromType2(type);
   const traitInEscrow = getAssetInEscrow(type, ftTrait);
 
-  const amountOrIdForSale = amountOrIdForSaleFromSwapsEntry(swapsEntry, type, ftData);
+  const amountOrIdForSale = amountOrIdForSaleFromSwapsEntry(
+    swapsEntry,
+    type,
+    ftData,
+  );
   const decimalsForSale = ftData?.decimals ? ftData.decimals : 1;
   const traitForSale = traitForSaleFromSwapsEntry(type, ftTrait, nftTrait);
 
   const buyerAddress = isAtomic(type)
     ? cvToString(swapsEntry.data[buyerPropertyFromSwapType(type)])
-    : stxAddressFromBtcAddress(pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']));
+    : stxAddressFromBtcAddress(
+        pubscriptCVToBtcAddress(swapsEntry.data["btc-receiver"]),
+      );
   const buyerBtcAddress = isAtomic(type)
     ? c32ToB58(buyerAddress)
-    : pubscriptCVToBtcAddress(swapsEntry.data['btc-receiver']);
+    : pubscriptCVToBtcAddress(swapsEntry.data["btc-receiver"]);
   const sellerProperty = sellerPropertyFromSwapType(type);
   const sellerAddress = optionalCVToString(swapsEntry.data[sellerProperty]);
 
   const feeId = getFeeIdFromSwapsEntry(swapsEntry, type);
 
-  const whenFromSwap = Number(swapsEntry.data['when'].value);
-  const doneFromSwap = swapsEntry.data['done']
-    ? Number(swapsEntry.data['done'].value)
-    : swapsEntry.data['open'].type === ClarityType.BoolTrue
+  const whenFromSwap = Number(swapsEntry.data["when"].value);
+  const doneFromSwap = swapsEntry.data["done"]
+    ? Number(swapsEntry.data["done"].value)
+    : swapsEntry.data["open"].type === ClarityType.BoolTrue
       ? 0
       : 1;
 
@@ -272,35 +298,42 @@ export async function resolveImageForNFT(contractAddress, contractName, nftId) {
   const tokenUriCV = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: 'get-token-uri',
+    functionName: "get-token-uri",
     functionArgs: [uintCV(nftId)],
   });
   const nftUrl =
-    tokenUriCV.type === ClarityType.ResponseOk && tokenUriCV.value.type === ClarityType.OptionalSome
+    tokenUriCV.type === ClarityType.ResponseOk &&
+    tokenUriCV.value.type === ClarityType.OptionalSome
       ? tokenUriCV.value.value.data
       : undefined;
   if (nftUrl) {
-    let url = nftUrl.replace('{id}', nftId);
-    url = url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+    let url = nftUrl.replace("{id}", nftId);
+    url = url.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     const metaDataResponse = await fetchPrivate(url);
     const metaData = await metaDataResponse.json();
     let image = metaData.image || metaData.properties.image;
-    image = image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+    image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     return image;
   } else {
     return undefined;
   }
 }
 
-export async function resolveOwnerForNFT(contractAddress, contractName, nftId, addressOnly) {
+export async function resolveOwnerForNFT(
+  contractAddress,
+  contractName,
+  nftId,
+  addressOnly,
+) {
   const ownerCV = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: 'get-owner',
+    functionName: "get-owner",
     functionArgs: [uintCV(nftId)],
   });
   const owner =
-    ownerCV.type === ClarityType.ResponseOk && ownerCV.value.type === ClarityType.OptionalSome
+    ownerCV.type === ClarityType.ResponseOk &&
+    ownerCV.value.type === ClarityType.OptionalSome
       ? cvToString(ownerCV.value.value)
       : undefined;
   if (addressOnly) {
@@ -309,7 +342,7 @@ export async function resolveOwnerForNFT(contractAddress, contractName, nftId, a
   const namesResponse = await fetchNamesByAddress({
     url: NETWORK.bnsLookupUrl,
     address: owner,
-    blockchain: 'stacks',
+    blockchain: "stacks",
   });
   return namesResponse.names?.length ? namesResponse.names[0] : owner;
 }

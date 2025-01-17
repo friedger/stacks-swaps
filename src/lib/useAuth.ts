@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from "react";
 
-import { AppConfig, AuthOptions, UserSession } from '@stacks/connect';
-import { AppState, defaultState } from './context';
+import { AppConfig, AuthOptions, UserSession } from "@stacks/connect";
+import { AppState, defaultState } from "./context";
 
 export interface AuthOptionsArgs {
   manifestPath?: string;
@@ -14,14 +14,21 @@ export interface AuthOptionsArgs {
 
 export function useAuth(customAuthOptions?: AuthOptionsArgs) {
   const [state, setState] = React.useState<AppState>(defaultState());
-  const [authResponse, setAuthResponse] = React.useState('');
-  const [appPrivateKey, setAppPrivateKey] = React.useState('');
+  const [authResponse, setAuthResponse] = React.useState("");
+  const [appPrivateKey, setAppPrivateKey] = React.useState("");
 
   const appConfig = useMemo(
-    () => new AppConfig(['store_write', 'publish_data'], process.env.NEXT_PUBLIC_DOMAIN),
-    []
+    () =>
+      new AppConfig(
+        ["store_write", "publish_data"],
+        process.env.NEXT_PUBLIC_DOMAIN,
+      ),
+    [],
   );
-  const userSession = useMemo(() => new UserSession({ appConfig }), [appConfig]);
+  const userSession = useMemo(
+    () => new UserSession({ appConfig }),
+    [appConfig],
+  );
 
   const handleSignOut = useCallback(() => {
     userSession.signUserOut();
@@ -39,17 +46,23 @@ export function useAuth(customAuthOptions?: AuthOptionsArgs) {
   }, [userSession]);
 
   const onFinish = useCallback(
-    ({ userSession, authResponse }: { userSession: any; authResponse: any }) => {
+    ({
+      userSession,
+      authResponse,
+    }: {
+      userSession: any;
+      authResponse: any;
+    }) => {
       const userData = userSession.loadUserData();
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
       setAuthResponse(authResponse);
       setState({ userData });
     },
-    []
+    [],
   );
 
   const onCancel = useCallback(() => {
-    console.log('popup closed!');
+    console.log("popup closed!");
   }, []);
 
   useEffect(() => {
@@ -61,14 +74,14 @@ export function useAuth(customAuthOptions?: AuthOptionsArgs) {
   }, [handleRedirectAuth, userSession, state]);
 
   const authOptions: AuthOptions = {
-    manifestPath: customAuthOptions?.manifestPath || '/manifest.json',
-    redirectTo: customAuthOptions?.redirectTo || '/',
+    manifestPath: customAuthOptions?.manifestPath || "/manifest.json",
+    redirectTo: customAuthOptions?.redirectTo || "/",
     userSession,
     onFinish,
     onCancel,
     appDetails: {
-      name: 'Catamaran Swaps',
-      icon: 'https://catamaranswaps.org/android-icon-192x192.png',
+      name: "Catamaran Swaps",
+      icon: "https://catamaranswaps.org/android-icon-192x192.png",
     },
   };
   return {

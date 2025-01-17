@@ -80,8 +80,7 @@ const CatamaranSwap = ({
     console.log('axios');
     axios
       .get(
-        `https://cors-anywhere.herokuapp.com/${
-          import.meta.env.VITE_COINMARKETCAP_ENDPOINT
+        `https://cors-anywhere.herokuapp.com/${import.meta.env.VITE_COINMARKETCAP_ENDPOINT
         }/v2/cryptocurrency/quotes/latest`,
         {
           params: {
@@ -137,10 +136,10 @@ const CatamaranSwap = ({
         sendAmount: 'Invalid number',
       });
     } else if (sendAmount > balance) {
-      setError({
-        ...error,
-        sendAmount: 'You cannot send more than your balance.',
-      });
+      // setError({ 
+      //   ...error,
+      //   sendAmount: 'You cannot send more than your balance.',
+      // });
     } else if (error.sendAmount) {
       setError({
         ...error,
@@ -223,9 +222,8 @@ const CatamaranSwap = ({
           <div className="mt-2 w-full flex justify-between items-center">
             <div className="flex flex-col">
               <input
-                className={`w-full text-[28px] leading-6 font-light bg-transparent outline-none w-1/2 ${
-                  error.sendAmount ? 'outline-1 outline-red-500' : ''
-                }`}
+                className={`w-full text-[28px] leading-6 font-light bg-transparent outline-none w-1/2 ${error.sendAmount ? 'outline-1 outline-red-500' : ''
+                  }`}
                 type="number"
                 name="sendAmount"
                 value={sendAmount}

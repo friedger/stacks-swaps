@@ -1,7 +1,7 @@
 import React from 'react';
 
 import UpImg from '/src/assets/img/up.svg?react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { SwapProgress } from '../../lib/swap';
 
 const SwapComplete = ({

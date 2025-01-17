@@ -8,6 +8,10 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "./index.css";
 import "react-toastify/dist/ReactToastify.css";
+import { BrowserRouter, Route, Routes } from "react-router";
+import Home from "./components/home/Home";
+import Swap from "./components/swap/Swap";
+import Tac from "./components/tac/Tac";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);

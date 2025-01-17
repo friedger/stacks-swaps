@@ -3,10 +3,11 @@ import Intro from './pages/Intro';
 import LandingCat from './pages/LandingCat';
 
 import { Connect } from '@stacks/connect-react';
-import { useEffect } from 'react';
 import { ProfileSmall } from './components/ProfileSmall';
 import { atomicSwaps } from './lib/constants';
+import { AppContext } from './lib/context';
 import { useAccount } from './lib/hooks';
+import { useAuth } from './lib/useAuth';
 import BitcoinMonkeys from './pages/BitcoinMonkeys';
 import Landing from './pages/Landing';
 import LandingAtomic from './pages/LandingAtomic';
@@ -16,13 +17,10 @@ import Arkadiko from './pages/special/Arkadiko';
 import BTCSportFlagsBurnMany from './pages/special/BTCSportsFlagsBurnMany';
 import BTCSportFlagsTransferMany from './pages/special/BTCSportsFlagsTransferMany';
 import Curator from './pages/special/Curator';
-import DeploySponsoredContract from './pages/special/DeploySponsoredContract';
 import NFTTransfer from './pages/special/NFTTransfer';
 import PoolAdmin from './pages/special/PoolAdmin';
 import ResendFailedTx from './pages/special/ResendFailedTx';
 import UnlistStacksPunks from './pages/special/UnlistStacksPunks';
-import { AppContext } from './lib/context';
-import { useAuth } from './lib/useAuth';
 
 export default function App() {
   const { authOptions, state } = useAuth();
@@ -100,7 +98,6 @@ function Content() {
           <BTCSportFlagsTransferMany path="/btc-sports-flags-transfer-many" />
           <BTCSportFlagsBurnMany path="/btc-sports-flags-burn-many" />
           <Arkadiko path="/arkadiko" />
-          <DeploySponsoredContract path="/deploy-sponsored-contract" />
         </>
         {!authenticated && <Landing path="/" exact default />}
         {!authenticated && <LandingCat path="/catamaran" />}

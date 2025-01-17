@@ -14,8 +14,6 @@ import {
 import { useState } from 'react';
 import { useAccount, useOpenContractCall } from '../../lib/hooks';
 
-const sleep = () => new Promise(resolve => setTimeout(resolve, 5000));
-
 const fetchVaultById = async id => {
   return callReadOnlyFunction({
     contractAddress: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR',

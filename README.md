@@ -1,3 +1,5 @@
+**New UI has been developed on https://github.com/friedger/stacks-catamaran**
+
 # Swap BTC and other assets for tokens on Stacks chain
 
 Information and basic UI to inspect and execute trustless swaps between Bitcoin (and other tokens) and fungible and non-fungible tokens on the Stacks chain.
